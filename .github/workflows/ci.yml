@@ -32,7 +32,7 @@ jobs:
       run: |
         cmake -S src/main/native -B build-native `
           -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-          -DVCPKG_TARGET_TRIPLET=x64-windows `
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static `
           -A x64
       shell: pwsh
 

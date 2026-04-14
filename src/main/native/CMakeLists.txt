@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# ── Use Static C Runtime (CRT) on Windows ──
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # ── Locate Microsoft SEAL (installed via vcpkg or system) ──
 find_package(SEAL 4.1 REQUIRED)
 

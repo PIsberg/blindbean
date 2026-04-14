@@ -50,58 +50,64 @@ public class FheNativeBridge {
     private static final MethodHandle MH_FREE_CIPHERTEXT;
 
     static {
-        // ── Load the native library ───────────────────────────
-        loadNativeLibrary();
-        SYMBOLS = SymbolLookup.loaderLookup();
+        try {
+            // ── Load the native library ───────────────────────────
+            loadNativeLibrary();
+            SYMBOLS = SymbolLookup.loaderLookup();
 
-        // ── Resolve all downcall handles once ─────────────────
-        MH_INIT_BFV = downcall("fhe_init_bfv",
-                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
+            // ── Resolve all downcall handles once ─────────────────
+            MH_INIT_BFV = downcall("fhe_init_bfv",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
 
-        MH_INIT_CKKS = downcall("fhe_init_ckks",
-                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_DOUBLE));
+            MH_INIT_CKKS = downcall("fhe_init_ckks",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_DOUBLE));
 
-        MH_DESTROY_CONTEXT = downcall("fhe_destroy_context",
-                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+            MH_DESTROY_CONTEXT = downcall("fhe_destroy_context",
+                    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
-        MH_ENCRYPT_LONG = downcall("fhe_encrypt_long",
-                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
+            MH_ENCRYPT_LONG = downcall("fhe_encrypt_long",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
 
-        MH_DECRYPT_LONG = downcall("fhe_decrypt_long",
-                FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_DECRYPT_LONG = downcall("fhe_decrypt_long",
+                    FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_ENCRYPT_DOUBLE = downcall("fhe_encrypt_double",
-                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_DOUBLE));
+            MH_ENCRYPT_DOUBLE = downcall("fhe_encrypt_double",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_DOUBLE));
 
-        MH_DECRYPT_DOUBLE = downcall("fhe_decrypt_double",
-                FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_DECRYPT_DOUBLE = downcall("fhe_decrypt_double",
+                    FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_ADD = downcall("fhe_add",
-                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_ADD = downcall("fhe_add",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_MULTIPLY = downcall("fhe_multiply",
-                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_MULTIPLY = downcall("fhe_multiply",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_RELINEARIZE = downcall("fhe_relinearize",
-                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_RELINEARIZE = downcall("fhe_relinearize",
+                    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_RESCALE = downcall("fhe_rescale",
-                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_RESCALE = downcall("fhe_rescale",
+                    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_NOISE_BUDGET = downcall("fhe_noise_budget",
-                FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_NOISE_BUDGET = downcall("fhe_noise_budget",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_SERIALIZE = downcall("fhe_serialize_ciphertext",
-                FunctionDescriptor.of(ValueLayout.JAVA_INT,
-                        ValueLayout.ADDRESS, ValueLayout.ADDRESS,
-                        ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_SERIALIZE = downcall("fhe_serialize_ciphertext",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT,
+                            ValueLayout.ADDRESS, ValueLayout.ADDRESS,
+                            ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-        MH_DESERIALIZE = downcall("fhe_deserialize_ciphertext",
-                FunctionDescriptor.of(ValueLayout.ADDRESS,
-                        ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
+            MH_DESERIALIZE = downcall("fhe_deserialize_ciphertext",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS,
+                            ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
 
-        MH_FREE_CIPHERTEXT = downcall("fhe_free_ciphertext",
-                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+            MH_FREE_CIPHERTEXT = downcall("fhe_free_ciphertext",
+                    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+        } catch (Throwable t) {
+            System.err.println("CRITICAL: Failed to initialize FheNativeBridge static handles.");
+            t.printStackTrace();
+            throw t;
+        }
     }
 
     // ── Public API ────────────────────────────────────────────
