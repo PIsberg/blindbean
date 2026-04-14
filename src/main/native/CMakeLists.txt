@@ -13,6 +13,7 @@ find_package(SEAL 4.1 REQUIRED)
 
 # ── Build the shared library ──
 add_library(blindbean_fhe SHARED blindbean_fhe.cpp)
+target_compile_definitions(blindbean_fhe PRIVATE BLINDBEAN_EXPORTS)
 
 target_link_libraries(blindbean_fhe PRIVATE SEAL::seal)
 

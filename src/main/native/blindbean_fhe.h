@@ -16,6 +16,16 @@ typedef void* FheContext;
 typedef void* FheCiphertext;
 typedef void* FhePlaintext;
 
+#ifdef _WIN32
+  #ifdef BLINDBEAN_EXPORTS
+    #define BLINDBEAN_API __declspec(dllexport)
+  #else
+    #define BLINDBEAN_API __declspec(dllimport)
+  #endif
+#else
+  #define BLINDBEAN_API
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,34 +37,34 @@ extern "C" {
 /** Initializes a BFV context with the given polynomial modulus degree.
  *  Uses SEAL recommended 128-bit security parameters.
  *  Returns NULL on failure. */
-FheContext fhe_init_bfv(uint32_t poly_modulus_degree);
+BLINDBEAN_API FheContext fhe_init_bfv(uint32_t poly_modulus_degree);
 
 /** Initializes a CKKS context with the given polynomial modulus degree and scale.
  *  Returns NULL on failure. */
-FheContext fhe_init_ckks(uint32_t poly_modulus_degree, double scale);
+BLINDBEAN_API FheContext fhe_init_ckks(uint32_t poly_modulus_degree, double scale);
 
 /** Destroys the context and frees all associated memory. */
-void fhe_destroy_context(FheContext ctx);
+BLINDBEAN_API void fhe_destroy_context(FheContext ctx);
 
 // ============================================================
 // BFV — Exact Integer Encryption
 // ============================================================
 
 /** Encrypts a 64-bit integer using BFV. Returns NULL on failure. */
-FheCiphertext fhe_encrypt_long(FheContext ctx, int64_t value);
+BLINDBEAN_API FheCiphertext fhe_encrypt_long(FheContext ctx, int64_t value);
 
 /** Decrypts a BFV ciphertext back to a 64-bit integer. Returns 0 on failure. */
-int64_t fhe_decrypt_long(FheContext ctx, FheCiphertext ct);
+BLINDBEAN_API int64_t fhe_decrypt_long(FheContext ctx, FheCiphertext ct);
 
 // ============================================================
 // CKKS — Approximate Real Encryption
 // ============================================================
 
 /** Encrypts a double using CKKS. Returns NULL on failure. */
-FheCiphertext fhe_encrypt_double(FheContext ctx, double value);
+BLINDBEAN_API FheCiphertext fhe_encrypt_double(FheContext ctx, double value);
 
 /** Decrypts a CKKS ciphertext back to a double. Returns 0.0 on failure. */
-double fhe_decrypt_double(FheContext ctx, FheCiphertext ct);
+BLINDBEAN_API double fhe_decrypt_double(FheContext ctx, FheCiphertext ct);
 
 // ============================================================
 // Homomorphic Operations
@@ -62,17 +72,17 @@ double fhe_decrypt_double(FheContext ctx, FheCiphertext ct);
 
 /** Homomorphically adds two ciphertexts, returning a new ciphertext.
  *  Both ciphertexts must belong to the same context. */
-FheCiphertext fhe_add(FheContext ctx, FheCiphertext a, FheCiphertext b);
+BLINDBEAN_API FheCiphertext fhe_add(FheContext ctx, FheCiphertext a, FheCiphertext b);
 
 /** Homomorphically multiplies two ciphertexts, returning a new ciphertext.
  *  Automatically relinearizes after multiplication. */
-FheCiphertext fhe_multiply(FheContext ctx, FheCiphertext a, FheCiphertext b);
+BLINDBEAN_API FheCiphertext fhe_multiply(FheContext ctx, FheCiphertext a, FheCiphertext b);
 
 /** Relinearizes a ciphertext in-place (reduces size after multiplication). */
-void fhe_relinearize(FheContext ctx, FheCiphertext ct);
+BLINDBEAN_API void fhe_relinearize(FheContext ctx, FheCiphertext ct);
 
 /** CKKS: rescales a ciphertext in-place (reduces scale after multiplication). */
-void fhe_rescale(FheContext ctx, FheCiphertext ct);
+BLINDBEAN_API void fhe_rescale(FheContext ctx, FheCiphertext ct);
 
 // ============================================================
 // Diagnostics
@@ -81,7 +91,7 @@ void fhe_rescale(FheContext ctx, FheCiphertext ct);
 /** Computes the remaining noise budget (in bits) for a BFV ciphertext.
  *  Returns 0 if the ciphertext is too noisy to decrypt correctly.
  *  For CKKS, always returns -1 (noise budget is not a meaningful concept). */
-int32_t fhe_noise_budget(FheContext ctx, FheCiphertext ct);
+BLINDBEAN_API int32_t fhe_noise_budget(FheContext ctx, FheCiphertext ct);
 
 // ============================================================
 // Serialization
@@ -91,11 +101,11 @@ int32_t fhe_noise_budget(FheContext ctx, FheCiphertext ct);
  *  On entry, *out_len must contain the buffer capacity.
  *  On exit, *out_len contains the actual bytes written.
  *  Returns 0 on success, -1 if the buffer is too small. */
-int32_t fhe_serialize_ciphertext(FheContext ctx, FheCiphertext ct,
+BLINDBEAN_API int32_t fhe_serialize_ciphertext(FheContext ctx, FheCiphertext ct,
                                   uint8_t* out_buf, size_t* out_len);
 
 /** Deserializes a ciphertext from a byte buffer. Returns NULL on failure. */
-FheCiphertext fhe_deserialize_ciphertext(FheContext ctx,
+BLINDBEAN_API FheCiphertext fhe_deserialize_ciphertext(FheContext ctx,
                                           const uint8_t* buf, size_t len);
 
 // ============================================================
@@ -103,7 +113,7 @@ FheCiphertext fhe_deserialize_ciphertext(FheContext ctx,
 // ============================================================
 
 /** Frees a ciphertext handle. */
-void fhe_free_ciphertext(FheCiphertext ct);
+BLINDBEAN_API void fhe_free_ciphertext(FheCiphertext ct);
 
 #ifdef __cplusplus
 }
