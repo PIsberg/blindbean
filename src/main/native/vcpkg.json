@@ -1,0 +1,11 @@
+{
+  "name": "blindbean-fhe",
+  "version-string": "1.0.0",
+  "description": "BlindBean FHE native bridge backed by Microsoft SEAL",
+  "dependencies": [
+    {
+      "name": "seal",
+      "version>=": "4.1.1"
+    }
+  ]
+}

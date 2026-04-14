@@ -20,14 +20,36 @@ jobs:
         distribution: 'oracle'
         cache: maven
 
-    - name: Compile Native Backend (DLL)
+    # ── Install vcpkg and Microsoft SEAL ──
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '01f602195983451bc83e72f4214af2cbc495aa94'  # 2024.05.24 release
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+
+    - name: Configure Native Build (CMake + SEAL)
       run: |
-        cd src/main/native
-        gcc -shared -o blindbean_fhe.dll blindbean_fhe.c
-      shell: bash
-      
+        cmake -S src/main/native -B build-native `
+          -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+          -A x64
+      shell: pwsh
+
+    - name: Build Native DLL
+      run: cmake --build build-native --config Release
+      shell: pwsh
+
+    - name: Verify DLL exists
+      run: |
+        if (!(Test-Path "build-native/Release/blindbean_fhe.dll")) {
+          Write-Error "DLL not found!"
+          exit 1
+        }
+        Write-Host "DLL size: $((Get-Item build-native/Release/blindbean_fhe.dll).Length) bytes"
+      shell: pwsh
+
+    # ── Java build ──
     - name: Install Core Library
-      run: mvn clean install -B
+      run: mvn clean install -B -Dblindbean.native.path=build-native/Release
 
     - name: Build and Test Example Application
       run: |

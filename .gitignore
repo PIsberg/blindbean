@@ -1,2 +1,5 @@
 target/
 blindbean-example/target/
+build-native/
+vcpkg/
+vcpkg_installed/

@@ -7,8 +7,33 @@ If it feels like math, we failed. It feels like Hibernate. You annotate, we calc
 
 ## Features
 - **Pure Java Paillier**: Leverages the Java 26 Vector API (Project Panama SIMD) for parallelized Partially Homomorphic Encryption.
-- **Native FHE Bridge**: Supports BFV and CKKS schemes via a Project Panama `jextract` bridge.
+- **Native FHE Bridge**: Supports **BFV** (exact integer) and **CKKS** (approximate real) schemes via Microsoft SEAL 4.1, bridged through Project Panama FFM — zero JNI.
 - **Developer-first Annotations**: Simply slap `@Homomorphic` on your domain entities.
+- **AutoCloseable Resources**: `FheContext` and `FheCiphertextNative` support try-with-resources for deterministic native cleanup.
+
+## Prerequisites
+
+| Requirement | Version |
+|:------------|:--------|
+| JDK | 26-ea (with `--enable-preview`) |
+| CMake | 3.16+ |
+| vcpkg | Latest |
+| C++ compiler | MSVC 2019+ / GCC 11+ / Clang 14+ (C++17) |
+
+## Building
+
+```bash
+# 1. Build the native SEAL-backed DLL
+cmake -S src/main/native -B build-native \
+    -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+cmake --build build-native --config Release
+
+# 2. Build and install the Java library
+mvn clean install -B -Dblindbean.native.path=build-native/Release
+
+# 3. Run tests
+mvn clean test -Dblindbean.native.path=build-native/Release
+```
 
 ## Quickstart
 
@@ -27,6 +52,30 @@ UserAccountBlindWrapper wrapper = new UserAccountBlindWrapper(user);
 // 4. Add the encrypted amount
 Ciphertext amountToAdd = BlindContext.getPaillier().encrypt(BigInteger.valueOf(500));
 wrapper.addBalance(amountToAdd); // Math happens right there, without decryption!
+```
+
+### Using BFV (Fully Homomorphic — Integers)
+
+```java
+try (var ctx = FheContext.bfv(8192)) {
+    MemorySegment encrypted = ctx.encryptLong(42L);
+    MemorySegment doubled   = ctx.add(encrypted, encrypted);
+
+    long result = ctx.decryptLong(doubled);
+    System.out.println("42 + 42 = " + result);  // 84, exact
+}
+```
+
+### Using CKKS (Fully Homomorphic — Reals)
+
+```java
+try (var ctx = FheContext.ckks(8192, Math.pow(2, 40))) {
+    MemorySegment encrypted = ctx.encryptDouble(3.14);
+    MemorySegment doubled   = ctx.add(encrypted, encrypted);
+
+    double result = ctx.decryptDouble(doubled);
+    System.out.println("3.14 + 3.14 ≈ " + result);  // ≈ 6.28
+}
 ```
 
 ## Running Benchmarks
