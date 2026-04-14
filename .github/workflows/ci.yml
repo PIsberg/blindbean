@@ -80,7 +80,7 @@ jobs:
         id: cmake_config
         run: |
           cmake -S src/main/native -B build-native \
-            -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
             ${{ matrix.cmake_generator_args }}
