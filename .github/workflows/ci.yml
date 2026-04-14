@@ -59,9 +59,9 @@ jobs:
 
     # ── Java build ──
     - name: Install Core Library
-      run: mvn clean install -B -Dblindbean.native.path=build-native/Release
+      run: mvn clean install -B "-Dblindbean.native.path=build-native/Release"
 
     - name: Build and Test Example Application
       run: |
         cd blindbean-example
-        mvn clean test -B
+        mvn clean test -B "-Dblindbean.native.path=../build-native/Release"
