@@ -14,22 +14,24 @@ cmake -S src/main/native -B build-native -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scr
 cmake --build build-native --config Release
 
 # Build and install all modules (pass native DLL path)
-mvn clean install -B -Dblindbean.native.path=build-native/Release
+./mvnw clean install -B -Dblindbean.native.path=build-native
 
 # Run tests (core library)
-mvn clean test -Dblindbean.native.path=build-native/Release
+./mvnw clean test -Dblindbean.native.path=build-native
 
 # Run a single test class
-mvn test -pl . -Dtest=BlindMathTest -Dblindbean.native.path=build-native/Release
+./mvnw test -pl . -Dtest=BlindMathTest -Dblindbean.native.path=build-native
 
 # Build and test the example module
-cd blindbean-example && mvn clean test -B
+cd blindbean-example && ../mvnw clean test -B
 
 # Run JMH benchmarks (after build)
 java -jar target/benchmarks.jar
 ```
 
-The CI pipeline runs on `windows-latest` with Oracle JDK 26-ea. It builds the SEAL-backed native DLL via CMake + vcpkg, then runs the full Maven test suite.
+On Windows, use `mvnw.cmd` and `-Dblindbean.native.path=build-native/Release`.
+
+The CI pipeline runs a Java fast gate on Linux and macOS, a native build matrix on Linux/macOS/Windows, and the full Maven test suite on Windows against the published DLL artifact.
 
 All Maven runs require these JVM flags (already configured in `pom.xml`):
 - `--enable-preview` (Java 26 preview features)
