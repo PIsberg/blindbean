@@ -1,70 +1,156 @@
 # Architecture: BlindBean
 
-BlindBean is structurally tiered into three layers to maintain high Developer Experience (DX) without compromising crypto-performance.
+BlindBean is structurally tiered into three layers to maintain high Developer Experience (DX) without compromising crypto-performance. This document details the relationship between the Java application layer and the native Microsoft SEAL backend.
+
+## Architecture Overview
+
+![Architecture Overview](images/architecture_overview.png)
+
+```mermaid
+graph TD
+    A[Consumer Code] -->|@BlindEntity| B[Generated Proxies]
+    B --> C[BlindMath Dispatcher]
+    
+    subgraph "Java Layer (FFM / Panama)"
+        C --> D[Paillier / Vector API]
+        C --> E[FheNativeBridge]
+        E --> F[MethodHandles]
+    end
+    
+    subgraph "Native Layer (C++)"
+        F --> G[blindbean_fhe.dll]
+        G --> H[Microsoft SEAL 4.1]
+    end
+```
+
+---
 
 ## 1. The Developer Layer (Annotations & Proxies)
 
 At compile time, `HomomorphicProcessor` evaluates classes annotated with `@BlindEntity`. It automatically generates heavily optimized wrapper proxies (e.g., `UserAccountBlindWrapper`).
-- **No Reflection**: By generating source code rather than using runtime weaving or reflection APIs, we avoid runtime performance hits. The wrappers statically bind to the entity's getters/setters.
-- **Transparent Invocation**: When the developer calls `wrapper.addBalance(amount)`, the proxy manages the complexity of extracting the ciphertext, executing homomorphic math, and re-setting the ciphertext, keeping the entity object completely clean.
+- **No Reflection**: By generating source code rather than using runtime weaving or reflection APIs, we avoid runtime performance hits.
+- **Transparent Invocation**: When the developer calls `wrapper.addBalance(amount)`, the proxy manages the complexity of extracting the ciphertext, executing homomorphic math, and re-setting the ciphertext.
 
-## 2. The Pure-Java Layer (PHE & Vector API)
+---
 
-For Partial Homomorphic Encryption (PHE) schemes like **Paillier**, the math natively operates on large numbers.
-- We implement `PaillierMath` for straightforward `add()` logic utilizing `java.math.BigInteger` under the hood.
-- **Java 26 Vector API**: To overcome large overheads of parallel encryptions in large datasets, `PaillierVectorized` abstracts the workload onto SIMD (Single Instruction Multiple Data) lanes using Project Panama's `jdk.incubator.vector`. This ensures multi-lane primitive multiplications drastically outperform standard iteration for scaling workloads.
+## 2. The Native Layer (FHE & Microsoft SEAL)
 
-## 3. The Native Layer (FHE & Microsoft SEAL)
+For Fully Homomorphic Encryption (FHE) like BFV or CKKS, we bridge to **Microsoft SEAL 4.1** via a C++ backend and Project Panama.
 
-For Fully Homomorphic Encryption (FHE) like BFV or CKKS (which require intense polynomials and noise budget management impossible in Pure Java), we bridge to **Microsoft SEAL 4.1** via a C++ backend.
+### Class Relationship
 
-### SEAL Integration
-- **Zero JNI**: We use Java 26 Project Panama (Foreign Function & Memory API — `java.lang.foreign`).
-- **`FheNativeBridge`**: Provides 15 cached `MethodHandle` downcalls into `blindbean_fhe.dll`, resolved once at class-load time.
-- **`blindbean_fhe.cpp`**: C++ source linking against Microsoft SEAL. All functions are `extern "C"` to maintain a stable ABI.
-- **Performance**: Direct `MethodHandle` invocations pass pointers and structs to the native library at near zero-overhead.
+![Class Diagram](images/class_diagram.png)
 
-### Internal Architecture: `BlindBeanContext`
+```mermaid
+classDiagram
+    class BlindMath {
+        +add(Ciphertext, Ciphertext)
+        +multiply(Ciphertext, Ciphertext)
+    }
+    class BlindContext {
+        +getFheContext() FheContext
+    }
+    class FheContext {
+        -MemorySegment handle
+        +add(han, han)
+        +multiply(han, han)
+        +close()
+    }
+    class FheCiphertextNative {
+        -MemorySegment handle
+        +toBlindCiphertext()
+        +fromBlindCiphertext()
+        +close()
+    }
+    class FheNativeBridge {
+        <<Internal>>
+        +MH_ADD
+        +MH_MULTIPLY
+        +MH_SERIALIZE
+    }
 
-The opaque `FheContext` handle points to a C++ struct that holds all SEAL objects:
-
-```cpp
-struct BlindBeanContext {
-    seal::SEALContext*   sealCtx;      // Encryption parameter context
-    seal::Encryptor*     encryptor;    // Public-key encryptor
-    seal::Decryptor*     decryptor;    // Secret-key decryptor
-    seal::Evaluator*     evaluator;    // Homomorphic operations
-    seal::PublicKey       publicKey;
-    seal::SecretKey       secretKey;
-    seal::RelinKeys       relinKeys;   // For post-multiply relinearization
-    double                scale;       // CKKS scale parameter
-    bool                  isCkks;      // Scheme flag
-};
+    BlindMath ..> BlindContext
+    BlindContext --> FheContext
+    FheContext ..> FheNativeBridge
+    FheCiphertextNative ..> FheNativeBridge
 ```
 
-### Memory Management
+### Operation Sequence (FHE Multiplication)
 
-- **Java side**: `FheContext` and `FheCiphertextNative` implement `AutoCloseable`, enabling try-with-resources for deterministic cleanup.
-- **Native side**: `fhe_destroy_context()` deletes all SEAL objects; `fhe_free_ciphertext()` deletes individual `seal::Ciphertext*` instances.
-- **Arena management**: Java `Arena` instances scope the lifecycle of off-heap memory segments returned by native calls.
+![Sequence Diagram](images/sequence_diagram.png)
 
-### Supported Operations
+```mermaid
+sequenceDiagram
+    participant App as Consumer Code
+    participant Math as BlindMath
+    participant Native as FheCiphertextNative
+    participant Bridge as FheNativeBridge
+    participant C++ as blindbean_fhe.cpp
+    participant SEAL as Microsoft SEAL
 
-| Operation | BFV | CKKS |
-|:----------|:---:|:----:|
-| Encrypt/Decrypt | ✅ int64 | ✅ double |
-| Addition | ✅ exact | ✅ approximate |
-| Multiplication | ✅ exact + auto-relin | ✅ approximate + rescale |
-| Noise Budget | ✅ real bits | ❌ returns -1 |
-| Serialization | ✅ | ✅ |
+    App->>Math: multiply(ctA, ctB)
+    Math->>Native: fromBlindCiphertext(ctx, a)
+    Native->>Bridge: fhe_deserialize_ciphertext(ctx, buf, len)
+    Bridge->>C++: fhe_deserialize_ciphertext
+    C++->>SEAL: seal::Ciphertext::load()
+    
+    Math->>Bridge: fhe_multiply(ctx, hanA, hanB)
+    Bridge->>C++: fhe_multiply
+    C++->>SEAL: seal::Evaluator::multiply
+    C++->>SEAL: seal::Evaluator::relinearize_inplace
+    
+    Math->>Native: toBlindCiphertext()
+    Native->>Bridge: fhe_serialize_ciphertext
+    Native-->>App: New Ciphertext (Serialized)
+    
+    Note over Native: try-with-resources calls close()
+    Native->>Bridge: fhe_free_ciphertext
+    Bridge->>C++: delete seal::Ciphertext
+```
 
-### Build System
+---
 
-The native DLL is built via **CMake** with **vcpkg** for dependency management:
-```bash
-cmake -S src/main/native -B build-native \
-    -DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake
+## 3. Implementation Details
+
+### FFM (Project Panama) Integration
+
+We utilize the Java 26 **Foreign Function & Memory API** (`java.lang.foreign`) for zero-overhead native calls.
+
+- **`MethodHandle` Downcalls**: All 15 native symbols are resolved once at class-load time via `SymbolLookup.loaderLookup()`.
+- **Struct Opaque Handles**: Java only ever sees a `MemorySegment` (an opaque `void*`). All SEAL-specific state is managed within a `BlindBeanContext` struct on the C++ heap.
+- **Critical Exports**: On Windows, we use `__declspec(dllexport)` and `extern "C"` to ensure stable, discoverable symbols.
+
+### Scheme Specifics & Security
+
+We target **128-bit security** based on the parameters recommended by the HomomorphicEncryption.org standard.
+
+| Parameter | BFV (Exact) | CKKS (Approximate) |
+|:----------|:------------|:-------------------|
+| **Poly Modulus Degree** | 8192 | 8192 |
+| **Coeff Modulus** | `BFVDefault` | `{60, 40, 40, 60}` |
+| **Plain Modulus** | `Batching(8192, 20)` | N/A |
+| **Scale** | N/A | 2^40 |
+
+- **BFV**: Used for exact integer arithmetic. Automatically relinearizes after multiplication.
+- **CKKS**: Used for floating-point arithmetic. Automatically relinearizes and rescales to manage depth.
+
+### Memory & Lifecycle Management
+
+- **Deterministic Cleanup**: Native resources are tied to Java `AutoCloseable` wrappers. We strictly follow the `try-with-resources` pattern to prevent memory leaks in the native heap.
+- **Static DLL**: The native library is built as a self-contained DLL (`x64-windows-static`). It bundles Microsoft SEAL and the C Runtime (CRT), requiring zero external dependencies on the host machine.
+
+---
+
+## 4. Build System
+
+The native registry uses **CMake** and **vcpkg** (Manifest Mode):
+
+```powershell
+# Build native bridge
+cmake -S src/main/native -B build-native `
+    -DCMAKE_TOOLCHAIN_FILE="vcpkg/scripts/buildsystems/vcpkg.cmake" `
+    -DVCPKG_TARGET_TRIPLET=x64-windows-static
 cmake --build build-native --config Release
 ```
 
-SEAL is linked as a static library, so the resulting `blindbean_fhe.dll` is self-contained.
+The resulting library is linked at runtime via `-Dblindbean.native.path=build-native/Release`.
