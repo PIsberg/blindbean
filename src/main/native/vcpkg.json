@@ -4,9 +4,6 @@
   "builtin-baseline": "01f602195983451bc83e72f4214af2cbc495aa94",
   "description": "BlindBean FHE native bridge backed by Microsoft SEAL",
   "dependencies": [
-    {
-      "name": "seal",
-      "version>=": "4.1.1"
-    }
+    "seal"
   ]
 }

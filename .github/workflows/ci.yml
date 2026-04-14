@@ -28,10 +28,20 @@ jobs:
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
     - name: Configure Native Build (CMake + SEAL)
+      id: cmake_config
       run: |
         cmake -S src/main/native -B build-native `
           -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+          -DVCPKG_TARGET_TRIPLET=x64-windows `
           -A x64
+      shell: pwsh
+
+    - name: Show vcpkg Error Log on Failure
+      if: failure() && steps.cmake_config.outcome == 'failure'
+      run: |
+        if (Test-Path "build-native/vcpkg-manifest-install.log") {
+          Get-Content "build-native/vcpkg-manifest-install.log"
+        }
       shell: pwsh
 
     - name: Build Native DLL
