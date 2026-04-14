@@ -6,21 +6,24 @@ BlindBean is structurally tiered into three layers to maintain high Developer Ex
 
 ![Architecture Overview](images/architecture_overview.png)
 
-```mermaid
-graph TD
-    A[Consumer Code] -->|@BlindEntity| B[Generated Proxies]
-    B --> C[BlindMath Dispatcher]
-    
-    subgraph "Java Layer (FFM / Panama)"
-        C --> D[Paillier / Vector API]
-        C --> E[FheNativeBridge]
-        E --> F[MethodHandles]
-    end
-    
-    subgraph "Native Layer (C++)"
-        F --> G[blindbean_fhe.dll]
-        G --> H[Microsoft SEAL 4.1]
-    end
+```plantuml
+@startuml
+package "Developer Layer" {
+    [Consumer Code] --> [Generated Proxies] : @BlindEntity
+    [Generated Proxies] --> [BlindMath Dispatcher]
+}
+
+package "Java Layer (FFM / Panama)" {
+    [BlindMath Dispatcher] --> [Paillier / Vector API]
+    [BlindMath Dispatcher] --> [FheNativeBridge]
+    [FheNativeBridge] --> [MethodHandles]
+}
+
+package "Native Layer (C++)" {
+    [MethodHandles] --> [blindbean_fhe.dll]
+    [blindbean_fhe.dll] --> [Microsoft SEAL 4.1]
+}
+@enduml
 ```
 
 ---
@@ -41,71 +44,68 @@ For Fully Homomorphic Encryption (FHE) like BFV or CKKS, we bridge to **Microsof
 
 ![Class Diagram](images/class_diagram.png)
 
-```mermaid
-classDiagram
-    class BlindMath {
-        +add(Ciphertext, Ciphertext)
-        +multiply(Ciphertext, Ciphertext)
-    }
-    class BlindContext {
-        +getFheContext() FheContext
-    }
-    class FheContext {
-        -MemorySegment handle
-        +add(han, han)
-        +multiply(han, han)
-        +close()
-    }
-    class FheCiphertextNative {
-        -MemorySegment handle
-        +toBlindCiphertext()
-        +fromBlindCiphertext()
-        +close()
-    }
-    class FheNativeBridge {
-        <<Internal>>
-        +MH_ADD
-        +MH_MULTIPLY
-        +MH_SERIALIZE
-    }
+```plantuml
+@startuml
+class BlindMath {
+    +add(Ciphertext, Ciphertext)
+    +multiply(Ciphertext, Ciphertext)
+}
+class BlindContext {
+    +getFheContext() : FheContext
+}
+class FheContext {
+    -MemorySegment handle
+    +add(MemorySegment, MemorySegment)
+    +multiply(MemorySegment, MemorySegment)
+    +close()
+}
+class FheCiphertextNative {
+    -MemorySegment handle
+    +toBlindCiphertext()
+    +fromBlindCiphertext()
+    +close()
+}
+class FheNativeBridge {
+    <<Internal>>
+    +MH_ADD
+    +MH_MULTIPLY
+}
 
-    BlindMath ..> BlindContext
-    BlindContext --> FheContext
-    FheContext ..> FheNativeBridge
-    FheCiphertextNative ..> FheNativeBridge
+BlindMath ..> BlindContext
+BlindContext --> FheContext
+FheContext ..> FheNativeBridge
+FheCiphertextNative ..> FheNativeBridge
+@enduml
 ```
 
 ### Operation Sequence (FHE Multiplication)
 
 ![Sequence Diagram](images/sequence_diagram.png)
 
-```mermaid
-sequenceDiagram
-    participant App as Consumer Code
-    participant Math as BlindMath
-    participant Native as FheCiphertextNative
-    participant Bridge as FheNativeBridge
-    participant C++ as blindbean_fhe.cpp
-    participant SEAL as Microsoft SEAL
+```plantuml
+@startuml
+participant "Consumer Code" as App
+participant "BlindMath" as Math
+participant "FheCiphertextNative" as Native
+participant "FheNativeBridge" as Bridge
+participant "blindbean_fhe.cpp" as CPP
+participant "Microsoft SEAL" as SEAL
 
-    App->>Math: multiply(ctA, ctB)
-    Math->>Native: fromBlindCiphertext(ctx, a)
-    Native->>Bridge: fhe_deserialize_ciphertext(ctx, buf, len)
-    Bridge->>C++: fhe_deserialize_ciphertext
-    C++->>SEAL: seal::Ciphertext::load()
-    
-    Math->>Bridge: fhe_multiply(ctx, hanA, hanB)
-    Bridge->>C++: fhe_multiply
-    C++->>SEAL: seal::Evaluator::multiply
-    C++->>SEAL: seal::Evaluator::relinearize_inplace
-    
-    Math->>Native: toBlindCiphertext()
-    Native->>Bridge: fhe_serialize_ciphertext
-    Native-->>App: New Ciphertext (Serialized)
-    
-    Note over Native: try-with-resources calls close()
-    Native->>Bridge: fhe_free_ciphertext
-    Bridge->>C++: delete seal::Ciphertext
+App -> Math : multiply(ctA, ctB)
+Math -> Native : fromBlindCiphertext(ctx, a)
+Native -> Bridge : fhe_deserialize_ciphertext(ctx, buf, len)
+Bridge -> CPP : fhe_deserialize_ciphertext
+CPP -> SEAL : seal::Ciphertext::load()
+
+Math -> Bridge : fhe_multiply(ctx, hanA, hanB)
+Bridge -> CPP : fhe_multiply
+CPP -> SEAL : seal::Evaluator::multiply
+CPP -> SEAL : seal::Evaluator::relinearize_inplace
+
+Math -> Native : toBlindCiphertext()
+Native -> Bridge : fhe_serialize_ciphertext
+Native --> App : New Ciphertext (Serialized)
+@enduml
 ```
 
 ---
