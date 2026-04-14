@@ -44,4 +44,38 @@ public class WalletTest {
         // Expecting 1000 + 500 = 1500
         assertEquals(BigInteger.valueOf(1500), decryptedTotal);
     }
+
+    @Test
+    public void testEncryptDecryptRoundTrip() {
+        // Start with an empty wallet (no initial ciphertext needed)
+        Wallet myWallet = new Wallet("");
+        WalletBlindWrapper wrapper = new WalletBlindWrapper(myWallet);
+
+        // Encrypt a known value via the generated encryptFunds helper
+        wrapper.encryptFunds(BigInteger.valueOf(42));
+
+        // Decrypt it via the generated decryptFunds helper and assert round-trip
+        BigInteger recovered = wrapper.decryptFunds();
+        assertEquals(BigInteger.valueOf(42), recovered,
+            "encryptFunds → decryptFunds round-trip must recover the original plaintext");
+    }
+
+    @Test
+    public void testEncryptThenAdd() {
+        // Use encryptFunds to set an initial balance, then addFunds homomorphically
+        Wallet myWallet = new Wallet("");
+        WalletBlindWrapper wrapper = new WalletBlindWrapper(myWallet);
+
+        // Encrypt 200 via the generated helper
+        wrapper.encryptFunds(BigInteger.valueOf(200));
+
+        // Add 300 homomorphically
+        Ciphertext deposit = BlindContext.getPaillier().encrypt(BigInteger.valueOf(300));
+        wrapper.addFunds(deposit);
+
+        // Decrypt and verify 200 + 300 = 500
+        BigInteger total = wrapper.decryptFunds();
+        assertEquals(BigInteger.valueOf(500), total,
+            "encryptFunds(200) + addFunds(300) must decrypt to 500");
+    }
 }

@@ -6,62 +6,158 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  build-and-test:
-    runs-on: windows-latest
+  java-fast-gate:
+    name: Java fast gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 26
-      uses: actions/setup-java@v4
-      with:
-        java-version: '26'
-        distribution: 'oracle'
-        cache: maven
+      - name: Set up JDK 26
+        uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
 
-    # ── Install vcpkg and Microsoft SEAL ──
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'  # 2025.01.13 release
-        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+      - name: Compile core
+        run: ./mvnw -B -pl . compile test-compile
+        shell: bash
 
-    - name: Configure Native Build (CMake + SEAL)
-      id: cmake_config
-      run: |
-        cmake -S src/main/native -B build-native `
-          -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-          -DVCPKG_TARGET_TRIPLET=x64-windows-static `
-          -A x64
-      shell: pwsh
+      - name: Run HomomorphicProcessorTest
+        run: ./mvnw -B -pl . test -Dtest=HomomorphicProcessorTest
+        shell: bash
 
-    - name: Show vcpkg Error Log on Failure
-      if: failure() && steps.cmake_config.outcome == 'failure'
-      run: |
-        if (Test-Path "build-native/vcpkg-manifest-install.log") {
-          Get-Content "build-native/vcpkg-manifest-install.log"
-        }
-      shell: pwsh
+  native-build-matrix:
+    name: Native build (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    needs: java-fast-gate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x64
+            vcpkg_triplet: x64-linux
+            library_path: build-native/blindbean_fhe.so
+            artifact_name: blindbean_fhe-linux-x64
+            cmake_generator_args: ""
+          - os: macos-latest
+            label: macos-arm64
+            vcpkg_triplet: arm64-osx
+            library_path: build-native/blindbean_fhe.dylib
+            artifact_name: blindbean_fhe-macos-arm64
+            cmake_generator_args: ""
+          - os: windows-latest
+            label: windows-x64
+            vcpkg_triplet: x64-windows-static
+            library_path: build-native/Release/blindbean_fhe.dll
+            artifact_name: blindbean_fhe-windows-x64
+            cmake_generator_args: "-A x64"
 
-    - name: Build Native DLL
-      run: cmake --build build-native --config Release
-      shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Verify DLL exists
-      run: |
-        if (!(Test-Path "build-native/Release/blindbean_fhe.dll")) {
-          Write-Error "DLL not found!"
-          exit 1
-        }
-        Write-Host "DLL size: $((Get-Item build-native/Release/blindbean_fhe.dll).Length) bytes"
-      shell: pwsh
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
-    # ── Java build ──
-    - name: Install Core Library
-      run: mvn clean install -B "-Dblindbean.native.path=build-native/Release"
+      - name: Configure Native Build (CMake + SEAL)
+        id: cmake_config
+        run: |
+          cmake -S src/main/native -B build-native \
+            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
+            ${{ matrix.cmake_generator_args }}
+        shell: bash
 
-    - name: Build and Test Example Application
-      run: |
-        cd blindbean-example
-        mvn clean test -B "-Dblindbean.native.path=../build-native/Release"
+      - name: Show vcpkg Error Log on Failure
+        if: failure() && steps.cmake_config.outcome == 'failure'
+        run: |
+          if [ -f build-native/vcpkg-manifest-install.log ]; then
+            cat build-native/vcpkg-manifest-install.log
+          fi
+        shell: bash
+
+      - name: Build Native Library
+        run: cmake --build build-native --config Release
+        shell: bash
+
+      - name: Verify native library exists
+        run: |
+          test -f "${{ matrix.library_path }}"
+          ls -lh "${{ matrix.library_path }}"
+        shell: bash
+
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.library_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+  full-windows:
+    name: Full Windows test
+    runs-on: windows-latest
+    needs: native-build-matrix
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+
+      - name: Download Windows native artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: blindbean_fhe-windows-x64
+          path: build-native/Release
+
+      - name: Verify downloaded DLL exists
+        run: |
+          if (!(Test-Path "build-native/Release/blindbean_fhe.dll")) {
+            Write-Error "DLL not found after artifact download."
+            exit 1
+          }
+          Write-Host "DLL size: $((Get-Item build-native/Release/blindbean_fhe.dll).Length) bytes"
+        shell: pwsh
+
+      - name: Install Core Library
+        run: .\mvnw.cmd clean install -B "-Dblindbean.native.path=build-native/Release"
+        shell: pwsh
+
+      - name: Build and Test Example Application
+        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release"
+        shell: pwsh
+        working-directory: blindbean-example
+
+      - name: Upload Surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-windows
+          path: |
+            target/surefire-reports/
+            blindbean-example/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 14

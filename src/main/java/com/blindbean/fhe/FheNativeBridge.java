@@ -10,6 +10,8 @@ import java.lang.invoke.MethodHandle;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Production-grade Project Panama (FFM API) bridge into Microsoft SEAL.
@@ -251,36 +253,36 @@ public class FheNativeBridge {
      * 3. System loadLibrary (java.library.path)
      */
     private static void loadNativeLibrary() {
-        String dllName = System.mapLibraryName("blindbean_fhe"); // blindbean_fhe.dll or libblindbean_fhe.so
+        Set<String> candidateNames = nativeLibraryFileNames();
 
         // Strategy 1: System property
         String nativePath = System.getProperty("blindbean.native.path");
         if (nativePath != null) {
-            Path candidate = Paths.get(nativePath, dllName);
-            if (Files.exists(candidate)) {
-                System.load(candidate.toAbsolutePath().toString());
-                return;
-            }
-            // Also try without the lib prefix on Linux (CMake output is "blindbean_fhe.so")
-            candidate = Paths.get(nativePath, "blindbean_fhe.dll");
-            if (Files.exists(candidate)) {
-                System.load(candidate.toAbsolutePath().toString());
-                return;
+            for (String candidateName : candidateNames) {
+                Path candidate = Paths.get(nativePath, candidateName);
+                if (Files.exists(candidate)) {
+                    System.load(candidate.toAbsolutePath().toString());
+                    return;
+                }
             }
         }
 
         // Strategy 2: Development path relative to cwd
-        Path devPath = Paths.get("src/main/native", dllName).toAbsolutePath();
-        if (Files.exists(devPath)) {
-            System.load(devPath.toString());
-            return;
+        for (String candidateName : candidateNames) {
+            Path devPath = Paths.get("src/main/native", candidateName).toAbsolutePath();
+            if (Files.exists(devPath)) {
+                System.load(devPath.toString());
+                return;
+            }
         }
         // Also check CMake build output directories
         for (String buildDir : new String[]{"build-native/Release", "build-native/Debug", "build-native"}) {
-            Path buildPath = Paths.get(buildDir, dllName).toAbsolutePath();
-            if (Files.exists(buildPath)) {
-                System.load(buildPath.toString());
-                return;
+            for (String candidateName : candidateNames) {
+                Path buildPath = Paths.get(buildDir, candidateName).toAbsolutePath();
+                if (Files.exists(buildPath)) {
+                    System.load(buildPath.toString());
+                    return;
+                }
             }
         }
 
@@ -292,7 +294,25 @@ public class FheNativeBridge {
                     "Cannot load blindbean_fhe native library. Searched: " +
                     "blindbean.native.path=" + nativePath + ", " +
                     "src/main/native/, build-native/, java.library.path. " +
-                    "Ensure the SEAL-backed DLL is built (see README for CMake instructions).", e);
+                    "Ensure the SEAL-backed native library is built (see README for CMake instructions).", e);
         }
+    }
+
+    private static Set<String> nativeLibraryFileNames() {
+        Set<String> candidateNames = new LinkedHashSet<>();
+        candidateNames.add(System.mapLibraryName("blindbean_fhe"));
+
+        String osName = System.getProperty("os.name", "").toLowerCase();
+        if (osName.contains("win")) {
+            candidateNames.add("blindbean_fhe.dll");
+        } else if (osName.contains("mac")) {
+            candidateNames.add("blindbean_fhe.dylib");
+            candidateNames.add("libblindbean_fhe.dylib");
+        } else {
+            candidateNames.add("blindbean_fhe.so");
+            candidateNames.add("libblindbean_fhe.so");
+        }
+
+        return candidateNames;
     }
 }

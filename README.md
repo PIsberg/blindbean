@@ -32,11 +32,20 @@ cmake -S src/main/native -B build-native \
 cmake --build build-native --config Release
 
 # 2. Build and install the Java library
-mvn clean install -B -Dblindbean.native.path=build-native/Release
+./mvnw clean install -B -Dblindbean.native.path=build-native
 
 # 3. Run tests
-mvn clean test -Dblindbean.native.path=build-native/Release
+./mvnw clean test -Dblindbean.native.path=build-native
 ```
+
+On Windows, use `mvnw.cmd` and `-Dblindbean.native.path=build-native/Release`.
+
+## CI
+
+GitHub Actions runs:
+- a fast Java-only gate on Linux and macOS for annotation-processor and core regressions
+- a native build matrix on Linux, macOS, and Windows that publishes the built shared library as an artifact
+- the full Maven test suite on Windows against the published `blindbean_fhe.dll`
 
 ## Quickstart
 
@@ -86,7 +95,7 @@ try (var ctx = FheContext.ckks(8192, Math.pow(2, 40))) {
 We test our throughput against standard `long` additions using JMH.
 
 ```bash
-mvn clean verify
+./mvnw clean verify
 java -jar target/benchmarks.jar
 ```
 
