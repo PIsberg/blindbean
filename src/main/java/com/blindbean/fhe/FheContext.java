@@ -251,10 +251,12 @@ public class FheContext implements AutoCloseable {
 
     @Override
     public void close() {
-        if (!closed) {
-            closed = true;
-            FheNativeBridge.fhe_destroy_context(handle);
-            arena.close();
+        synchronized (nativeLock) {
+            if (!closed) {
+                closed = true;
+                FheNativeBridge.fhe_destroy_context(handle);
+                arena.close();
+            }
         }
     }
 }
