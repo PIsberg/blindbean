@@ -40,6 +40,8 @@ public class FheNativeBridge {
     private static final MethodHandle MH_DESTROY_CONTEXT;
     private static final MethodHandle MH_ENCRYPT_LONG;
     private static final MethodHandle MH_DECRYPT_LONG;
+    private static final MethodHandle MH_ENCRYPT_LONG_ARRAY;
+    private static final MethodHandle MH_DECRYPT_LONG_ARRAY;
     private static final MethodHandle MH_ENCRYPT_DOUBLE;
     private static final MethodHandle MH_DECRYPT_DOUBLE;
     private static final MethodHandle MH_ADD;
@@ -73,6 +75,12 @@ public class FheNativeBridge {
 
             MH_DECRYPT_LONG = downcall("fhe_decrypt_long",
                     FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+
+            MH_ENCRYPT_LONG_ARRAY = downcall("fhe_encrypt_long_array",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
+
+            MH_DECRYPT_LONG_ARRAY = downcall("fhe_decrypt_long_array",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
 
             MH_ENCRYPT_DOUBLE = downcall("fhe_encrypt_double",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_DOUBLE));
@@ -155,6 +163,22 @@ public class FheNativeBridge {
             return (long) MH_DECRYPT_LONG.invokeExact(ctx, ct);
         } catch (Throwable e) {
             throw new FheException("Failed to call fhe_decrypt_long", e);
+        }
+    }
+
+    public static MemorySegment fhe_encrypt_long_array(MemorySegment ctx, MemorySegment valuesArray, long count) {
+        try {
+            return (MemorySegment) MH_ENCRYPT_LONG_ARRAY.invokeExact(ctx, valuesArray, count);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_encrypt_long_array", e);
+        }
+    }
+
+    public static int fhe_decrypt_long_array(MemorySegment ctx, MemorySegment ct, MemorySegment outBuffer, long maxCount) {
+        try {
+            return (int) MH_DECRYPT_LONG_ARRAY.invokeExact(ctx, ct, outBuffer, maxCount);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_decrypt_long_array", e);
         }
     }
 

@@ -79,6 +79,36 @@ public class FheContext implements AutoCloseable {
         return FheNativeBridge.fhe_decrypt_long(handle, ct);
     }
 
+    /** Encrypts a long[] block directly into a single SIMD BFV Batch Ciphertext. */
+    public MemorySegment encryptLongArray(long[] values) {
+        ensureOpen();
+        if (scheme != Scheme.BFV) {
+            throw new FheException("encryptLongArray requires BFV context, got " + scheme);
+        }
+        try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
+            java.lang.foreign.MemorySegment arrayBuffer = arena.allocateFrom(java.lang.foreign.ValueLayout.JAVA_LONG, values);
+            MemorySegment ct = FheNativeBridge.fhe_encrypt_long_array(handle, arrayBuffer, values.length);
+            if (ct.equals(MemorySegment.NULL)) {
+                throw new FheException("fhe_encrypt_long_array returned NULL. Matrix may be too large.");
+            }
+            return ct;
+        }
+    }
+
+    /** Decrypts a single SIMD BFV Batch Ciphertext into a long[] block. */
+    public long[] decryptLongArray(MemorySegment ct) {
+        ensureOpen();
+        if (scheme != Scheme.BFV) {
+            throw new FheException("decryptLongArray requires BFV context, got " + scheme);
+        }
+        try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
+            java.lang.foreign.MemorySegment outBuffer = arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG, 8192);
+            int count = FheNativeBridge.fhe_decrypt_long_array(handle, ct, outBuffer, 8192);
+            if (count == 0) return new long[0];
+            return outBuffer.asSlice(0, count * 8L).toArray(java.lang.foreign.ValueLayout.JAVA_LONG);
+        }
+    }
+
     /** Encrypts a double value (CKKS contexts only). */
     public MemorySegment encryptDouble(double value) {
         ensureOpen();

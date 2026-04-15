@@ -56,6 +56,12 @@ BLINDBEAN_API FheCiphertext fhe_encrypt_long(FheContext ctx, int64_t value);
 /** Decrypts a BFV ciphertext back to a 64-bit integer. Returns 0 on failure. */
 BLINDBEAN_API int64_t fhe_decrypt_long(FheContext ctx, FheCiphertext ct);
 
+/** Encrypts an array of 64-bit integers using BFV Batching. Returns NULL on failure. */
+BLINDBEAN_API FheCiphertext fhe_encrypt_long_array(FheContext ctx, const int64_t* values, size_t count);
+
+/** Decrypts a BFV ciphertext back into a 64-bit array buffer. Returns elements decoded or 0 on failure. */
+BLINDBEAN_API int32_t fhe_decrypt_long_array(FheContext ctx, FheCiphertext ct, int64_t* out_values, size_t max_count);
+
 // ============================================================
 // CKKS — Approximate Real Encryption
 // ============================================================

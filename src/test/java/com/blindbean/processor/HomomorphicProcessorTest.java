@@ -224,6 +224,59 @@ public class HomomorphicProcessorTest {
     }
 
     @Test
+    public void typedFieldsGenerateCorrectSignatures(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class TypedEntity {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = String.class)
+                private String username;
+
+                @Homomorphic(scheme = Scheme.PAILLIER, type = boolean.class)
+                private String flag;
+
+                public TypedEntity(String u, String f) { this.username = u; this.flag = f; }
+
+                public String getUsername() { return username; }
+                public void setUsername(String u) { this.username = u; }
+
+                public String getFlag() { return flag; }
+                public void setFlag(String f) { this.flag = f; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("TypedEntity", source, genDir, classesDir);
+
+        long errors = diags.stream()
+            .filter(d -> d.getKind() == Diagnostic.Kind.ERROR)
+            .count();
+        assertEquals(0, errors, "Expected no compilation errors; got: " + diags);
+
+        Path wrapper = genDir.resolve("com/example/apt/TypedEntityBlindWrapper.java");
+        assertTrue(Files.exists(wrapper), "Wrapper source not generated");
+
+        String wrapperSrc = Files.readString(wrapper);
+        assertTrue(wrapperSrc.contains("encryptUsername(String plain)"), "Missing encryptUsername(String)");
+        assertTrue(wrapperSrc.contains("String decryptUsername()"), "Missing String decryptUsername()");
+        assertFalse(wrapperSrc.contains("addUsername"), "String should not support add");
+
+        assertTrue(wrapperSrc.contains("encryptFlag(boolean plain)"), "Missing encryptFlag(boolean)");
+        assertTrue(wrapperSrc.contains("boolean decryptFlag()"), "Missing boolean decryptFlag()");
+        assertFalse(wrapperSrc.contains("addFlag"), "Boolean should not support add");
+    }
+
+    @Test
     public void missingGetterCausesAptError(@TempDir Path tmpDir) throws Exception {
         Path genDir     = tmpDir.resolve("gen");
         Path classesDir = tmpDir.resolve("classes");

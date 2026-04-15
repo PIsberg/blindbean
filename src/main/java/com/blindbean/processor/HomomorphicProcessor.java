@@ -19,6 +19,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -36,7 +38,7 @@ import java.util.Set;
 public class HomomorphicProcessor extends AbstractProcessor {
 
     /** Immutable model for one @Homomorphic field. */
-    private record FieldModel(String name, String capName, Scheme scheme) {}
+    private record FieldModel(String name, String capName, Scheme scheme, String typeName) {}
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -180,7 +182,15 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 continue;
             }
 
-            result.add(new FieldModel(fieldName, capName, scheme));
+            TypeMirror typeMirror = null;
+            try {
+                ann.type();
+            } catch (MirroredTypeException e) {
+                typeMirror = e.getTypeMirror();
+            }
+            String typeName = typeMirror != null ? typeMirror.toString() : "java.lang.Void";
+
+            result.add(new FieldModel(fieldName, capName, scheme, typeName));
         }
 
         return hadError ? null : result;
@@ -235,19 +245,26 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     emitEncrypt(out, f);
                     out.println();
                     emitDecrypt(out, f);
-                    out.println();
-                    emitAdd(out, f);
-                    out.println();
-                    emitSub(out, f);
-                    out.println();
-                    emitAddPlain(out, f);
-                    out.println();
-                    emitSubPlain(out, f);
-                    if (f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS) {
+
+                    boolean mathSupported = !f.typeName().equals("java.lang.String") &&
+                                            !f.typeName().equals("boolean") &&
+                                            !f.typeName().equals("java.lang.Boolean");
+
+                    if (mathSupported) {
                         out.println();
-                        emitMultiply(out, f);
+                        emitAdd(out, f);
                         out.println();
-                        emitMulPlain(out, f);
+                        emitSub(out, f);
+                        out.println();
+                        emitAddPlain(out, f);
+                        out.println();
+                        emitSubPlain(out, f);
+                        if (f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS) {
+                            out.println();
+                            emitMultiply(out, f);
+                            out.println();
+                            emitMulPlain(out, f);
+                        }
                     }
                 }
 
@@ -267,57 +284,190 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitEncrypt(PrintWriter out, FieldModel f) {
-        switch (f.scheme()) {
-            case PAILLIER -> {
-                out.println("    public void encrypt" + f.capName() + "(BigInteger plain) {");
-                out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain);");
+        String typeName = f.typeName();
+        if (typeName.equals("java.lang.String")) {
+            out.println("    public void encrypt" + f.capName() + "(String plain) {");
+            if (f.scheme() == Scheme.PAILLIER) {
+                out.println("        java.math.BigInteger encoded = new java.math.BigInteger(1, plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));");
+                out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(encoded);");
                 out.println("        entity.set" + f.capName() + "(ct.hexData());");
-                out.println("    }");
+            } else {
+                out.println("        throw new UnsupportedOperationException(\"String encryption not supported securely on FHE without batching\");");
             }
-            case BFV -> {
-                out.println("    public void encrypt" + f.capName() + "(long plain) {");
+            out.println("    }");
+        } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+            out.println("    public void encrypt" + f.capName() + "(boolean plain) {");
+            if (f.scheme() == Scheme.PAILLIER) {
+                out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain ? java.math.BigInteger.ONE : java.math.BigInteger.ZERO);");
+                out.println("        entity.set" + f.capName() + "(ct.hexData());");
+            } else if (f.scheme() == Scheme.BFV) {
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
-                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong(plain), ctx)) {");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong(plain ? 1L : 0L), ctx)) {");
+                out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                out.println("        }");
+            } else {
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble(plain ? 1.0 : 0.0), ctx)) {");
+                out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                out.println("        }");
+            }
+            out.println("    }");
+        } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+            switch (f.scheme()) {
+                case PAILLIER -> {
+                    out.println("    public void encrypt" + f.capName() + "(int plain) {");
+                    out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(java.math.BigInteger.valueOf(plain));");
+                    out.println("        entity.set" + f.capName() + "(ct.hexData());");
+                    out.println("    }");
+                }
+                case BFV -> {
+                    out.println("    public void encrypt" + f.capName() + "(int plain) {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong((long)plain), ctx)) {");
+                    out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+                case CKKS -> {
+                    out.println("    public void encrypt" + f.capName() + "(int plain) {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble((double)plain), ctx)) {");
+                    out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+            }
+        } else if (typeName.equals("long[]")) {
+            if (f.scheme() == Scheme.BFV) {
+                out.println("    public void encrypt" + f.capName() + "(long[] plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
                 out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
                 out.println("        }");
                 out.println("    }");
-            }
-            case CKKS -> {
-                out.println("    public void encrypt" + f.capName() + "(double plain) {");
-                out.println("        FheContext ctx = BlindContext.getFheContext();");
-                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble(plain), ctx)) {");
-                out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
-                out.println("        }");
+            } else {
+                out.println("    public void encrypt" + f.capName() + "(long[] plain) {");
+                out.println("        throw new UnsupportedOperationException(\"long[] array batching is exclusively supported by Scheme.BFV\");");
                 out.println("    }");
             }
-            default -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        } else {
+            // Default mapping
+            switch (f.scheme()) {
+                case PAILLIER -> {
+                    out.println("    public void encrypt" + f.capName() + "(java.math.BigInteger plain) {");
+                    out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain);");
+                    out.println("        entity.set" + f.capName() + "(ct.hexData());");
+                    out.println("    }");
+                }
+                case BFV -> {
+                    out.println("    public void encrypt" + f.capName() + "(long plain) {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong(plain), ctx)) {");
+                    out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+                case CKKS -> {
+                    out.println("    public void encrypt" + f.capName() + "(double plain) {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble(plain), ctx)) {");
+                    out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+            }
         }
     }
 
     private void emitDecrypt(PrintWriter out, FieldModel f) {
-        switch (f.scheme()) {
-            case PAILLIER -> {
-                out.println("    public BigInteger decrypt" + f.capName() + "() {");
-                out.println("        return BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
-                out.println("    }");
+        String typeName = f.typeName();
+        if (typeName.equals("java.lang.String")) {
+            out.println("    public String decrypt" + f.capName() + "() {");
+            if (f.scheme() == Scheme.PAILLIER) {
+                out.println("        java.math.BigInteger encoded = BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
+                out.println("        return new String(encoded.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);");
+            } else {
+                out.println("        throw new UnsupportedOperationException(\"String decryption not supported on FHE.\");");
             }
-            case BFV -> {
-                out.println("    public long decrypt" + f.capName() + "() {");
+            out.println("    }");
+        } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+            out.println("    public boolean decrypt" + f.capName() + "() {");
+            if (f.scheme() == Scheme.PAILLIER) {
+                out.println("        return java.math.BigInteger.ZERO.compareTo(BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "())) != 0;");
+            } else if (f.scheme() == Scheme.BFV) {
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                out.println("            return ctx.decryptLong(ct.handle());");
+                out.println("            return ctx.decryptLong(ct.handle()) != 0L;");
                 out.println("        }");
-                out.println("    }");
-            }
-            case CKKS -> {
-                out.println("    public double decrypt" + f.capName() + "() {");
+            } else {
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                out.println("            return ctx.decryptDouble(ct.handle());");
+                out.println("            return ctx.decryptDouble(ct.handle()) != 0.0;");
+                out.println("        }");
+            }
+            out.println("    }");
+        } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+            switch (f.scheme()) {
+                case PAILLIER -> {
+                    out.println("    public int decrypt" + f.capName() + "() {");
+                    out.println("        return BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "()).intValue();");
+                    out.println("    }");
+                }
+                case BFV -> {
+                    out.println("    public int decrypt" + f.capName() + "() {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                    out.println("            return (int)ctx.decryptLong(ct.handle());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+                case CKKS -> {
+                    out.println("    public int decrypt" + f.capName() + "() {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                    out.println("            return (int)ctx.decryptDouble(ct.handle());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+            }
+        } else if (typeName.equals("long[]")) {
+            if (f.scheme() == Scheme.BFV) {
+                out.println("    public long[] decrypt" + f.capName() + "() {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                out.println("            return ctx.decryptLongArray(ct.handle());");
                 out.println("        }");
                 out.println("    }");
+            } else {
+                out.println("    public long[] decrypt" + f.capName() + "() {");
+                out.println("        throw new UnsupportedOperationException(\"long[] array batching is exclusively supported by Scheme.BFV\");");
+                out.println("    }");
             }
-            default -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        } else {
+            // Default mapping
+            switch (f.scheme()) {
+                case PAILLIER -> {
+                    out.println("    public java.math.BigInteger decrypt" + f.capName() + "() {");
+                    out.println("        return BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
+                    out.println("    }");
+                }
+                case BFV -> {
+                    out.println("    public long decrypt" + f.capName() + "() {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                    out.println("            return ctx.decryptLong(ct.handle());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+                case CKKS -> {
+                    out.println("    public double decrypt" + f.capName() + "() {");
+                    out.println("        FheContext ctx = BlindContext.getFheContext();");
+                    out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                    out.println("            return ctx.decryptDouble(ct.handle());");
+                    out.println("        }");
+                    out.println("    }");
+                }
+            }
         }
     }
 
@@ -336,6 +486,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitAddPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
+            out.println("    public void add" + f.capName() + "(long[] plain) {");
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+            out.println("            add" + f.capName() + "(ct.toBlindCiphertext());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
         switch (f.scheme()) {
             case PAILLIER -> {
                 out.println("    public void add" + f.capName() + "(BigInteger plain) {");
@@ -364,6 +524,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitSubPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
+            out.println("    public void sub" + f.capName() + "(long[] plain) {");
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+            out.println("            sub" + f.capName() + "(ct.toBlindCiphertext());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
         switch (f.scheme()) {
             case PAILLIER -> {
                 out.println("    public void sub" + f.capName() + "(BigInteger plain) {");
@@ -399,6 +569,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitMulPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
+            out.println("    public void mul" + f.capName() + "(long[] plain) {");
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+            out.println("            mul" + f.capName() + "(ct.toBlindCiphertext());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
         switch (f.scheme()) {
             case BFV -> {
                 out.println("    public void mul" + f.capName() + "(long plain) {");
