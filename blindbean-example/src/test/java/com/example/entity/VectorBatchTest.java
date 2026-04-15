@@ -14,8 +14,8 @@ public class VectorBatchTest {
 
     @BeforeEach
     public void setup() {
-        // init test contexts
-        BlindContext.init();
+        // init BFV context for array batching!
+        BlindContext.initBfv(8192);
     }
 
     @AfterEach
