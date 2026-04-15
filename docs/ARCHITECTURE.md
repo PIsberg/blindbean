@@ -33,6 +33,7 @@ package "Native Layer (C++)" {
 At compile time, `HomomorphicProcessor` evaluates classes annotated with `@BlindEntity`. It automatically generates heavily optimized wrapper proxies (e.g., `UserAccountBlindWrapper`).
 - **No Reflection**: By generating source code rather than using runtime weaving or reflection APIs, we avoid runtime performance hits.
 - **Transparent Invocation**: When the developer calls `wrapper.addBalance(amount)`, the proxy manages the complexity of extracting the ciphertext, executing homomorphic math, and re-setting the ciphertext.
+- **Explicit Type Binding**: Using AST `TypeMirrors`, the processor resolves arbitrary properties via the `type()` parameter (like `String.class`, `int.class`, `boolean.class`) into primitive conversion methods. This enables completely invisible proxy serialization for arbitrary data flows while systematically enforcing algebraic boundaries (e.g., omitting mathematically corrupt additions over UTF-8 texts).
 
 ---
 
