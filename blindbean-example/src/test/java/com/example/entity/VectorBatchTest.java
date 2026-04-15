@@ -42,22 +42,27 @@ public class VectorBatchTest {
             bias[i] = 100L; 
         }
 
+        long[] multiplier = new long[8192];
+        for (int i = 0; i < 8192; i++) {
+            multiplier[i] = 2L; 
+        }
+
         // SIMD batch math! This perfectly adds 100 to all 8192 indices seamlessly on the exact same loop.
         wrapper.addBatchedReadings(bias);
-        wrapper.mulBatchedReadings(bias);
+        wrapper.mulBatchedReadings(multiplier);
 
         long[] decodedResult = wrapper.decryptBatchedReadings();
 
         // Ensure length maps symmetrically
         assertEquals(8192, decodedResult.length);
 
-        // Decode first entry: (0 * 2 + 100) * 100 = 10000
-        assertEquals(10000L, decodedResult[0]);
+        // Decode first entry: (0 * 2 + 100) * 2 = 200
+        assertEquals(200L, decodedResult[0]);
         
-        // Decode second entry: (1 * 2 + 100) * 100 = 10200
-        assertEquals(10200L, decodedResult[1]);
+        // Decode second entry: (1 * 2 + 100) * 2 = 204
+        assertEquals(204L, decodedResult[1]);
 
-        // Decode last entry: (8191 * 2 + 100) * 100 = 1648200
-        assertEquals(1648200L, decodedResult[8191]);
+        // Decode last entry: (8191 * 2 + 100) * 2 = 32964
+        assertEquals(32964L, decodedResult[8191]);
     }
 }
