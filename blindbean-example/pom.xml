@@ -22,6 +22,14 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- VibeTags AI Guardrail Annotations -->
+        <dependency>
+            <groupId>se.deversity.vibetags</groupId>
+            <artifactId>vibetags-processor</artifactId>
+            <version>0.5.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -52,6 +60,11 @@
                             <groupId>com.blindbean</groupId>
                             <artifactId>blindbean</artifactId>
                             <version>1.0-SNAPSHOT</version>
+                        </path>
+                        <path>
+                            <groupId>se.deversity.vibetags</groupId>
+                            <artifactId>vibetags-processor</artifactId>
+                            <version>0.5.0</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
