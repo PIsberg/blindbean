@@ -1,4 +1,4 @@
-package com.blindbean.entity;
+package com.example.entity;
 
 import com.blindbean.context.BlindContext;
 import org.junit.jupiter.api.AfterEach;

@@ -1,4 +1,4 @@
-package com.blindbean.entity;
+package com.example.entity;
 
 import com.blindbean.annotations.BlindEntity;
 import com.blindbean.annotations.Homomorphic;
