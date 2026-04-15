@@ -53,6 +53,7 @@ jobs:
         uses: github/codeql-action/init@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3.35.2
         with:
           languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.language == 'java' && 'none' || 'manual' }}
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.
           # Prefix the list here with "+" to use these queries and those in the config file.
@@ -63,10 +64,6 @@ jobs:
           java-version: '26'
           distribution: 'oracle'
           cache: maven
-
-      - name: Manual Build (Java)
-        if: matrix.language == 'java'
-        run: ./mvnw -B clean compile
 
       - name: Setup vcpkg (CPP)
         if: matrix.language == 'cpp'
