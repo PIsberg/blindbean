@@ -49,4 +49,17 @@ public class PaillierMath {
         BigInteger result = numA.multiply(numB).mod(keyPair.getN2());
         return Ciphertext.fromBytes(result.toByteArray(), Scheme.PAILLIER);
     }
+
+    public Ciphertext subtract(Ciphertext a, Ciphertext b) {
+        if (a.scheme() != Scheme.PAILLIER || b.scheme() != Scheme.PAILLIER) {
+            throw new IllegalArgumentException();
+        }
+        BigInteger numA = new BigInteger(a.getBytes());
+        BigInteger numB = new BigInteger(b.getBytes());
+
+        // Subtraction in Paillier is multiplication by the modular inverse mod n^2
+        BigInteger inverseB = numB.modInverse(keyPair.getN2());
+        BigInteger result = numA.multiply(inverseB).mod(keyPair.getN2());
+        return Ciphertext.fromBytes(result.toByteArray(), Scheme.PAILLIER);
+    }
 }

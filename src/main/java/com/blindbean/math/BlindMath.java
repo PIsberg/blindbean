@@ -23,6 +23,20 @@ public class BlindMath {
     }
 
     /**
+     * Homomorphically subtracts two ciphertexts, dispatching to the correct backend.
+     */
+    public static Ciphertext subtract(Ciphertext a, Ciphertext b) {
+        if (a.scheme() != b.scheme()) {
+            throw new IllegalArgumentException("Cannot subtract ciphertexts of different schemes: " + a.scheme() + " vs " + b.scheme());
+        }
+        return switch (a.scheme()) {
+            case PAILLIER -> BlindContext.getPaillier().subtract(a, b);
+            case BFV, CKKS -> fheSubtract(a, b);
+            case ELGAMAL -> throw new UnsupportedOperationException("Subtraction not supported for ElGamal");
+        };
+    }
+
+    /**
      * Homomorphically multiplies two ciphertexts.
      * Only supported for FHE schemes (BFV, CKKS).
      */
@@ -45,6 +59,18 @@ public class BlindMath {
              var ctB = FheCiphertextNative.fromBlindCiphertext(ctx, b)) {
 
             var resultHandle = ctx.add(ctA.handle(), ctB.handle());
+            try (var ctResult = new FheCiphertextNative(resultHandle, ctx)) {
+                return ctResult.toBlindCiphertext();
+            }
+        }
+    }
+
+    private static Ciphertext fheSubtract(Ciphertext a, Ciphertext b) {
+        FheContext ctx = BlindContext.getFheContext();
+        try (var ctA = FheCiphertextNative.fromBlindCiphertext(ctx, a);
+             var ctB = FheCiphertextNative.fromBlindCiphertext(ctx, b)) {
+
+            var resultHandle = ctx.subtract(ctA.handle(), ctB.handle());
             try (var ctResult = new FheCiphertextNative(resultHandle, ctx)) {
                 return ctResult.toBlindCiphertext();
             }

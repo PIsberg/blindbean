@@ -111,6 +111,16 @@ public class FheContext implements AutoCloseable {
         return result;
     }
 
+    /** Homomorphic subtraction of two ciphertexts. */
+    public MemorySegment subtract(MemorySegment a, MemorySegment b) {
+        ensureOpen();
+        MemorySegment result = FheNativeBridge.fhe_subtract(handle, a, b);
+        if (result.equals(MemorySegment.NULL)) {
+            throw new FheException("fhe_subtract returned NULL");
+        }
+        return result;
+    }
+
     /** Homomorphic multiplication of two ciphertexts (auto-relinearized). */
     public MemorySegment multiply(MemorySegment a, MemorySegment b) {
         ensureOpen();

@@ -210,6 +210,22 @@ extern "C" FheCiphertext fhe_add(FheContext handle, FheCiphertext aHandle, FheCi
     }
 }
 
+extern "C" FheCiphertext fhe_subtract(FheContext handle, FheCiphertext aHandle, FheCiphertext bHandle) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        auto* a   = static_cast<seal::Ciphertext*>(aHandle);
+        auto* b   = static_cast<seal::Ciphertext*>(bHandle);
+        if (!ctx || !a || !b) return nullptr;
+
+        auto* result = new seal::Ciphertext();
+        ctx->evaluator->sub(*a, *b, *result);
+        return static_cast<FheCiphertext>(result);
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_subtract error: %s\n", e.what());
+        return nullptr;
+    }
+}
+
 extern "C" FheCiphertext fhe_multiply(FheContext handle, FheCiphertext aHandle, FheCiphertext bHandle) {
     try {
         auto* ctx = static_cast<BlindBeanContext*>(handle);

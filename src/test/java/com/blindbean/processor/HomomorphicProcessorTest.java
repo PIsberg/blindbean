@@ -125,7 +125,10 @@ public class HomomorphicProcessorTest {
         assertTrue(wrapperSrc.contains("getCiphertextBalance"), "Missing getCiphertextBalance");
         assertTrue(wrapperSrc.contains("encryptBalance"),       "Missing encryptBalance");
         assertTrue(wrapperSrc.contains("decryptBalance"),       "Missing decryptBalance");
-        assertTrue(wrapperSrc.contains("addBalance"),           "Missing addBalance");
+        assertTrue(wrapperSrc.contains("addBalance(Ciphertext other)"), "Missing addBalance");
+        assertTrue(wrapperSrc.contains("subBalance(Ciphertext other)"), "Missing subBalance");
+        assertTrue(wrapperSrc.contains("addBalance(BigInteger plain)"), "Missing addBalance plain");
+        assertTrue(wrapperSrc.contains("subBalance(BigInteger plain)"), "Missing subBalance plain");
         assertFalse(wrapperSrc.contains("mulBalance"),          "PAILLIER must NOT have mulBalance");
     }
 
@@ -170,8 +173,12 @@ public class HomomorphicProcessorTest {
         assertTrue(wrapperSrc.contains("getCiphertextCounter"), "Missing getCiphertextCounter");
         assertTrue(wrapperSrc.contains("encryptCounter"),       "Missing encryptCounter");
         assertTrue(wrapperSrc.contains("decryptCounter"),       "Missing decryptCounter");
-        assertTrue(wrapperSrc.contains("addCounter"),           "Missing addCounter");
-        assertTrue(wrapperSrc.contains("mulCounter"),           "BFV must have mulCounter");
+        assertTrue(wrapperSrc.contains("addCounter(Ciphertext other)"), "Missing addCounter");
+        assertTrue(wrapperSrc.contains("subCounter(Ciphertext other)"), "Missing subCounter");
+        assertTrue(wrapperSrc.contains("mulCounter(Ciphertext other)"), "Missing mulCounter");
+        assertTrue(wrapperSrc.contains("addCounter(long plain)"), "Missing addCounter plain");
+        assertTrue(wrapperSrc.contains("subCounter(long plain)"), "Missing subCounter plain");
+        assertTrue(wrapperSrc.contains("mulCounter(long plain)"), "Missing mulCounter plain");
     }
 
     // ── Negative tests ────────────────────────────────────────────────────
