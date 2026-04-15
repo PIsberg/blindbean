@@ -29,12 +29,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import se.deversity.vibetags.annotations.AIContext;
+
 @SupportedAnnotationTypes({
     "com.blindbean.annotations.BlindEntity",
     "com.blindbean.annotations.Homomorphic"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_26)
 @AutoService(Processor.class)
+@AIContext(focus = "Strictly maintain high-performance AST compilation speed", avoids = "Heavy internal object allocations")
 public class HomomorphicProcessor extends AbstractProcessor {
 
     /** Immutable model for one @Homomorphic field. */
