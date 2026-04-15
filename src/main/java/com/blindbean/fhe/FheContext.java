@@ -21,30 +21,37 @@ public class FheContext implements AutoCloseable {
     private final MemorySegment handle;
     private final Scheme scheme;
     private final Arena arena;
+    private final int polyModulusDegree;
+    private final double scale;
     private volatile boolean closed = false;
 
-    private FheContext(MemorySegment handle, Scheme scheme, Arena arena) {
+    private FheContext(MemorySegment handle, Scheme scheme, Arena arena, int polyModulusDegree, double scale) {
         if (handle.equals(MemorySegment.NULL)) {
             throw new FheException("Failed to initialize FHE context — native call returned NULL");
         }
         this.handle = handle;
         this.scheme = scheme;
         this.arena  = arena;
+        this.polyModulusDegree = polyModulusDegree;
+        this.scale = scale;
     }
 
     /** Creates a BFV context with the given polynomial modulus degree. */
     public static FheContext bfv(int polyModulusDegree) {
         Arena arena = Arena.ofShared();
         MemorySegment h = FheNativeBridge.fhe_init_bfv(polyModulusDegree);
-        return new FheContext(h, Scheme.BFV, arena);
+        return new FheContext(h, Scheme.BFV, arena, polyModulusDegree, 0.0);
     }
 
     /** Creates a CKKS context with the given polynomial modulus degree and scale. */
     public static FheContext ckks(int polyModulusDegree, double scale) {
         Arena arena = Arena.ofShared();
         MemorySegment h = FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale);
-        return new FheContext(h, Scheme.CKKS, arena);
+        return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
     }
+
+    public int polyModulusDegree() { return polyModulusDegree; }
+    public double scale() { return scale; }
 
     /** Returns the raw native handle for use with {@link FheNativeBridge}. */
     public MemorySegment handle() {
