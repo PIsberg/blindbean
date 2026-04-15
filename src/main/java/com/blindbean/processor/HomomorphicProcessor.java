@@ -337,6 +337,19 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     out.println("    }");
                 }
             }
+        } else if (typeName.equals("long[]")) {
+            if (f.scheme() == Scheme.BFV) {
+                out.println("    public void encrypt" + f.capName() + "(long[] plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+                out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                out.println("        }");
+                out.println("    }");
+            } else {
+                out.println("    public void encrypt" + f.capName() + "(long[] plain) {");
+                out.println("        throw new UnsupportedOperationException(\"long[] array batching is exclusively supported by Scheme.BFV\");");
+                out.println("    }");
+            }
         } else {
             // Default mapping
             switch (f.scheme()) {
@@ -417,6 +430,19 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     out.println("    }");
                 }
             }
+        } else if (typeName.equals("long[]")) {
+            if (f.scheme() == Scheme.BFV) {
+                out.println("    public long[] decrypt" + f.capName() + "() {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                out.println("            return ctx.decryptLongArray(ct.handle());");
+                out.println("        }");
+                out.println("    }");
+            } else {
+                out.println("    public long[] decrypt" + f.capName() + "() {");
+                out.println("        throw new UnsupportedOperationException(\"long[] array batching is exclusively supported by Scheme.BFV\");");
+                out.println("    }");
+            }
         } else {
             // Default mapping
             switch (f.scheme()) {
@@ -460,6 +486,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitAddPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
+            out.println("    public void add" + f.capName() + "(long[] plain) {");
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+            out.println("            add" + f.capName() + "(ct.toBlindCiphertext());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
         switch (f.scheme()) {
             case PAILLIER -> {
                 out.println("    public void add" + f.capName() + "(BigInteger plain) {");
@@ -488,6 +524,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitSubPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
+            out.println("    public void sub" + f.capName() + "(long[] plain) {");
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+            out.println("            sub" + f.capName() + "(ct.toBlindCiphertext());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
         switch (f.scheme()) {
             case PAILLIER -> {
                 out.println("    public void sub" + f.capName() + "(BigInteger plain) {");
@@ -523,6 +569,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitMulPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
+            out.println("    public void mul" + f.capName() + "(long[] plain) {");
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
+            out.println("            mul" + f.capName() + "(ct.toBlindCiphertext());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
         switch (f.scheme()) {
             case BFV -> {
                 out.println("    public void mul" + f.capName() + "(long plain) {");

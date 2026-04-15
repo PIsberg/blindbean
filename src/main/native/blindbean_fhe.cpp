@@ -149,6 +149,55 @@ extern "C" int64_t fhe_decrypt_long(FheContext handle, FheCiphertext ctHandle) {
     }
 }
 
+extern "C" FheCiphertext fhe_encrypt_long_array(FheContext handle, const int64_t* values, size_t count) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        if (!ctx || ctx->isCkks || !values || count == 0) return nullptr;
+
+        seal::BatchEncoder encoder(*ctx->sealCtx);
+        size_t slot_count = encoder.slot_count();
+        if (count > slot_count) {
+            fprintf(stderr, "[SEAL] batch exceeds max slot count (%zu > %zu)\n", count, slot_count);
+            return nullptr;
+        }
+
+        std::vector<int64_t> pod(slot_count, 0);
+        std::memcpy(pod.data(), values, count * sizeof(int64_t));
+
+        seal::Plaintext plain;
+        encoder.encode(pod, plain);
+
+        auto* ct = new seal::Ciphertext();
+        ctx->encryptor->encrypt(plain, *ct);
+        return static_cast<FheCiphertext>(ct);
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_encrypt_long_array error: %s\n", e.what());
+        return nullptr;
+    }
+}
+
+extern "C" int32_t fhe_decrypt_long_array(FheContext handle, FheCiphertext ctHandle, int64_t* out_values, size_t max_count) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        auto* ct  = static_cast<seal::Ciphertext*>(ctHandle);
+        if (!ctx || !ct || ctx->isCkks || !out_values) return 0;
+
+        seal::Plaintext plain;
+        ctx->decryptor->decrypt(*ct, plain);
+
+        seal::BatchEncoder encoder(*ctx->sealCtx);
+        std::vector<int64_t> result;
+        encoder.decode(plain, result);
+
+        size_t copy_count = std::min(result.size(), max_count);
+        std::memcpy(out_values, result.data(), copy_count * sizeof(int64_t));
+        return static_cast<int32_t>(copy_count);
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_decrypt_long_array error: %s\n", e.what());
+        return 0;
+    }
+}
+
 // ============================================================
 // CKKS — Approximate Real Encryption
 // ============================================================
