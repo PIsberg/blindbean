@@ -5,6 +5,8 @@ import com.blindbean.fhe.FheException;
 import com.blindbean.math.PaillierKeyPair;
 import com.blindbean.math.PaillierMath;
 
+import se.deversity.vibetags.annotations.AIAudit;
+
 /**
  * Thread-local context holder for all BlindBean cryptographic backends.
  * <p>
@@ -12,6 +14,7 @@ import com.blindbean.math.PaillierMath;
  * Must be initialized before any cryptographic operation. Supports both
  * manual lifecycle management and try-with-resources via {@link #clear()}.
  */
+@AIAudit(checkFor = {"Resource Leaks", "Thread Safety", "Context Closure failures"})
 public class BlindContext {
     private static final ThreadLocal<PaillierMath> paillierInstance = new ThreadLocal<>();
     private static final ThreadLocal<FheContext>    fheInstance      = new ThreadLocal<>();

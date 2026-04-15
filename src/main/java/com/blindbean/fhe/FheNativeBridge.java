@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import se.deversity.vibetags.annotations.AILocked;
+
 /**
  * Production-grade Project Panama (FFM API) bridge into Microsoft SEAL.
  * <p>
@@ -29,6 +31,7 @@ import java.util.Set;
  *
  * Requires {@code --enable-native-access=ALL-UNNAMED} at runtime.
  */
+@AILocked(reason = "Direct Memory FFM JNI mapping. Avoid breaking SEAL bridge architecture.")
 public class FheNativeBridge {
 
     private static final Linker LINKER = Linker.nativeLinker();
