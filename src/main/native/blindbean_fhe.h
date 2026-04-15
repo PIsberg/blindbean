@@ -74,6 +74,10 @@ BLINDBEAN_API double fhe_decrypt_double(FheContext ctx, FheCiphertext ct);
  *  Both ciphertexts must belong to the same context. */
 BLINDBEAN_API FheCiphertext fhe_add(FheContext ctx, FheCiphertext a, FheCiphertext b);
 
+/** Homomorphically subtracts two ciphertexts, returning a new ciphertext.
+ *  Both ciphertexts must belong to the same context. */
+BLINDBEAN_API FheCiphertext fhe_subtract(FheContext ctx, FheCiphertext a, FheCiphertext b);
+
 /** Homomorphically multiplies two ciphertexts, returning a new ciphertext.
  *  Automatically relinearizes after multiplication. */
 BLINDBEAN_API FheCiphertext fhe_multiply(FheContext ctx, FheCiphertext a, FheCiphertext b);

@@ -43,6 +43,7 @@ public class FheNativeBridge {
     private static final MethodHandle MH_ENCRYPT_DOUBLE;
     private static final MethodHandle MH_DECRYPT_DOUBLE;
     private static final MethodHandle MH_ADD;
+    private static final MethodHandle MH_SUBTRACT;
     private static final MethodHandle MH_MULTIPLY;
     private static final MethodHandle MH_RELINEARIZE;
     private static final MethodHandle MH_RESCALE;
@@ -80,6 +81,9 @@ public class FheNativeBridge {
                     FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
             MH_ADD = downcall("fhe_add",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+
+            MH_SUBTRACT = downcall("fhe_subtract",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
             MH_MULTIPLY = downcall("fhe_multiply",
@@ -175,6 +179,14 @@ public class FheNativeBridge {
             return (MemorySegment) MH_ADD.invokeExact(ctx, a, b);
         } catch (Throwable e) {
             throw new FheException("Failed to call fhe_add", e);
+        }
+    }
+
+    public static MemorySegment fhe_subtract(MemorySegment ctx, MemorySegment a, MemorySegment b) {
+        try {
+            return (MemorySegment) MH_SUBTRACT.invokeExact(ctx, a, b);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_subtract", e);
         }
     }
 

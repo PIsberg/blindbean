@@ -237,9 +237,17 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     emitDecrypt(out, f);
                     out.println();
                     emitAdd(out, f);
+                    out.println();
+                    emitSub(out, f);
+                    out.println();
+                    emitAddPlain(out, f);
+                    out.println();
+                    emitSubPlain(out, f);
                     if (f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS) {
                         out.println();
                         emitMultiply(out, f);
+                        out.println();
+                        emitMulPlain(out, f);
                     }
                 }
 
@@ -320,10 +328,95 @@ public class HomomorphicProcessor extends AbstractProcessor {
         out.println("    }");
     }
 
+    private void emitSub(PrintWriter out, FieldModel f) {
+        out.println("    public void sub" + f.capName() + "(Ciphertext other) {");
+        out.println("        Ciphertext diff = BlindMath.subtract(getCiphertext" + f.capName() + "(), other);");
+        out.println("        entity.set" + f.capName() + "(diff.hexData());");
+        out.println("    }");
+    }
+
+    private void emitAddPlain(PrintWriter out, FieldModel f) {
+        switch (f.scheme()) {
+            case PAILLIER -> {
+                out.println("    public void add" + f.capName() + "(BigInteger plain) {");
+                out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain);");
+                out.println("        add" + f.capName() + "(ct);");
+                out.println("    }");
+            }
+            case BFV -> {
+                out.println("    public void add" + f.capName() + "(long plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong(plain), ctx)) {");
+                out.println("            add" + f.capName() + "(ct.toBlindCiphertext());");
+                out.println("        }");
+                out.println("    }");
+            }
+            case CKKS -> {
+                out.println("    public void add" + f.capName() + "(double plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble(plain), ctx)) {");
+                out.println("            add" + f.capName() + "(ct.toBlindCiphertext());");
+                out.println("        }");
+                out.println("    }");
+            }
+            default -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        }
+    }
+
+    private void emitSubPlain(PrintWriter out, FieldModel f) {
+        switch (f.scheme()) {
+            case PAILLIER -> {
+                out.println("    public void sub" + f.capName() + "(BigInteger plain) {");
+                out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain);");
+                out.println("        sub" + f.capName() + "(ct);");
+                out.println("    }");
+            }
+            case BFV -> {
+                out.println("    public void sub" + f.capName() + "(long plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong(plain), ctx)) {");
+                out.println("            sub" + f.capName() + "(ct.toBlindCiphertext());");
+                out.println("        }");
+                out.println("    }");
+            }
+            case CKKS -> {
+                out.println("    public void sub" + f.capName() + "(double plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble(plain), ctx)) {");
+                out.println("            sub" + f.capName() + "(ct.toBlindCiphertext());");
+                out.println("        }");
+                out.println("    }");
+            }
+            default -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        }
+    }
+
     private void emitMultiply(PrintWriter out, FieldModel f) {
         out.println("    public void mul" + f.capName() + "(Ciphertext other) {");
         out.println("        Ciphertext product = BlindMath.multiply(getCiphertext" + f.capName() + "(), other);");
         out.println("        entity.set" + f.capName() + "(product.hexData());");
         out.println("    }");
+    }
+
+    private void emitMulPlain(PrintWriter out, FieldModel f) {
+        switch (f.scheme()) {
+            case BFV -> {
+                out.println("    public void mul" + f.capName() + "(long plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong(plain), ctx)) {");
+                out.println("            mul" + f.capName() + "(ct.toBlindCiphertext());");
+                out.println("        }");
+                out.println("    }");
+            }
+            case CKKS -> {
+                out.println("    public void mul" + f.capName() + "(double plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble(plain), ctx)) {");
+                out.println("            mul" + f.capName() + "(ct.toBlindCiphertext());");
+                out.println("        }");
+                out.println("    }");
+            }
+            default -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        }
     }
 }
