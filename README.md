@@ -4,6 +4,7 @@
 ![Project Panama FFM](https://img.shields.io/badge/Project_Panama-FFM-blue.svg)
 ![Cryptography](https://img.shields.io/badge/Cryptography-FHE-red.svg)
 ![Microsoft SEAL](https://img.shields.io/badge/Microsoft_SEAL-4.1-0078D4.svg)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/PIsberg/blindbean/badge)](https://securityscorecards.dev/viewer/?uri=github.com/PIsberg/blindbean)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 BlindBean is a developer-first Java 26 library that makes Homomorphic Encryption (HE) invisible to the end user. It allows you to perform secure, private arithmetic on encrypted data using standard Java objects, completely hiding the complex cryptography behind annotations.
 
