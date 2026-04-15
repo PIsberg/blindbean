@@ -211,6 +211,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
             boolean needsBigInteger = fields.stream().anyMatch(f -> f.scheme() == Scheme.PAILLIER);
             boolean needsFhe        = fields.stream()
                 .anyMatch(f -> f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS);
+            boolean asyncEnabled    = typeElement.getAnnotation(BlindEntity.class).async();
 
             try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
                 // Header
@@ -230,6 +231,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     out.println("import com.blindbean.fhe.FheCiphertextNative;");
                     out.println("import com.blindbean.fhe.FheContext;");
                 }
+                if (asyncEnabled) {
+                    out.println("import com.blindbean.async.BlindAsync;");
+                    out.println("import java.util.concurrent.CompletableFuture;");
+                }
                 out.println();
 
                 // Class declaration
@@ -242,31 +247,40 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
                 // Per-field methods
                 for (FieldModel f : fields) {
-                    out.println();
-                    emitGetCiphertext(out, f);
-                    out.println();
-                    emitEncrypt(out, f);
-                    out.println();
-                    emitDecrypt(out, f);
-
                     boolean mathSupported = !f.typeName().equals("java.lang.String") &&
                                             !f.typeName().equals("boolean") &&
                                             !f.typeName().equals("java.lang.Boolean");
 
+                    out.println();
+                    emitGetCiphertext(out, f);
+                    if (asyncEnabled) { out.println(); emitGetCiphertextAsync(out, f); }
+                    out.println();
+                    emitEncrypt(out, f);
+                    if (asyncEnabled) { out.println(); emitEncryptAsync(out, f); }
+                    out.println();
+                    emitDecrypt(out, f);
+                    if (asyncEnabled) { out.println(); emitDecryptAsync(out, f); }
+
                     if (mathSupported) {
                         out.println();
                         emitAdd(out, f);
+                        if (asyncEnabled) { out.println(); emitAddAsync(out, f); }
                         out.println();
                         emitSub(out, f);
+                        if (asyncEnabled) { out.println(); emitSubAsync(out, f); }
                         out.println();
                         emitAddPlain(out, f);
+                        if (asyncEnabled) { out.println(); emitAddPlainAsync(out, f); }
                         out.println();
                         emitSubPlain(out, f);
+                        if (asyncEnabled) { out.println(); emitSubPlainAsync(out, f); }
                         if (f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS) {
                             out.println();
                             emitMultiply(out, f);
+                            if (asyncEnabled) { out.println(); emitMultiplyAsync(out, f); }
                             out.println();
                             emitMulPlain(out, f);
+                            if (asyncEnabled) { out.println(); emitMulPlainAsync(out, f); }
                         }
                     }
                 }
@@ -601,5 +615,103 @@ public class HomomorphicProcessor extends AbstractProcessor {
             }
             default -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
         }
+    }
+
+    // ── Async emit helpers ────────────────────────────────────────────────
+
+    private void emitGetCiphertextAsync(PrintWriter out, FieldModel f) {
+        emitSupplyAsync(out, "getCiphertext", f.capName(), "Ciphertext");
+    }
+
+    private void emitEncryptAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "encrypt", f.capName(), encryptParamType(f), "plain");
+    }
+
+    private void emitDecryptAsync(PrintWriter out, FieldModel f) {
+        emitSupplyAsync(out, "decrypt", f.capName(), boxedDecryptReturnType(f));
+    }
+
+    private void emitAddAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "add", f.capName(), "Ciphertext", "other");
+    }
+
+    private void emitSubAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "sub", f.capName(), "Ciphertext", "other");
+    }
+
+    private void emitAddPlainAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "add", f.capName(), plainMathParamType(f), "plain");
+    }
+
+    private void emitSubPlainAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "sub", f.capName(), plainMathParamType(f), "plain");
+    }
+
+    private void emitMultiplyAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "mul", f.capName(), "Ciphertext", "other");
+    }
+
+    private void emitMulPlainAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "mul", f.capName(), plainMathParamType(f), "plain");
+    }
+
+    /** Emits a {@code CompletableFuture<Void>} method delegating to {@code BlindAsync.runAsync}. */
+    private void emitRunAsync(PrintWriter out, String prefix, String capName, String paramType, String paramName) {
+        out.println("    public CompletableFuture<Void> " + prefix + capName + "Async(" + paramType + " " + paramName + ") {");
+        out.println("        return BlindAsync.runAsync(() -> " + prefix + capName + "(" + paramName + "));");
+        out.println("    }");
+    }
+
+    /** Emits a {@code CompletableFuture<T>} no-arg method delegating to {@code BlindAsync.supplyAsync}. */
+    private void emitSupplyAsync(PrintWriter out, String prefix, String capName, String returnType) {
+        out.println("    public CompletableFuture<" + returnType + "> " + prefix + capName + "Async() {");
+        out.println("        return BlindAsync.supplyAsync(() -> " + prefix + capName + "());");
+        out.println("    }");
+    }
+
+    // ── Type helpers ──────────────────────────────────────────────────────
+
+    /** Returns the Java source type for the encrypt() parameter of this field. */
+    private String encryptParamType(FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("java.lang.String"))                          return "String";
+        if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return "boolean";
+        if (typeName.equals("int")     || typeName.equals("java.lang.Integer")) return "int";
+        if (typeName.equals("long[]"))                                    return "long[]";
+        return switch (f.scheme()) {
+            case PAILLIER -> "java.math.BigInteger";
+            case BFV      -> "long";
+            case CKKS     -> "double";
+            default       -> "java.math.BigInteger";
+        };
+    }
+
+    /**
+     * Returns the boxed Java source type for the decrypt() return value,
+     * suitable as a {@code CompletableFuture<T>} type argument.
+     */
+    private String boxedDecryptReturnType(FieldModel f) {
+        String typeName = f.typeName();
+        if (typeName.equals("java.lang.String"))                          return "String";
+        if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return "Boolean";
+        if (typeName.equals("int")     || typeName.equals("java.lang.Integer")) return "Integer";
+        if (typeName.equals("long[]"))                                    return "long[]";
+        return switch (f.scheme()) {
+            case PAILLIER -> "java.math.BigInteger";
+            case BFV      -> "Long";
+            case CKKS     -> "Double";
+            default       -> "java.math.BigInteger";
+        };
+    }
+
+    /** Returns the Java source type for the plain-value overload of add/sub/mul. */
+    private String plainMathParamType(FieldModel f) {
+        if (f.typeName().equals("long[]") && f.scheme() == Scheme.BFV) return "long[]";
+        return switch (f.scheme()) {
+            case PAILLIER -> "BigInteger";
+            case BFV      -> "long";
+            case CKKS     -> "double";
+            default       -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        };
     }
 }

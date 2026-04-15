@@ -148,4 +148,34 @@ public class BlindContext {
             fheInstance.remove();
         }
     }
+
+    // ── Async support — snapshot / restore ────────────────────────────────
+
+    /**
+     * Captures the calling thread's Paillier and FHE context references.
+     * Used by {@code BlindAsync} to propagate context across virtual-thread boundaries.
+     */
+    public record Snapshot(PaillierMath paillier, FheContext fhe) {}
+
+    /**
+     * Returns a snapshot of the current thread's cryptographic context.
+     * Both fields may be {@code null} if not initialized on this thread.
+     */
+    public static Snapshot snapshot() {
+        return new Snapshot(paillierInstance.get(), fheInstance.get());
+    }
+
+    /**
+     * Installs a previously captured snapshot on the current thread.
+     * Does not close or replace any existing FHE context on this thread —
+     * call {@link #clear()} first if that is needed.
+     */
+    public static void restore(Snapshot snapshot) {
+        if (snapshot.paillier() != null) {
+            paillierInstance.set(snapshot.paillier());
+        }
+        if (snapshot.fhe() != null) {
+            fheInstance.set(snapshot.fhe());
+        }
+    }
 }
