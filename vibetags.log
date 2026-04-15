@@ -1,0 +1,9 @@
+2026-04-15 21:17:06.048 INFO  VibeTags v1.0.0-SNAPSHOT | https://github.com/PIsberg/vibetags
+2026-04-15 21:17:06.050 INFO  Root: C:\dev\private\blindbean
+2026-04-15 21:17:06.055 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-15 21:17:06.055 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-15 21:17:06.055 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-15 21:17:06.055 INFO  @AIAudit:   1 — BlindContext
+2026-04-15 21:17:06.077 INFO  CLAUDE.md — updated
+2026-04-15 21:17:06.078 INFO  gemini_instructions.md — updated
+2026-04-15 21:17:06.078 INFO  .aiexclude — updated
