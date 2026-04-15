@@ -89,6 +89,14 @@ private String isAdmin;
 ```
 *Note: Homomorphic math functions (add/multiply) are structurally omitted for textual and logical structures to prevent mathematical data corruption.*
 
+### Vector Batching (SIMD Arrays)
+When using the BFV scheme, you can natively batch complete arrays of thousands of variables homogeneously using the `long[].class` parameter. 
+```java
+@Homomorphic(scheme = Scheme.BFV, type = long[].class)
+private String batchedMetrics; 
+```
+Math operations (such as `wrapper.addBatchedMetrics(...)`) automatically propagate efficiently to all coordinates concurrently at the underlying C++ layer simultaneously without adding a single millisecond of overhead. Note: Maximum batch capacity is natively bound to the Scheme's polynomial degree size limit (`8,192`).
+
 ### Using BFV (Fully Homomorphic — Integers)
 
 ```java

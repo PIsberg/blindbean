@@ -132,7 +132,7 @@ We target **128-bit security** based on the parameters recommended by the Homomo
 | **Plain Modulus** | `Batching(8192, 20)` | N/A |
 | **Scale** | N/A | 2^40 |
 
-- **BFV**: Used for exact integer arithmetic. Automatically relinearizes after multiplication.
+- **BFV**: Used for exact integer arithmetic. Automatically relinearizes after multiplication. Support natively handles `seal::BatchEncoder` array interception, mapping massive Java vectors `long[]` flawlessly across FFM boundaries directly into polynomial parameters for optimal Single-Instruction-Multiple-Data (SIMD) capabilities.
 - **CKKS**: Used for floating-point arithmetic. Automatically relinearizes and rescales to manage depth.
 
 ### Memory & Lifecycle Management
