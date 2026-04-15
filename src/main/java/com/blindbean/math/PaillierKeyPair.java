@@ -3,7 +3,9 @@ package com.blindbean.math;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-public class PaillierKeyPair {
+public class PaillierKeyPair implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final BigInteger n;
     private final BigInteger n2; // n^2
     private final BigInteger g;

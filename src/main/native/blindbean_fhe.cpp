@@ -393,3 +393,54 @@ extern "C" void fhe_free_ciphertext(FheCiphertext ctHandle) {
         delete ct;
     }
 }
+
+// ============================================================
+// Key Management
+// ============================================================
+
+extern "C" int32_t fhe_export_keys(FheContext handle, uint8_t* out_buf, size_t* out_len) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        if (!ctx || !out_len) return -1;
+
+        std::ostringstream oss(std::ios::binary);
+        ctx->secretKey.save(oss);
+        ctx->publicKey.save(oss);
+        ctx->relinKeys.save(oss);
+
+        std::string data = oss.str();
+        if (!out_buf || *out_len < data.size()) {
+            *out_len = data.size();
+            return -1; // buffer too small
+        }
+
+        std::memcpy(out_buf, data.data(), data.size());
+        *out_len = data.size();
+        return 0;
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_export_keys error: %s\n", e.what());
+        return -1;
+    }
+}
+
+extern "C" int32_t fhe_import_keys(FheContext handle, const uint8_t* buf, size_t len) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        if (!ctx || !buf || len == 0) return -1;
+
+        std::string data(reinterpret_cast<const char*>(buf), len);
+        std::istringstream iss(data, std::ios::binary);
+
+        ctx->secretKey.load(*ctx->sealCtx, iss);
+        ctx->publicKey.load(*ctx->sealCtx, iss);
+        ctx->relinKeys.load(*ctx->sealCtx, iss);
+
+        ctx->encryptor = std::make_unique<seal::Encryptor>(*ctx->sealCtx, ctx->publicKey);
+        ctx->decryptor = std::make_unique<seal::Decryptor>(*ctx->sealCtx, ctx->secretKey);
+        
+        return 0;
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_import_keys error: %s\n", e.what());
+        return -1;
+    }
+}

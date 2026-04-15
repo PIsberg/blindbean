@@ -131,6 +131,45 @@ public class FheContext implements AutoCloseable {
         return FheNativeBridge.fhe_decrypt_double(handle, ct);
     }
 
+    /** Exports the underlying SEAL keys natively. */
+    public byte[] exportState() {
+        ensureOpen();
+        try (java.lang.foreign.Arena a = java.lang.foreign.Arena.ofConfined()) {
+            java.lang.foreign.MemorySegment lenSeg = a.allocate(java.lang.foreign.ValueLayout.JAVA_LONG);
+            lenSeg.set(java.lang.foreign.ValueLayout.JAVA_LONG, 0, 0L);
+
+            FheNativeBridge.fhe_export_keys(handle, java.lang.foreign.MemorySegment.NULL, lenSeg);
+            long requiredSize = lenSeg.get(java.lang.foreign.ValueLayout.JAVA_LONG, 0);
+
+            if (requiredSize <= 0) {
+                throw new FheException("Failed to query serialization size for key export");
+            }
+
+            java.lang.foreign.MemorySegment buf = a.allocate(requiredSize);
+            lenSeg.set(java.lang.foreign.ValueLayout.JAVA_LONG, 0, requiredSize);
+
+            int rc = FheNativeBridge.fhe_export_keys(handle, buf, lenSeg);
+            if (rc != 0) {
+                throw new FheException("Key export failed", rc);
+            }
+
+            long actualLen = lenSeg.get(java.lang.foreign.ValueLayout.JAVA_LONG, 0);
+            return buf.asSlice(0, actualLen).toArray(java.lang.foreign.ValueLayout.JAVA_BYTE);
+        }
+    }
+
+    /** Reloads the underlying SEAL keys natively. */
+    public void importState(byte[] data) {
+        ensureOpen();
+        try (java.lang.foreign.Arena a = java.lang.foreign.Arena.ofConfined()) {
+            java.lang.foreign.MemorySegment buf = a.allocateFrom(java.lang.foreign.ValueLayout.JAVA_BYTE, data);
+            int rc = FheNativeBridge.fhe_import_keys(handle, buf, data.length);
+            if (rc != 0) {
+                throw new FheException("Key import failed", rc);
+            }
+        }
+    }
+
     /** Homomorphic addition of two ciphertexts. */
     public MemorySegment add(MemorySegment a, MemorySegment b) {
         ensureOpen();

@@ -53,6 +53,8 @@ public class FheNativeBridge {
     private static final MethodHandle MH_SERIALIZE;
     private static final MethodHandle MH_DESERIALIZE;
     private static final MethodHandle MH_FREE_CIPHERTEXT;
+    private static final MethodHandle MH_EXPORT_KEYS;
+    private static final MethodHandle MH_IMPORT_KEYS;
 
     static {
         try {
@@ -117,6 +119,14 @@ public class FheNativeBridge {
 
             MH_FREE_CIPHERTEXT = downcall("fhe_free_ciphertext",
                     FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+
+            MH_EXPORT_KEYS = downcall("fhe_export_keys",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT,
+                            ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+
+            MH_IMPORT_KEYS = downcall("fhe_import_keys",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT,
+                            ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
         } catch (Throwable t) {
             System.err.println("CRITICAL: Failed to initialize FheNativeBridge static handles.");
             t.printStackTrace();
@@ -243,6 +253,22 @@ public class FheNativeBridge {
             return (int) MH_NOISE_BUDGET.invokeExact(ctx, ct);
         } catch (Throwable e) {
             throw new FheException("Failed to call fhe_noise_budget", e);
+        }
+    }
+
+    public static int fhe_export_keys(MemorySegment ctx, MemorySegment outBuf, MemorySegment outLenPtr) {
+        try {
+            return (int) MH_EXPORT_KEYS.invokeExact(ctx, outBuf, outLenPtr);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_export_keys", e);
+        }
+    }
+
+    public static int fhe_import_keys(MemorySegment ctx, MemorySegment inBuf, long len) {
+        try {
+            return (int) MH_IMPORT_KEYS.invokeExact(ctx, inBuf, len);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_import_keys", e);
         }
     }
 
