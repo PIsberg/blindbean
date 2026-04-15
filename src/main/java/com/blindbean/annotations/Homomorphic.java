@@ -13,4 +13,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Homomorphic {
     Scheme scheme() default Scheme.PAILLIER;
+    Class<?> type() default Void.class;
 }
