@@ -21,30 +21,37 @@ public class FheContext implements AutoCloseable {
     private final MemorySegment handle;
     private final Scheme scheme;
     private final Arena arena;
+    private final int polyModulusDegree;
+    private final double scale;
     private volatile boolean closed = false;
 
-    private FheContext(MemorySegment handle, Scheme scheme, Arena arena) {
+    private FheContext(MemorySegment handle, Scheme scheme, Arena arena, int polyModulusDegree, double scale) {
         if (handle.equals(MemorySegment.NULL)) {
             throw new FheException("Failed to initialize FHE context — native call returned NULL");
         }
         this.handle = handle;
         this.scheme = scheme;
         this.arena  = arena;
+        this.polyModulusDegree = polyModulusDegree;
+        this.scale = scale;
     }
 
     /** Creates a BFV context with the given polynomial modulus degree. */
     public static FheContext bfv(int polyModulusDegree) {
         Arena arena = Arena.ofShared();
         MemorySegment h = FheNativeBridge.fhe_init_bfv(polyModulusDegree);
-        return new FheContext(h, Scheme.BFV, arena);
+        return new FheContext(h, Scheme.BFV, arena, polyModulusDegree, 0.0);
     }
 
     /** Creates a CKKS context with the given polynomial modulus degree and scale. */
     public static FheContext ckks(int polyModulusDegree, double scale) {
         Arena arena = Arena.ofShared();
         MemorySegment h = FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale);
-        return new FheContext(h, Scheme.CKKS, arena);
+        return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
     }
+
+    public int polyModulusDegree() { return polyModulusDegree; }
+    public double scale() { return scale; }
 
     /** Returns the raw native handle for use with {@link FheNativeBridge}. */
     public MemorySegment handle() {
@@ -129,6 +136,45 @@ public class FheContext implements AutoCloseable {
             throw new FheException("decryptDouble requires CKKS context, got " + scheme);
         }
         return FheNativeBridge.fhe_decrypt_double(handle, ct);
+    }
+
+    /** Exports the underlying SEAL keys natively. */
+    public byte[] exportState() {
+        ensureOpen();
+        try (java.lang.foreign.Arena a = java.lang.foreign.Arena.ofConfined()) {
+            java.lang.foreign.MemorySegment lenSeg = a.allocate(java.lang.foreign.ValueLayout.JAVA_LONG);
+            lenSeg.set(java.lang.foreign.ValueLayout.JAVA_LONG, 0, 0L);
+
+            FheNativeBridge.fhe_export_keys(handle, java.lang.foreign.MemorySegment.NULL, lenSeg);
+            long requiredSize = lenSeg.get(java.lang.foreign.ValueLayout.JAVA_LONG, 0);
+
+            if (requiredSize <= 0) {
+                throw new FheException("Failed to query serialization size for key export");
+            }
+
+            java.lang.foreign.MemorySegment buf = a.allocate(requiredSize);
+            lenSeg.set(java.lang.foreign.ValueLayout.JAVA_LONG, 0, requiredSize);
+
+            int rc = FheNativeBridge.fhe_export_keys(handle, buf, lenSeg);
+            if (rc != 0) {
+                throw new FheException("Key export failed", rc);
+            }
+
+            long actualLen = lenSeg.get(java.lang.foreign.ValueLayout.JAVA_LONG, 0);
+            return buf.asSlice(0, actualLen).toArray(java.lang.foreign.ValueLayout.JAVA_BYTE);
+        }
+    }
+
+    /** Reloads the underlying SEAL keys natively. */
+    public void importState(byte[] data) {
+        ensureOpen();
+        try (java.lang.foreign.Arena a = java.lang.foreign.Arena.ofConfined()) {
+            java.lang.foreign.MemorySegment buf = a.allocateFrom(java.lang.foreign.ValueLayout.JAVA_BYTE, data);
+            int rc = FheNativeBridge.fhe_import_keys(handle, buf, data.length);
+            if (rc != 0) {
+                throw new FheException("Key import failed", rc);
+            }
+        }
     }
 
     /** Homomorphic addition of two ciphertexts. */

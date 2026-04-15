@@ -14,6 +14,10 @@ public class PaillierMath {
         this.keyPair = keyPair;
     }
 
+    public PaillierKeyPair getKeyPair() {
+        return keyPair;
+    }
+
     public Ciphertext encrypt(BigInteger m) {
         BigInteger r;
         do {

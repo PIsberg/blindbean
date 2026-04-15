@@ -95,6 +95,16 @@ BLINDBEAN_API void fhe_relinearize(FheContext ctx, FheCiphertext ct);
 BLINDBEAN_API void fhe_rescale(FheContext ctx, FheCiphertext ct);
 
 // ============================================================
+// Key Management
+// ============================================================
+
+/** Exports SecretKey, PublicKey, and RelinKeys into a given binary buffer. */
+BLINDBEAN_API int32_t fhe_export_keys(FheContext ctx, uint8_t* out_buf, size_t* out_len);
+
+/** Re-initializes SEAL configurations bypassing randomization using existing native Keys. */
+BLINDBEAN_API int32_t fhe_import_keys(FheContext ctx, const uint8_t* buf, size_t len);
+
+// ============================================================
 // Diagnostics
 // ============================================================
 

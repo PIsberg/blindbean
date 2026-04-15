@@ -69,6 +69,64 @@ public class BlindContext {
         return instance;
     }
 
+    // ── Serialization & Key Management ────────────────────────
+    
+    /**
+     * Exports the current combined Paillier and Microsoft SEAL encryption states to a file.
+     * This secures the keys allowing the application to persist data over restarts.
+     * @param filePath the destination binary path to stream the bundle to.
+     */
+    public static void exportKeys(String filePath) {
+        try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
+            PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
+            FheContext ctx = fheInstance.get();
+            
+            if (ctx == null && kp == null) {
+                throw new FheException("No open BlindContext elements available to export");
+            }
+            
+            KeyBundle bundle = new KeyBundle(
+                    kp,
+                    ctx != null ? ctx.scheme() : null,
+                    ctx != null ? ctx.polyModulusDegree() : 0,
+                    ctx != null ? ctx.scale() : 0.0,
+                    ctx != null ? ctx.exportState() : null
+            );
+            oos.writeObject(bundle);
+        } catch (Exception e) {
+            throw new FheException("Key export failed", e);
+        }
+    }
+
+    /**
+     * Restores encryption context from a previously exported state file.
+     * @param filePath the binary bundle path.
+     */
+    public static void loadKeys(String filePath) {
+        try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(filePath))) {
+            KeyBundle bundle = (KeyBundle) ois.readObject();
+            
+            // Paillier resumption
+            if (bundle.getPaillierKeyPair() != null) {
+                init(bundle.getPaillierKeyPair());
+            }
+
+            // FHE resumption
+            if (bundle.getFheScheme() != null && bundle.getNativeFhePayload() != null) {
+                if (bundle.getFheScheme() == com.blindbean.annotations.Scheme.BFV) {
+                    initBfv(bundle.getPolyModulusDegree());
+                } else if (bundle.getFheScheme() == com.blindbean.annotations.Scheme.CKKS) {
+                    initCkks(bundle.getPolyModulusDegree(), bundle.getScale());
+                }
+                
+                // Mount native pointers strictly
+                fheInstance.get().importState(bundle.getNativeFhePayload());
+            }
+        } catch (Exception e) {
+            throw new FheException("Key import failed", e);
+        }
+    }
+
     // ── Lifecycle ─────────────────────────────────────────────
 
     /**

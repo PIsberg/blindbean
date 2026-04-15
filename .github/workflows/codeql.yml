@@ -53,24 +53,32 @@ jobs:
         uses: github/codeql-action/init@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3.35.2
         with:
           languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.language == 'java' && 'none' || 'manual' }}
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.
           # Prefix the list here with "+" to use these queries and those in the config file.
 
-      # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-      # If this step fails, then you should remove it and run the build manually (see below)
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3.35.2
+      - name: Set up JDK 26
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
 
-      # ℹ️ Command-line programs to run using the OS shell.
-      # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+      - name: Setup vcpkg (CPP)
+        if: matrix.language == 'cpp'
+        uses: lukka/run-vcpkg@7d259227a1fb6471a0253dd5ab7419835228f7d7 # v11
+        with:
+          vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
-      #   If the Autobuild fails above, remove it and uncomment the following three lines.
-      #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
-
-      # - run: |
-      #   echo "Run, Build Application using script"
-      #   ./location_of_script_within_repo/buildscript.sh
+      - name: Manual Build (CPP)
+        if: matrix.language == 'cpp'
+        run: |
+          cmake -S src/main/native -B build-native \
+            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-native --config Release
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3.35.2
