@@ -64,9 +64,9 @@ jobs:
           distribution: 'oracle'
           cache: maven
 
-      - name: Autobuild (Java)
+      - name: Manual Build (Java)
         if: matrix.language == 'java'
-        uses: github/codeql-action/autobuild@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3.35.2
+        run: ./mvnw -B clean compile
 
       - name: Setup vcpkg (CPP)
         if: matrix.language == 'cpp'
