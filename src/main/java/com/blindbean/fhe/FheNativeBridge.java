@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import se.deversity.vibetags.annotations.AICore;
 import se.deversity.vibetags.annotations.AILocked;
 
 /**
@@ -31,6 +32,7 @@ import se.deversity.vibetags.annotations.AILocked;
  *
  * Requires {@code --enable-native-access=ALL-UNNAMED} at runtime.
  */
+@AICore
 @AILocked(reason = "Direct Memory FFM JNI mapping. Avoid breaking SEAL bridge architecture.")
 public class FheNativeBridge {
 

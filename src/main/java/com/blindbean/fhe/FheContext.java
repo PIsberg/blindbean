@@ -5,6 +5,9 @@ import com.blindbean.annotations.Scheme;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
+import se.deversity.vibetags.annotations.AICore;
+import se.deversity.vibetags.annotations.AIPerformance;
+
 /**
  * High-level AutoCloseable wrapper around a native FHE context.
  * Enables try-with-resources usage for deterministic cleanup of SEAL resources.
@@ -16,6 +19,7 @@ import java.lang.foreign.MemorySegment;
  * }
  * }</pre>
  */
+@AICore
 public class FheContext implements AutoCloseable {
 
     private final MemorySegment handle;
@@ -92,6 +96,7 @@ public class FheContext implements AutoCloseable {
     }
 
     /** Encrypts a long[] block directly into a single SIMD BFV Batch Ciphertext. */
+    @AIPerformance
     public MemorySegment encryptLongArray(long[] values) {
         synchronized (nativeLock) {
             ensureOpen();
@@ -219,6 +224,7 @@ public class FheContext implements AutoCloseable {
     }
 
     /** Homomorphic multiplication of two ciphertexts (auto-relinearized). */
+    @AIPerformance
     public MemorySegment multiply(MemorySegment a, MemorySegment b) {
         synchronized (nativeLock) {
             ensureOpen();

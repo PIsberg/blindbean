@@ -64,7 +64,7 @@
         <dependency>
             <groupId>se.deversity.async-test-lib</groupId>
             <artifactId>async-test-lib</artifactId>
-            <version>0.6.2</version>
+            <version>0.7.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -72,7 +72,7 @@
         <dependency>
             <groupId>se.deversity.vibetags</groupId>
             <artifactId>vibetags-processor</artifactId>
-            <version>0.5.2</version>
+            <version>0.5.3</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -101,7 +101,7 @@
                         <path>
                             <groupId>se.deversity.vibetags</groupId>
                             <artifactId>vibetags-processor</artifactId>
-                            <version>0.5.2</version>
+                            <version>0.5.3</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
