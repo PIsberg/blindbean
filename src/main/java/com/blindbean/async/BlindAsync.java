@@ -36,16 +36,18 @@ public final class BlindAsync {
     // ── Lazy initialization ───────────────────────────────────────────────
 
     private static ExecutorService executor() {
-        if (executor == null) {
+        ExecutorService e = executor; // read volatile once into local
+        if (e == null) {
             synchronized (INIT_LOCK) {
-                if (executor == null) {
+                e = executor;
+                if (e == null) {
                     semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());
-                    executor  = Executors.newVirtualThreadPerTaskExecutor();
+                    e = executor = Executors.newVirtualThreadPerTaskExecutor();
                     Runtime.getRuntime().addShutdownHook(new Thread(BlindAsync::shutdown, "blindbean-async-shutdown"));
                 }
             }
         }
-        return executor;
+        return e; // always return the local — never re-reads the volatile
     }
 
     private static Semaphore semaphore() {
@@ -64,15 +66,23 @@ public final class BlindAsync {
      */
     public static CompletableFuture<Void> runAsync(Runnable task) {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
-        return CompletableFuture.runAsync(() -> {
-            semaphore().acquireUninterruptibly();
+        for (;;) {
+            ExecutorService exec = executor();
             try {
-                BlindContext.restore(snapshot);
-                task.run();
-            } finally {
-                semaphore().release();
+                return CompletableFuture.runAsync(() -> {
+                    Semaphore sem = semaphore(); // capture once — acquire and release must be symmetric
+                    sem.acquireUninterruptibly();
+                    try {
+                        BlindContext.restore(snapshot);
+                        task.run();
+                    } finally {
+                        sem.release();
+                    }
+                }, exec);
+            } catch (java.util.concurrent.RejectedExecutionException ignored) {
+                // exec was concurrently shut down; executor() will reinitialize on the next iteration
             }
-        }, executor());
+        }
     }
 
     /**
@@ -85,15 +95,23 @@ public final class BlindAsync {
      */
     public static <T> CompletableFuture<T> supplyAsync(Supplier<T> task) {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
-        return CompletableFuture.supplyAsync(() -> {
-            semaphore().acquireUninterruptibly();
+        for (;;) {
+            ExecutorService exec = executor();
             try {
-                BlindContext.restore(snapshot);
-                return task.get();
-            } finally {
-                semaphore().release();
+                return CompletableFuture.supplyAsync(() -> {
+                    Semaphore sem = semaphore(); // capture once — acquire and release must be symmetric
+                    sem.acquireUninterruptibly();
+                    try {
+                        BlindContext.restore(snapshot);
+                        return task.get();
+                    } finally {
+                        sem.release();
+                    }
+                }, exec);
+            } catch (java.util.concurrent.RejectedExecutionException ignored) {
+                // exec was concurrently shut down; executor() will reinitialize on the next iteration
             }
-        }, executor());
+        }
     }
 
     /**

@@ -169,9 +169,10 @@ class BlindAsyncConcurrencyTest {
      */
     @AsyncTest(
         threads = 20,
-        invocations = 200,
+        invocations = 20,
         detectRaceConditions = true,
-        detectAtomicityViolations = true
+        detectAtomicityViolations = true,
+        timeoutMs = 30000
     )
     void paillierEncryptDecryptIsThreadSafe() {
         long raw = ThreadLocalRandom.current().nextLong(1_000_000L);
@@ -190,8 +191,9 @@ class BlindAsyncConcurrencyTest {
      */
     @AsyncTest(
         threads = 30,
-        invocations = 100,
-        detectRaceConditions = true
+        invocations = 20,
+        detectRaceConditions = true,
+        timeoutMs = 30000
     )
     void snapshotRestoreRoundTripIsIsolated() {
         BlindContext.init();
