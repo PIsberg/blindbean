@@ -45,13 +45,6 @@ jobs:
         run: ./mvnw -B -pl . test -Dtest=HomomorphicProcessorTest
         shell: bash
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./**/target/site/jacoco/jacoco.xml
-          name: java-fast-gate
-          fail_ci_if_error: false
-
   native-build-matrix:
     name: Native build (${{ matrix.label }})
     runs-on: ${{ matrix.os }}
@@ -174,13 +167,6 @@ jobs:
         run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release"
         shell: pwsh
         working-directory: blindbean-example
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./**/target/site/jacoco/jacoco.xml
-          name: full-windows
-          fail_ci_if_error: false
 
       - name: Upload Surefire reports on failure
         if: failure()
