@@ -81,15 +81,18 @@ wrapper.addBalance(amountToAdd); // Math happens right there, without decryption
 ```
 
 ### Storing Arbitrary Types
-You can securely store standard Java types like `String`, `int` or `boolean` natively without parsing arrays yourself:
+You can securely store standard Java types like `String`, `boolean` or any numeric type (`byte`, `short`, `int`, `long`, `float`, `double`) natively:
 ```java
-@Homomorphic(scheme = Scheme.PAILLIER, type = String.class)
-private String secretRank; // Safely mapped through UTF_8 to Paillier bounds
+@Homomorphic(scheme = Scheme.PAILLIER, type = int.class)
+private String age; 
 
-@Homomorphic(scheme = Scheme.BFV, type = boolean.class)
-private String isAdmin; 
+@Homomorphic(scheme = Scheme.BFV, type = long.class)
+private String balance; 
+
+@Homomorphic(scheme = Scheme.CKKS, type = double.class)
+private String precisionValue;
 ```
-*Note: Homomorphic math functions (add/multiply) are structurally omitted for textual and logical structures to prevent mathematical data corruption.*
+*Note: Homomorphic math functions (add/multiply) are structurally omitted for textual and logical structures (String/boolean) to prevent mathematical data corruption.*
 
 ### Vector Batching (SIMD Arrays)
 When using the BFV scheme, you can natively batch complete arrays of thousands of variables homogeneously using the `long[].class` parameter. 

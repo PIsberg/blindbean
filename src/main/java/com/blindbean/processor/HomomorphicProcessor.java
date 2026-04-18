@@ -211,7 +211,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
             boolean needsBigInteger = fields.stream().anyMatch(f -> f.scheme() == Scheme.PAILLIER);
             boolean needsFhe        = fields.stream()
                 .anyMatch(f -> f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS);
-            boolean asyncEnabled    = typeElement.getAnnotation(BlindEntity.class).async();
+            boolean asyncEnabled    = typeElement.getAnnotation(BlindEntity.class).async()
+                                       || "true".equalsIgnoreCase(System.getProperty("blindbean.apt.async"));
 
             try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
                 // Header
@@ -329,16 +330,17 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("        }");
             }
             out.println("    }");
-        } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+        } else if (isIntegral(typeName)) {
+            String pType = getPrimitiveType(typeName);
             switch (f.scheme()) {
                 case PAILLIER -> {
-                    out.println("    public void encrypt" + f.capName() + "(int plain) {");
+                    out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
                     out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(java.math.BigInteger.valueOf(plain));");
                     out.println("        entity.set" + f.capName() + "(ct.hexData());");
                     out.println("    }");
                 }
                 case BFV -> {
-                    out.println("    public void encrypt" + f.capName() + "(int plain) {");
+                    out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong((long)plain), ctx)) {");
                     out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
@@ -346,13 +348,27 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     out.println("    }");
                 }
                 case CKKS -> {
-                    out.println("    public void encrypt" + f.capName() + "(int plain) {");
+                    out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble((double)plain), ctx)) {");
                     out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
                     out.println("        }");
                     out.println("    }");
                 }
+            }
+        } else if (isFloatingPoint(typeName)) {
+            String pType = getPrimitiveType(typeName);
+            if (f.scheme() == Scheme.CKKS) {
+                out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble((double)plain), ctx)) {");
+                out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+                out.println("        }");
+                out.println("    }");
+            } else {
+                out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
+                out.println("        throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\");");
+                out.println("    }");
             }
         } else if (typeName.equals("long[]")) {
             if (f.scheme() == Scheme.BFV) {
@@ -423,29 +439,49 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("        }");
             }
             out.println("    }");
-        } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+        } else if (isIntegral(typeName)) {
+            String pType = getPrimitiveType(typeName);
             switch (f.scheme()) {
                 case PAILLIER -> {
-                    out.println("    public int decrypt" + f.capName() + "() {");
-                    out.println("        return BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "()).intValue();");
+                    String rType = boxedDecryptReturnType(f);
+                    out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                    out.println("        return (" + rType + ")(" + pType + ")BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "()).longValue();");
                     out.println("    }");
                 }
                 case BFV -> {
-                    out.println("    public int decrypt" + f.capName() + "() {");
+                    String rType = boxedDecryptReturnType(f);
+                    out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                    out.println("            return (int)ctx.decryptLong(ct.handle());");
+                    out.println("            return (" + rType + ")(" + pType + ")ctx.decryptLong(ct.handle());");
                     out.println("        }");
                     out.println("    }");
                 }
                 case CKKS -> {
-                    out.println("    public int decrypt" + f.capName() + "() {");
+                    String rType = boxedDecryptReturnType(f);
+                    out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                    out.println("            return (int)ctx.decryptDouble(ct.handle());");
+                    out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
                     out.println("        }");
                     out.println("    }");
                 }
+            }
+        } else if (isFloatingPoint(typeName)) {
+            String pType = getPrimitiveType(typeName);
+            if (f.scheme() == Scheme.CKKS) {
+                String rType = boxedDecryptReturnType(f);
+                out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                out.println("        FheContext ctx = BlindContext.getFheContext();");
+                out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+                out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
+                out.println("        }");
+                out.println("    }");
+            } else {
+                String rType = boxedDecryptReturnType(f);
+                out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                out.println("        throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\");");
+                out.println("    }");
             }
         } else if (typeName.equals("long[]")) {
             if (f.scheme() == Scheme.BFV) {
@@ -676,7 +712,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
         String typeName = f.typeName();
         if (typeName.equals("java.lang.String"))                          return "String";
         if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return "boolean";
-        if (typeName.equals("int")     || typeName.equals("java.lang.Integer")) return "int";
+        if (isIntegral(typeName))                                         return getPrimitiveType(typeName);
+        if (isFloatingPoint(typeName))                                    return getPrimitiveType(typeName);
         if (typeName.equals("long[]"))                                    return "long[]";
         return switch (f.scheme()) {
             case PAILLIER -> "java.math.BigInteger";
@@ -694,7 +731,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
         String typeName = f.typeName();
         if (typeName.equals("java.lang.String"))                          return "String";
         if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return "Boolean";
-        if (typeName.equals("int")     || typeName.equals("java.lang.Integer")) return "Integer";
+        if (isIntegral(typeName))                                         return getBoxedType(typeName);
+        if (isFloatingPoint(typeName))                                    return getBoxedType(typeName);
         if (typeName.equals("long[]"))                                    return "long[]";
         return switch (f.scheme()) {
             case PAILLIER -> "java.math.BigInteger";
@@ -706,12 +744,55 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     /** Returns the Java source type for the plain-value overload of add/sub/mul. */
     private String plainMathParamType(FieldModel f) {
-        if (f.typeName().equals("long[]") && f.scheme() == Scheme.BFV) return "long[]";
+        String typeName = f.typeName();
+        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) return "long[]";
         return switch (f.scheme()) {
             case PAILLIER -> "BigInteger";
             case BFV      -> "long";
             case CKKS     -> "double";
             default       -> throw new IllegalStateException("Unsupported scheme: " + f.scheme());
+        };
+    }
+
+    private boolean isIntegral(String typeName) {
+        return typeName.equals("byte")   || typeName.equals("java.lang.Byte") ||
+               typeName.equals("short")  || typeName.equals("java.lang.Short") ||
+               typeName.equals("int")    || typeName.equals("java.lang.Integer") ||
+               typeName.equals("long")   || typeName.equals("java.lang.Long");
+    }
+
+    private boolean isFloatingPoint(String typeName) {
+        return typeName.equals("float")  || typeName.equals("java.lang.Float") ||
+               typeName.equals("double") || typeName.equals("java.lang.Double");
+    }
+
+    private String getPrimitiveType(String typeName) {
+        return switch (typeName) {
+            case "java.lang.Byte"    -> "byte";
+            case "java.lang.Short"   -> "short";
+            case "java.lang.Integer" -> "int";
+            case "java.lang.Long"    -> "long";
+            case "java.lang.Float"   -> "float";
+            case "java.lang.Double"  -> "double";
+            default -> typeName;
+        };
+    }
+
+    private String getBoxedType(String typeName) {
+        return switch (typeName) {
+            case "byte"   -> "Byte";
+            case "short"  -> "Short";
+            case "int"    -> "Integer";
+            case "long"   -> "Long";
+            case "float"  -> "Float";
+            case "double" -> "Double";
+            case "java.lang.Byte"    -> "Byte";
+            case "java.lang.Short"   -> "Short";
+            case "java.lang.Integer" -> "Integer";
+            case "java.lang.Long"    -> "Long";
+            case "java.lang.Float"   -> "Float";
+            case "java.lang.Double"  -> "Double";
+            default -> typeName;
         };
     }
 }

@@ -354,4 +354,344 @@ public class HomomorphicProcessorTest {
         assertTrue(hasAptError,
             "Expected APT error for ELGAMAL scheme; diagnostics: " + diags);
     }
+
+    @Test
+    public void allNumericPrimitivesGenerateCorrectSignatures(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class NumericPrimitivesEntity {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = byte.class)
+                private String b;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = short.class)
+                private String s;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = int.class)
+                private String i;
+                @Homomorphic(scheme = Scheme.BFV, type = long.class)
+                private String l;
+                @Homomorphic(scheme = Scheme.CKKS, type = float.class)
+                private String f;
+                @Homomorphic(scheme = Scheme.CKKS, type = double.class)
+                private String d;
+
+                public NumericPrimitivesEntity() {}
+
+                public String getB() { return b; }
+                public void setB(String b) { this.b = b; }
+                public String getS() { return s; }
+                public void setS(String s) { this.s = s; }
+                public String getI() { return i; }
+                public void setI(String i) { this.i = i; }
+                public String getL() { return l; }
+                public void setL(String l) { this.l = l; }
+                public String getF() { return f; }
+                public void setF(String f) { this.f = f; }
+                public String getD() { return d; }
+                public void setD(String d) { this.d = d; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("NumericPrimitivesEntity", source, genDir, classesDir);
+
+        long errors = diags.stream()
+            .filter(d -> d.getKind() == Diagnostic.Kind.ERROR)
+            .count();
+        assertEquals(0, errors, "Expected no compilation errors; got: " + diags);
+
+        Path wrapper = genDir.resolve("com/example/apt/NumericPrimitivesEntityBlindWrapper.java");
+        assertTrue(Files.exists(wrapper), "Wrapper source not generated");
+
+        String wrapperSrc = Files.readString(wrapper);
+        
+        // Assertions for byte (Paillier)
+        assertTrue(wrapperSrc.contains("encryptB(byte plain)"), "Missing byte encryption");
+        assertTrue(wrapperSrc.contains("byte decryptB()"), "Missing byte decryption");
+        assertTrue(wrapperSrc.contains("java.math.BigInteger.valueOf(plain)"), "Missing byte-to-BigInteger conversion");
+
+        // Assertions for short (Paillier)
+        assertTrue(wrapperSrc.contains("encryptS(short plain)"), "Missing short encryption");
+        assertTrue(wrapperSrc.contains("short decryptS()"), "Missing short decryption");
+
+        // Assertions for int (Paillier)
+        assertTrue(wrapperSrc.contains("encryptI(int plain)"), "Missing int encryption");
+        assertTrue(wrapperSrc.contains("int decryptI()"), "Missing int decryption");
+        assertTrue(wrapperSrc.contains("addI(BigInteger plain)"), "Missing int math");
+
+        // Assertions for long (BFV)
+        assertTrue(wrapperSrc.contains("encryptL(long plain)"), "Missing long encryption");
+        assertTrue(wrapperSrc.contains("long decryptL()"), "Missing long decryption");
+        assertTrue(wrapperSrc.contains("addL(long plain)"), "Missing long math");
+
+        // Assertions for float (CKKS)
+        assertTrue(wrapperSrc.contains("encryptF(float plain)"), "Missing float encryption");
+        assertTrue(wrapperSrc.contains("float decryptF()"), "Missing float decryption");
+        assertTrue(wrapperSrc.contains("ctx.encryptDouble((double)plain)"), "Missing float-to-double widening");
+
+        // Assertions for double (CKKS)
+        assertTrue(wrapperSrc.contains("encryptD(double plain)"), "Missing double encryption");
+        assertTrue(wrapperSrc.contains("double decryptD()"), "Missing double decryption");
+    }
+
+    @Test
+    public void boxedNumericTypesGenerateCorrectSignatures(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class BoxedNumericEntity {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = Integer.class)
+                private String i;
+                @Homomorphic(scheme = Scheme.BFV, type = Long.class)
+                private String l;
+                @Homomorphic(scheme = Scheme.CKKS, type = Double.class)
+                private String d;
+
+                public BoxedNumericEntity() {}
+                public String getI() { return i; }
+                public void setI(String i) { this.i = i; }
+                public String getL() { return l; }
+                public void setL(String l) { this.l = l; }
+                public String getD() { return d; }
+                public void setD(String d) { this.d = d; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("BoxedNumericEntity", source, genDir, classesDir);
+
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count());
+
+        Path wrapper = genDir.resolve("com/example/apt/BoxedNumericEntityBlindWrapper.java");
+        String wrapperSrc = Files.readString(wrapper);
+        
+        assertTrue(wrapperSrc.contains("encryptI(int plain)"), "Boxed Integer should use int primitive parameter");
+        assertTrue(wrapperSrc.contains("Integer decryptI()"), "Boxed Integer should return Integer wrapper");
+        assertTrue(wrapperSrc.contains("encryptL(long plain)"), "Boxed Long should use long primitive parameter");
+        assertTrue(wrapperSrc.contains("Long decryptL()"), "Boxed Long should return Long wrapper");
+        assertTrue(wrapperSrc.contains("encryptD(double plain)"), "Boxed Double should use double primitive parameter");
+        assertTrue(wrapperSrc.contains("Double decryptD()"), "Boxed Double should return Double wrapper");
+    }
+
+    @Test
+    public void mathOperationsAcrossAllSchemes(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class MathEntity {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = int.class)
+                private String i;
+                @Homomorphic(scheme = Scheme.BFV, type = long.class)
+                private String l;
+                @Homomorphic(scheme = Scheme.CKKS, type = double.class)
+                private String d;
+
+                public MathEntity() {}
+                public String getI() { return i; }
+                public void setI(String i) { this.i = i; }
+                public String getL() { return l; }
+                public void setL(String l) { this.l = l; }
+                public String getD() { return d; }
+                public void setD(String d) { this.d = d; }
+            }
+            """;
+
+        compile("MathEntity", source, genDir, classesDir);
+        Path wrapper = genDir.resolve("com/example/apt/MathEntityBlindWrapper.java");
+        String wrapperSrc = Files.readString(wrapper);
+        
+        // Paillier Math
+        assertTrue(wrapperSrc.contains("addI(BigInteger plain)"), "Missing Paillier Add Plain");
+        assertTrue(wrapperSrc.contains("subI(BigInteger plain)"), "Missing Paillier Sub Plain");
+
+        // BFV Math
+        assertTrue(wrapperSrc.contains("addL(long plain)"), "Missing BFV Add Plain");
+        assertTrue(wrapperSrc.contains("subL(long plain)"), "Missing BFV Sub Plain");
+        assertTrue(wrapperSrc.contains("mulL(long plain)"), "Missing BFV Mul Plain");
+
+        // CKKS Math
+        assertTrue(wrapperSrc.contains("addD(double plain)"), "Missing CKKS Add Plain");
+        assertTrue(wrapperSrc.contains("subD(double plain)"), "Missing CKKS Sub Plain");
+        assertTrue(wrapperSrc.contains("mulD(double plain)"), "Missing CKKS Mul Plain");
+    }
+
+    @Test
+    public void asyncMethodsAreGenerated(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity(async = true)
+            public class AsyncEntity {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = int.class)
+                private String val;
+
+                public AsyncEntity() {}
+                public String getVal() { return val; }
+                public void setVal(String v) { this.val = v; }
+            }
+            """;
+
+        compile("AsyncEntity", source, genDir, classesDir);
+        Path wrapper = genDir.resolve("com/example/apt/AsyncEntityBlindWrapper.java");
+        String wrapperSrc = Files.readString(wrapper);
+        
+        assertTrue(wrapperSrc.contains("addValAsync(Ciphertext other)"), "Missing Async Add Ciphertext");
+        assertTrue(wrapperSrc.contains("addValAsync(BigInteger plain)"), "Missing Async Add Plain");
+        assertTrue(wrapperSrc.contains("subValAsync(Ciphertext other)"), "Missing Async Sub Ciphertext");
+        assertTrue(wrapperSrc.contains("subValAsync(BigInteger plain)"), "Missing Async Sub Plain");
+        assertTrue(wrapperSrc.contains("BlindAsync.runAsync"), "Async methods should use BlindAsync.runAsync");
+        assertTrue(wrapperSrc.contains("BlindAsync.supplyAsync"), "Async methods should use BlindAsync.supplyAsync");
+    }
+
+    @Test
+    public void arrayBatchingGeneratesCorrectSignatures(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class ArrayEntity {
+                @Homomorphic(scheme = Scheme.BFV, type = long[].class)
+                private String data;
+
+                public ArrayEntity() {}
+                public String getData() { return data; }
+                public void setData(String d) { this.data = d; }
+            }
+            """;
+
+        compile("ArrayEntity", source, genDir, classesDir);
+        Path wrapper = genDir.resolve("com/example/apt/ArrayEntityBlindWrapper.java");
+        String wrapperSrc = Files.readString(wrapper);
+        
+        assertTrue(wrapperSrc.contains("encryptData(long[] plain)"), "Missing long[] encryption");
+        assertTrue(wrapperSrc.contains("long[] decryptData()"), "Missing long[] decryption");
+        assertTrue(wrapperSrc.contains("addData(long[] plain)"), "Missing long[] plain math");
+        assertTrue(wrapperSrc.contains("ctx.encryptLongArray(plain)"), "Should use encryptLongArray for batching");
+    }
+
+    @Test
+    public void defaultMappingForFheSchemes(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class DefaultFheEntity {
+                @Homomorphic(scheme = Scheme.BFV)
+                private String bfvVal;
+                @Homomorphic(scheme = Scheme.CKKS)
+                private String ckksVal;
+
+                public DefaultFheEntity() {}
+                public String getBfvVal() { return bfvVal; }
+                public void setBfvVal(String v) { this.bfvVal = v; }
+                public String getCkksVal() { return ckksVal; }
+                public void setCkksVal(String v) { this.ckksVal = v; }
+            }
+            """;
+
+        compile("DefaultFheEntity", source, genDir, classesDir);
+        Path wrapper = genDir.resolve("com/example/apt/DefaultFheEntityBlindWrapper.java");
+        String wrapperSrc = Files.readString(wrapper);
+        
+        // BFV default should be long
+        assertTrue(wrapperSrc.contains("encryptBfvVal(long plain)"), "BFV default should be long");
+        assertTrue(wrapperSrc.contains("long decryptBfvVal()"), "BFV default should be long");
+
+        // CKKS default should be double
+        assertTrue(wrapperSrc.contains("encryptCkksVal(double plain)"), "CKKS default should be double");
+        assertTrue(wrapperSrc.contains("double decryptCkksVal()"), "CKKS default should be double");
+    }
+
+    @Test
+    public void unsupportedOperationsThrowErrors(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class UnsupportedEntity {
+                @Homomorphic(scheme = Scheme.BFV, type = String.class)
+                private String text;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = double.class)
+                private String decimal;
+
+                public UnsupportedEntity() {}
+                public String getText() { return text; }
+                public void setText(String t) { this.text = t; }
+                public String getDecimal() { return decimal; }
+                public void setDecimal(String d) { this.decimal = d; }
+            }
+            """;
+
+        compile("UnsupportedEntity", source, genDir, classesDir);
+        Path wrapper = genDir.resolve("com/example/apt/UnsupportedEntityBlindWrapper.java");
+        String wrapperSrc = Files.readString(wrapper);
+        
+        assertTrue(wrapperSrc.contains("throw new UnsupportedOperationException(\"String encryption not supported securely on FHE without batching\")"), "Missing String BFV encryption error");
+        assertTrue(wrapperSrc.contains("throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\")"), "Missing floating point Paillier error");
+    }
 }
