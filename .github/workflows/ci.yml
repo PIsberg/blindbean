@@ -81,10 +81,11 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup vcpkg
-        uses: lukka/run-vcpkg@7d259227a1fb6471a0253dd5ab7419835228f7d7 # v11
+        uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
         with:
           vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          runVcpkgInstall: false
 
       - name: Configure Native Build (CMake + SEAL)
         id: cmake_config
