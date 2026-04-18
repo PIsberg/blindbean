@@ -240,7 +240,9 @@ public class FheContext implements AutoCloseable {
 
     /** Frees a ciphertext handle. */
     public void freeCiphertext(MemorySegment ct) {
-        FheNativeBridge.fhe_free_ciphertext(ct);
+        synchronized (nativeLock) {
+            FheNativeBridge.fhe_free_ciphertext(ct);
+        }
     }
 
     private void ensureOpen() {
