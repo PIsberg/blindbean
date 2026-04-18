@@ -211,7 +211,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
             boolean needsBigInteger = fields.stream().anyMatch(f -> f.scheme() == Scheme.PAILLIER);
             boolean needsFhe        = fields.stream()
                 .anyMatch(f -> f.scheme() == Scheme.BFV || f.scheme() == Scheme.CKKS);
-            boolean asyncEnabled    = typeElement.getAnnotation(BlindEntity.class).async();
+            boolean asyncEnabled    = typeElement.getAnnotation(BlindEntity.class).async()
+                                       || "true".equalsIgnoreCase(System.getProperty("blindbean.apt.async"));
 
             try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
                 // Header
@@ -442,23 +443,26 @@ public class HomomorphicProcessor extends AbstractProcessor {
             String pType = getPrimitiveType(typeName);
             switch (f.scheme()) {
                 case PAILLIER -> {
-                    out.println("    public " + pType + " decrypt" + f.capName() + "() {");
-                    out.println("        return (" + pType + ")BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "()).longValue();");
+                    String rType = boxedDecryptReturnType(f);
+                    out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                    out.println("        return (" + rType + ")(" + pType + ")BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "()).longValue();");
                     out.println("    }");
                 }
                 case BFV -> {
-                    out.println("    public " + pType + " decrypt" + f.capName() + "() {");
+                    String rType = boxedDecryptReturnType(f);
+                    out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                    out.println("            return (" + pType + ")ctx.decryptLong(ct.handle());");
+                    out.println("            return (" + rType + ")(" + pType + ")ctx.decryptLong(ct.handle());");
                     out.println("        }");
                     out.println("    }");
                 }
                 case CKKS -> {
-                    out.println("    public " + pType + " decrypt" + f.capName() + "() {");
+                    String rType = boxedDecryptReturnType(f);
+                    out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                    out.println("            return (" + pType + ")ctx.decryptDouble(ct.handle());");
+                    out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
                     out.println("        }");
                     out.println("    }");
                 }
@@ -466,14 +470,16 @@ public class HomomorphicProcessor extends AbstractProcessor {
         } else if (isFloatingPoint(typeName)) {
             String pType = getPrimitiveType(typeName);
             if (f.scheme() == Scheme.CKKS) {
-                out.println("    public " + pType + " decrypt" + f.capName() + "() {");
+                String rType = boxedDecryptReturnType(f);
+                out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                out.println("            return (" + pType + ")ctx.decryptDouble(ct.handle());");
+                out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
                 out.println("        }");
                 out.println("    }");
             } else {
-                out.println("    public " + pType + " decrypt" + f.capName() + "() {");
+                String rType = boxedDecryptReturnType(f);
+                out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                 out.println("        throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\");");
                 out.println("    }");
             }

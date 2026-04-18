@@ -72,6 +72,10 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
   <locked_files>
   </locked_files>
   <contextual_instructions>
+    <file path="com.blindbean.processor.HomomorphicProcessor">
+      <focus>Strictly maintain high-performance AST compilation speed</focus>
+      <avoids>Heavy internal object allocations</avoids>
+    </file>
   </contextual_instructions>
 </project_guardrails>
 
