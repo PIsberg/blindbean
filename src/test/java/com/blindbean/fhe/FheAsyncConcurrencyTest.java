@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FheAsyncConcurrencyTest {
 
-    private FheContext bfvContext;
+    private volatile FheContext bfvContext;
 
     @BeforeEach
     void setup() {
