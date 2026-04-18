@@ -50,11 +50,6 @@ public final class BlindAsync {
         return e; // always return the local — never re-reads the volatile
     }
 
-    private static Semaphore semaphore() {
-        executor(); // ensure co-initialized
-        return semaphore;
-    }
-
     // ── Public API ────────────────────────────────────────────────────────
 
     /**
@@ -68,10 +63,11 @@ public final class BlindAsync {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
         for (;;) {
             ExecutorService exec = executor();
+            Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialization
+            if (sem == null) continue; // shutdown() raced between executor() and our volatile read; retry
             try {
                 return CompletableFuture.runAsync(() -> {
-                    Semaphore sem = semaphore(); // capture once — acquire and release must be symmetric
-                    sem.acquireUninterruptibly();
+                    sem.acquireUninterruptibly(); // sem is a closed-over local — never null, acquire and release are symmetric
                     try {
                         BlindContext.restore(snapshot);
                         task.run();
@@ -97,10 +93,11 @@ public final class BlindAsync {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
         for (;;) {
             ExecutorService exec = executor();
+            Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialization
+            if (sem == null) continue; // shutdown() raced between executor() and our volatile read; retry
             try {
                 return CompletableFuture.supplyAsync(() -> {
-                    Semaphore sem = semaphore(); // capture once — acquire and release must be symmetric
-                    sem.acquireUninterruptibly();
+                    sem.acquireUninterruptibly(); // sem is a closed-over local — never null, acquire and release are symmetric
                     try {
                         BlindContext.restore(snapshot);
                         return task.get();

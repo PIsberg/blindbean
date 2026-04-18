@@ -49,7 +49,8 @@ class FheAsyncConcurrencyTest {
         threads = 20,
         invocations = 100,
         detectRaceConditions = true,
-        detectAtomicityViolations = true
+        detectAtomicityViolations = true,
+        timeoutMs = 60000
     )
     void concurrentBfvOperationsAreThreadSafe() {
         long val1 = ThreadLocalRandom.current().nextLong(1000);
@@ -93,7 +94,8 @@ class FheAsyncConcurrencyTest {
     @AsyncTest(
         threads = 15,
         invocations = 30,
-        detectRaceConditions = true
+        detectRaceConditions = true,
+        timeoutMs = 30000
     )
     void simultaneousKeyExport() {
         byte[] state = bfvContext.exportState();
@@ -110,7 +112,8 @@ class FheAsyncConcurrencyTest {
     @AsyncTest(
         threads = 10,
         invocations = 20,
-        detectResourceLeaks = true
+        detectResourceLeaks = true,
+        timeoutMs = 45000
     )
     void rapidContextCreationAndCleanup() {
         try (FheContext ctx = FheContext.bfv(4096)) {
