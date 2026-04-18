@@ -127,6 +127,156 @@
 2026-04-16 01:11:44.485 INFO  CLAUDE.md — no changes
 2026-04-16 01:11:44.487 INFO  gemini_instructions.md — no changes
 2026-04-16 01:11:44.488 INFO  .aiexclude — no changes
+2026-04-17 20:02:29.090 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 20:02:29.093 INFO  Root: C:\dev\private\blindbean
+2026-04-17 20:02:29.099 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 20:02:29.099 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 20:02:29.099 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 20:02:29.099 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 20:02:29.102 INFO  CLAUDE.md — updated
+2026-04-17 20:02:29.103 INFO  gemini_instructions.md — updated
+2026-04-17 20:02:29.104 INFO  .aiexclude — updated
+2026-04-17 20:02:29.845 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 20:02:29.846 INFO  Root: C:\dev\private\blindbean
+2026-04-17 20:02:29.848 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 20:02:29.852 INFO  CLAUDE.md — updated
+2026-04-17 20:02:29.868 INFO  gemini_instructions.md — updated
+2026-04-17 20:02:29.870 INFO  .aiexclude — updated
+2026-04-17 20:07:39.264 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 20:07:39.266 INFO  Root: C:\dev\private\blindbean
+2026-04-17 20:07:39.271 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 20:07:39.271 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 20:07:39.271 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 20:07:39.271 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 20:07:39.275 INFO  CLAUDE.md — updated
+2026-04-17 20:07:39.275 INFO  gemini_instructions.md — updated
+2026-04-17 20:07:39.276 INFO  .aiexclude — updated
+2026-04-17 20:07:39.928 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 20:07:39.931 INFO  Root: C:\dev\private\blindbean
+2026-04-17 20:07:39.933 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 20:07:39.936 INFO  CLAUDE.md — updated
+2026-04-17 20:07:39.939 INFO  gemini_instructions.md — updated
+2026-04-17 20:07:39.941 INFO  .aiexclude — updated
+2026-04-17 20:09:11.027 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 20:09:11.030 INFO  Root: C:\dev\private\blindbean
+2026-04-17 20:09:11.035 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 20:09:11.035 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 20:09:11.036 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 20:09:11.036 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 20:09:11.040 INFO  CLAUDE.md — updated
+2026-04-17 20:09:11.042 INFO  gemini_instructions.md — updated
+2026-04-17 20:09:11.044 INFO  .aiexclude — updated
+2026-04-17 20:09:11.868 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 20:09:11.870 INFO  Root: C:\dev\private\blindbean
+2026-04-17 20:09:11.875 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 20:09:11.881 INFO  CLAUDE.md — updated
+2026-04-17 20:09:11.884 INFO  gemini_instructions.md — updated
+2026-04-17 20:09:11.888 INFO  .aiexclude — updated
+2026-04-17 22:25:05.489 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:25:05.512 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:25:05.537 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:25:05.537 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 22:25:05.537 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 22:25:05.539 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 22:25:05.552 INFO  CLAUDE.md — updated
+2026-04-17 22:25:05.558 INFO  gemini_instructions.md — updated
+2026-04-17 22:25:05.564 INFO  .aiexclude — updated
+2026-04-17 22:25:06.268 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:25:06.269 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:25:06.271 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:25:06.278 INFO  CLAUDE.md — updated
+2026-04-17 22:25:06.284 INFO  gemini_instructions.md — updated
+2026-04-17 22:25:06.289 INFO  .aiexclude — updated
+2026-04-17 22:25:15.018 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:25:15.036 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:25:15.050 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:25:15.051 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 22:25:15.051 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 22:25:15.051 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 22:25:15.067 INFO  CLAUDE.md — updated
+2026-04-17 22:25:15.072 INFO  gemini_instructions.md — updated
+2026-04-17 22:25:15.079 INFO  .aiexclude — updated
+2026-04-17 22:25:15.370 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:25:15.370 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:25:15.372 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:25:15.381 INFO  CLAUDE.md — updated
+2026-04-17 22:25:15.390 INFO  gemini_instructions.md — updated
+2026-04-17 22:25:15.400 INFO  .aiexclude — updated
+2026-04-17 22:26:54.828 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:26:54.828 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:26:54.829 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:26:54.829 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 22:26:54.829 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 22:26:54.829 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 22:26:54.835 INFO  CLAUDE.md — updated
+2026-04-17 22:26:54.839 INFO  gemini_instructions.md — updated
+2026-04-17 22:26:54.842 INFO  .aiexclude — updated
+2026-04-17 22:26:54.958 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:26:54.958 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:26:54.959 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:26:54.965 INFO  CLAUDE.md — updated
+2026-04-17 22:26:54.970 INFO  gemini_instructions.md — updated
+2026-04-17 22:26:54.975 INFO  .aiexclude — updated
+2026-04-17 22:27:11.948 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:11.950 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:11.953 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:11.953 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 22:27:11.953 INFO  @AICore:    1 — BlindContext
+2026-04-17 22:27:11.957 INFO  CLAUDE.md — updated
+2026-04-17 22:27:11.960 INFO  gemini_instructions.md — updated
+2026-04-17 22:27:11.960 INFO  .aiexclude — no changes
+2026-04-17 22:27:12.132 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:12.132 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:12.132 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:12.137 INFO  CLAUDE.md — updated
+2026-04-17 22:27:12.141 INFO  gemini_instructions.md — updated
+2026-04-17 22:27:12.142 INFO  .aiexclude — no changes
+2026-04-17 22:27:18.649 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:18.649 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:18.651 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:18.651 INFO  @AICore:    1 — FheContext
+2026-04-17 22:27:18.651 INFO  @AIPerformance: 2 — multiply, encryptLongArray
+2026-04-17 22:27:18.652 INFO  CLAUDE.md — no changes
+2026-04-17 22:27:18.653 INFO  gemini_instructions.md — no changes
+2026-04-17 22:27:18.653 INFO  .aiexclude — no changes
+2026-04-17 22:27:18.748 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:18.748 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:18.749 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:18.751 INFO  CLAUDE.md — no changes
+2026-04-17 22:27:18.752 INFO  gemini_instructions.md — no changes
+2026-04-17 22:27:18.752 INFO  .aiexclude — no changes
+2026-04-17 22:27:25.341 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:25.342 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:25.342 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:25.342 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 22:27:25.342 INFO  @AICore:    1 — FheNativeBridge
+2026-04-17 22:27:25.344 INFO  CLAUDE.md — updated
+2026-04-17 22:27:25.344 INFO  gemini_instructions.md — no changes
+2026-04-17 22:27:25.347 INFO  .aiexclude — updated
+2026-04-17 22:27:32.932 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:32.932 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:32.933 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:32.933 INFO  @AIPerformance: 1 — PaillierVectorized
+2026-04-17 22:27:32.935 INFO  CLAUDE.md — updated
+2026-04-17 22:27:32.936 INFO  gemini_instructions.md — no changes
+2026-04-17 22:27:32.938 INFO  .aiexclude — updated
+2026-04-17 22:27:32.957 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
+2026-04-17 22:27:32.957 INFO  Root: c:\dev\private\blindbean
+2026-04-17 22:27:32.957 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:27:32.960 INFO  CLAUDE.md — no changes
+2026-04-17 22:27:32.961 INFO  gemini_instructions.md — no changes
+2026-04-17 22:27:32.963 INFO  .aiexclude — no changes
+2026-04-17 22:29:48.618 INFO  VibeTags v0.5.3 | https://github.com/PIsberg/vibetags
+2026-04-17 22:29:48.620 INFO  Root: C:\dev\private\blindbean
+2026-04-17 22:29:48.628 INFO  Active services (3): aiexclude, claude, gemini
+2026-04-17 22:29:48.628 INFO  @AILocked:  1 — FheNativeBridge
+2026-04-17 22:29:48.628 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-04-17 22:29:48.628 INFO  @AIAudit:   1 — BlindContext
+2026-04-17 22:29:48.628 INFO  @AICore:    3 — BlindContext, FheContext, FheNativeBridge
+2026-04-17 22:29:48.628 INFO  @AIPerformance: 3 — encryptLongArray, multiply, PaillierVectorized
+2026-04-17 22:29:48.633 INFO  CLAUDE.md — updated
+2026-04-17 22:29:48.635 INFO  gemini_instructions.md — updated
+2026-04-17 22:29:48.637 INFO  .aiexclude — updated
 2026-04-17 23:04:52.925 INFO  VibeTags v0.5.2 | https://github.com/PIsberg/vibetags
 2026-04-17 23:04:52.929 INFO  Root: c:\dev\private\blindbean
 2026-04-17 23:04:52.932 INFO  Active services (3): aiexclude, claude, gemini

@@ -1,11 +1,14 @@
 package com.blindbean.math;
 
+import se.deversity.vibetags.annotations.AIPerformance;
+
 import jdk.incubator.vector.LongVector;
 import jdk.incubator.vector.VectorSpecies;
 
 /**
  * A prototype Vector API implementation demonstrating SIMD acceleration for batch modular multiplication (Paillier addition).
  */
+@AIPerformance
 public class PaillierVectorized {
     private static final VectorSpecies<Long> SPECIES = LongVector.SPECIES_PREFERRED;
 
