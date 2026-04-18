@@ -2,6 +2,7 @@ package com.blindbean.async;
 
 import com.blindbean.context.BlindContext;
 import com.blindbean.core.Ciphertext;
+import com.blindbean.math.PaillierKeyPair;
 import com.blindbean.math.PaillierMath;
 import com.github.asynctest.AsyncTest;
 import com.github.asynctest.BeforeEachInvocation;
@@ -31,6 +32,11 @@ import static org.junit.jupiter.api.Assertions.*;
  *   6. PaillierMath thread-safety under high contention
  */
 class BlindAsyncConcurrencyTest {
+
+    // Generated once per test-class load; reused by per-thread BlindContext.init(keyPair) calls.
+    // Generating a fresh 1024-bit key pair per invocation (2000+ times in tests 3 and 7) is the
+    // primary cause of the CI "Install Core Library" timeout on 2-vCPU GitHub Actions runners.
+    private static final PaillierKeyPair SHARED_KEY_PAIR = new PaillierKeyPair(1024);
 
     @BeforeEach
     void setup() {
@@ -100,7 +106,7 @@ class BlindAsyncConcurrencyTest {
         detectRaceConditions = true
     )
     void contextSnapshotPropagatedToCorrectVirtualThread() throws Exception {
-        BlindContext.init(); // each concurrent thread initializes its own ThreadLocal context
+        BlindContext.init(SHARED_KEY_PAIR); // each thread gets its own ThreadLocal; reuse key pair to avoid per-invocation prime generation
         PaillierMath local = BlindContext.getPaillier();
 
         AtomicReference<PaillierMath> asyncMath = new AtomicReference<>();
@@ -196,7 +202,7 @@ class BlindAsyncConcurrencyTest {
         timeoutMs = 30000
     )
     void snapshotRestoreRoundTripIsIsolated() {
-        BlindContext.init();
+        BlindContext.init(SHARED_KEY_PAIR); // reuse key pair — avoids per-invocation prime generation on CI
         PaillierMath before = BlindContext.getPaillier();
 
         BlindContext.Snapshot snap = BlindContext.snapshot();
@@ -220,7 +226,8 @@ class BlindAsyncConcurrencyTest {
         threads = 50,
         invocations = 50,
         detectRaceConditions = true,
-        detectVisibility = true
+        detectVisibility = true,
+        timeoutMs = 30000
     )
     void churnExecutorShutdownAndInit() {
         if (ThreadLocalRandom.current().nextBoolean()) {

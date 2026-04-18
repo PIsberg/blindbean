@@ -126,6 +126,7 @@ jobs:
     name: Full Windows test
     runs-on: windows-latest
     needs: native-build-matrix
+    timeout-minutes: 45
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

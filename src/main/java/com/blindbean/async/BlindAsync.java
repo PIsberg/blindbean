@@ -119,12 +119,14 @@ public final class BlindAsync {
      * Subsequent calls to {@link #runAsync} or {@link #supplyAsync} will reinitialize it.
      */
     public static void shutdown() {
+        ExecutorService toClose;
         synchronized (INIT_LOCK) {
-            if (executor != null) {
-                executor.close();
-                executor  = null;
-                semaphore = null;
-            }
+            toClose   = executor;
+            executor  = null;  // null before close() so concurrent runAsync callers block on INIT_LOCK instead of spinning
+            semaphore = null;
+        }
+        if (toClose != null) {
+            toClose.close();
         }
     }
 }
