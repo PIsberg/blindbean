@@ -354,4 +354,92 @@ public class HomomorphicProcessorTest {
         assertTrue(hasAptError,
             "Expected APT error for ELGAMAL scheme; diagnostics: " + diags);
     }
+
+    @Test
+    public void allNumericPrimitivesGenerateCorrectSignatures(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class NumericPrimitivesEntity {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = byte.class)
+                private String b;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = short.class)
+                private String s;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = int.class)
+                private String i;
+                @Homomorphic(scheme = Scheme.BFV, type = long.class)
+                private String l;
+                @Homomorphic(scheme = Scheme.CKKS, type = float.class)
+                private String f;
+                @Homomorphic(scheme = Scheme.CKKS, type = double.class)
+                private String d;
+
+                public NumericPrimitivesEntity() {}
+
+                public String getB() { return b; }
+                public void setB(String b) { this.b = b; }
+                public String getS() { return s; }
+                public void setS(String s) { this.s = s; }
+                public String getI() { return i; }
+                public void setI(String i) { this.i = i; }
+                public String getL() { return l; }
+                public void setL(String l) { this.l = l; }
+                public String getF() { return f; }
+                public void setF(String f) { this.f = f; }
+                public String getD() { return d; }
+                public void setD(String d) { this.d = d; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("NumericPrimitivesEntity", source, genDir, classesDir);
+
+        long errors = diags.stream()
+            .filter(d -> d.getKind() == Diagnostic.Kind.ERROR)
+            .count();
+        assertEquals(0, errors, "Expected no compilation errors; got: " + diags);
+
+        Path wrapper = genDir.resolve("com/example/apt/NumericPrimitivesEntityBlindWrapper.java");
+        assertTrue(Files.exists(wrapper), "Wrapper source not generated");
+
+        String wrapperSrc = Files.readString(wrapper);
+        
+        // Assertions for byte (Paillier)
+        assertTrue(wrapperSrc.contains("encryptB(byte plain)"), "Missing byte encryption");
+        assertTrue(wrapperSrc.contains("byte decryptB()"), "Missing byte decryption");
+        assertTrue(wrapperSrc.contains("java.math.BigInteger.valueOf(plain)"), "Missing byte-to-BigInteger conversion");
+
+        // Assertions for short (Paillier)
+        assertTrue(wrapperSrc.contains("encryptS(short plain)"), "Missing short encryption");
+        assertTrue(wrapperSrc.contains("short decryptS()"), "Missing short decryption");
+
+        // Assertions for int (Paillier)
+        assertTrue(wrapperSrc.contains("encryptI(int plain)"), "Missing int encryption");
+        assertTrue(wrapperSrc.contains("int decryptI()"), "Missing int decryption");
+        assertTrue(wrapperSrc.contains("addI(BigInteger plain)"), "Missing int math");
+
+        // Assertions for long (BFV)
+        assertTrue(wrapperSrc.contains("encryptL(long plain)"), "Missing long encryption");
+        assertTrue(wrapperSrc.contains("long decryptL()"), "Missing long decryption");
+        assertTrue(wrapperSrc.contains("addL(long plain)"), "Missing long math");
+
+        // Assertions for float (CKKS)
+        assertTrue(wrapperSrc.contains("encryptF(float plain)"), "Missing float encryption");
+        assertTrue(wrapperSrc.contains("float decryptF()"), "Missing float decryption");
+        assertTrue(wrapperSrc.contains("ctx.encryptDouble((double)plain)"), "Missing float-to-double widening");
+
+        // Assertions for double (CKKS)
+        assertTrue(wrapperSrc.contains("encryptD(double plain)"), "Missing double encryption");
+        assertTrue(wrapperSrc.contains("double decryptD()"), "Missing double decryption");
+    }
 }
