@@ -764,3 +764,60 @@
 2026-05-02 19:10:41.433 INFO  Skipping update of gemini_instructions.md — no annotations found
 2026-05-02 19:10:41.433 INFO  gemini_instructions.md — no changes
 2026-05-02 19:10:41.436 INFO  .aiexclude — updated
+2026-05-02 19:17:19.321 INFO  VibeTags v0.5.4 | https://github.com/PIsberg/vibetags
+2026-05-02 19:17:19.323 INFO  Root: C:\dev\private\blindbean
+2026-05-02 19:17:19.332 INFO  Active services (3): aiexclude, claude, gemini
+2026-05-02 19:17:19.333 INFO  @AILocked:  1 — FheNativeBridge
+2026-05-02 19:17:19.333 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-05-02 19:17:19.333 INFO  @AIAudit:   1 — BlindContext
+2026-05-02 19:17:19.333 INFO  @AICore:    3 — BlindContext, FheContext, FheNativeBridge
+2026-05-02 19:17:19.333 INFO  @AIPerformance: 3 — encryptLongArray, multiply, PaillierVectorized
+2026-05-02 19:17:19.337 INFO  CLAUDE.md — no changes
+2026-05-02 19:17:19.337 INFO  gemini_instructions.md — no changes
+2026-05-02 19:17:19.341 INFO  .aiexclude — updated
+2026-05-02 19:17:20.273 INFO  VibeTags v0.5.4 | https://github.com/PIsberg/vibetags
+2026-05-02 19:17:20.275 INFO  Root: C:\dev\private\blindbean
+2026-05-02 19:17:20.279 INFO  Active services (3): aiexclude, claude, gemini
+2026-05-02 19:17:20.280 INFO  Skipping update of CLAUDE.md — no annotations found
+2026-05-02 19:17:20.280 INFO  CLAUDE.md — no changes
+2026-05-02 19:17:20.280 INFO  Skipping update of gemini_instructions.md — no annotations found
+2026-05-02 19:17:20.280 INFO  gemini_instructions.md — no changes
+2026-05-02 19:17:20.285 INFO  .aiexclude — updated
+2026-05-02 19:19:28.041 INFO  VibeTags v0.5.4 | https://github.com/PIsberg/vibetags
+2026-05-02 19:19:28.043 INFO  Root: C:\dev\private\blindbean
+2026-05-02 19:19:28.052 INFO  Active services (3): aiexclude, claude, gemini
+2026-05-02 19:19:28.052 INFO  @AILocked:  1 — FheNativeBridge
+2026-05-02 19:19:28.053 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-05-02 19:19:28.053 INFO  @AIAudit:   1 — BlindContext
+2026-05-02 19:19:28.053 INFO  @AICore:    3 — BlindContext, FheContext, FheNativeBridge
+2026-05-02 19:19:28.053 INFO  @AIPerformance: 3 — encryptLongArray, multiply, PaillierVectorized
+2026-05-02 19:19:28.055 INFO  CLAUDE.md — no changes
+2026-05-02 19:19:28.056 INFO  gemini_instructions.md — no changes
+2026-05-02 19:19:28.060 INFO  .aiexclude — updated
+2026-05-02 19:19:29.027 INFO  VibeTags v0.5.4 | https://github.com/PIsberg/vibetags
+2026-05-02 19:19:29.028 INFO  Root: C:\dev\private\blindbean
+2026-05-02 19:19:29.030 INFO  Active services (3): aiexclude, claude, gemini
+2026-05-02 19:19:29.031 INFO  Skipping update of CLAUDE.md — no annotations found
+2026-05-02 19:19:29.032 INFO  CLAUDE.md — no changes
+2026-05-02 19:19:29.032 INFO  Skipping update of gemini_instructions.md — no annotations found
+2026-05-02 19:19:29.032 INFO  gemini_instructions.md — no changes
+2026-05-02 19:19:29.035 INFO  .aiexclude — updated
+2026-05-02 19:20:24.362 INFO  VibeTags v0.5.4 | https://github.com/PIsberg/vibetags
+2026-05-02 19:20:24.364 INFO  Root: C:\dev\private\blindbean
+2026-05-02 19:20:24.373 INFO  Active services (3): aiexclude, claude, gemini
+2026-05-02 19:20:24.373 INFO  @AILocked:  1 — FheNativeBridge
+2026-05-02 19:20:24.373 INFO  @AIContext: 1 — HomomorphicProcessor
+2026-05-02 19:20:24.373 INFO  @AIAudit:   1 — BlindContext
+2026-05-02 19:20:24.373 INFO  @AICore:    3 — BlindContext, FheContext, FheNativeBridge
+2026-05-02 19:20:24.373 INFO  @AIPerformance: 3 — encryptLongArray, multiply, PaillierVectorized
+2026-05-02 19:20:24.376 INFO  CLAUDE.md — no changes
+2026-05-02 19:20:24.376 INFO  gemini_instructions.md — no changes
+2026-05-02 19:20:24.380 INFO  .aiexclude — updated
+2026-05-02 19:20:25.338 INFO  VibeTags v0.5.4 | https://github.com/PIsberg/vibetags
+2026-05-02 19:20:25.340 INFO  Root: C:\dev\private\blindbean
+2026-05-02 19:20:25.343 INFO  Active services (3): aiexclude, claude, gemini
+2026-05-02 19:20:25.344 INFO  Skipping update of CLAUDE.md — no annotations found
+2026-05-02 19:20:25.345 INFO  CLAUDE.md — no changes
+2026-05-02 19:20:25.345 INFO  Skipping update of gemini_instructions.md — no annotations found
+2026-05-02 19:20:25.345 INFO  gemini_instructions.md — no changes
+2026-05-02 19:20:25.349 INFO  .aiexclude — updated
