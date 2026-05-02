@@ -33,7 +33,7 @@ The following elements are well-tested core components. Make changes with extrem
 ## PERFORMANCE CONSTRAINTS (HOT PATH)
 Never introduce O(n²) complexity into these elements. Always reason about complexity before proposing changes:
 
-- `encryptLongArray(long[])`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
-- `multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `com.blindbean.fhe.FheContext.encryptLongArray(long[])`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `com.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
 - `com.blindbean.math.PaillierVectorized`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
 <!-- VIBETAGS-END -->

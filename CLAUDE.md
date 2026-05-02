@@ -109,10 +109,10 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
 
 <rule>Elements listed in <core_elements> are well-tested core components. Make changes with extreme caution and verify comprehensive test coverage before proposing modifications.</rule>
   <performance_constraints>
-    <element path="encryptLongArray(long[])">
+    <element path="com.blindbean.fhe.FheContext.encryptLongArray(long[])">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
-    <element path="multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)">
+    <element path="com.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
     <element path="com.blindbean.math.PaillierVectorized">
