@@ -24,6 +24,18 @@
         <license.mock.mode>true</license.mock.mode>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>se.deversity.vibetags</groupId>
+                <artifactId>vibetags-bom</artifactId>
+                <version>0.6.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- AutoService for Annotation Processor -->
         <dependency>
@@ -69,12 +81,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- VibeTags AI Guardrail Annotation Processor -->
+        <!-- VibeTags AI Guardrail Annotations -->
         <dependency>
             <groupId>se.deversity.vibetags</groupId>
-            <artifactId>vibetags-processor</artifactId>
-            <version>0.5.4</version>
-            <scope>compile</scope>
+            <artifactId>vibetags-annotations</artifactId>
         </dependency>
     </dependencies>
 
@@ -102,7 +112,7 @@
                         <path>
                             <groupId>se.deversity.vibetags</groupId>
                             <artifactId>vibetags-processor</artifactId>
-                            <version>0.5.4</version>
+                            <version>0.6.0</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

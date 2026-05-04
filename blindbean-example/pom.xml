@@ -14,6 +14,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>se.deversity.vibetags</groupId>
+                <artifactId>vibetags-bom</artifactId>
+                <version>0.6.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- The library we just built -->
         <dependency>
@@ -25,9 +37,7 @@
         <!-- VibeTags AI Guardrail Annotations -->
         <dependency>
             <groupId>se.deversity.vibetags</groupId>
-            <artifactId>vibetags-processor</artifactId>
-            <version>0.5.0</version>
-            <scope>provided</scope>
+            <artifactId>vibetags-annotations</artifactId>
         </dependency>
 
         <!-- Testing -->
@@ -64,7 +74,7 @@
                         <path>
                             <groupId>se.deversity.vibetags</groupId>
                             <artifactId>vibetags-processor</artifactId>
-                            <version>0.5.0</version>
+                            <version>0.6.0</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
