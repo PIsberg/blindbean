@@ -5,8 +5,14 @@ import com.blindbean.annotations.Scheme;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
+import se.deversity.vibetags.annotations.AIContract;
 import se.deversity.vibetags.annotations.AICore;
+import se.deversity.vibetags.annotations.AIIdempotent;
+import se.deversity.vibetags.annotations.AIObservability;
 import se.deversity.vibetags.annotations.AIPerformance;
+import se.deversity.vibetags.annotations.AISecure;
+import se.deversity.vibetags.annotations.AITestDriven;
+import se.deversity.vibetags.annotations.AIThreadSafe;
 
 /**
  * High-level AutoCloseable wrapper around a native FHE context.
@@ -20,6 +26,11 @@ import se.deversity.vibetags.annotations.AIPerformance;
  * }</pre>
  */
 @AICore
+@AIContract(reason = "Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump")
+@AIThreadSafe(strategy = AIThreadSafe.Strategy.SYNCHRONIZED,
+              note = "All native FFM operations are guarded by nativeLock to prevent concurrent SEAL context access")
+@AISecure(aspect = "fhe-encryption")
+@AITestDriven(coverageGoal = 90, testLocation = "src/test/java/com/blindbean/fhe")
 public class FheContext implements AutoCloseable {
 
     private final MemorySegment handle;
@@ -237,6 +248,8 @@ public class FheContext implements AutoCloseable {
     }
 
     /** Returns the remaining noise budget in bits (BFV only; returns -1 for CKKS). */
+    @AIObservability(metrics = {"fhe.noise_budget"},
+                     note = "Noise budget drives correctness alerts — dashboards fire when budget drops below safe threshold; do not remove or rename this method")
     public int noiseBudget(MemorySegment ct) {
         synchronized (nativeLock) {
             ensureOpen();
@@ -257,6 +270,7 @@ public class FheContext implements AutoCloseable {
         }
     }
 
+    @AIIdempotent(reason = "Guarded by closed flag; subsequent calls after first close() are no-ops")
     @Override
     public void close() {
         synchronized (nativeLock) {

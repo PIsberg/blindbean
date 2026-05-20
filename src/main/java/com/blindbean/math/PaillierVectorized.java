@@ -1,6 +1,8 @@
 package com.blindbean.math;
 
+import se.deversity.vibetags.annotations.AIDraft;
 import se.deversity.vibetags.annotations.AIPerformance;
+import se.deversity.vibetags.annotations.AIThreadSafe;
 
 import jdk.incubator.vector.LongVector;
 import jdk.incubator.vector.VectorSpecies;
@@ -9,6 +11,8 @@ import jdk.incubator.vector.VectorSpecies;
  * A prototype Vector API implementation demonstrating SIMD acceleration for batch modular multiplication (Paillier addition).
  */
 @AIPerformance
+@AIThreadSafe(strategy = AIThreadSafe.Strategy.IMMUTABLE,
+              note = "Stateless utility class — SPECIES is a compile-time constant; no instance state")
 public class PaillierVectorized {
     private static final VectorSpecies<Long> SPECIES = LongVector.SPECIES_PREFERRED;
 
@@ -16,6 +20,9 @@ public class PaillierVectorized {
      * Parallel batch addition of Paillier ciphertexts (represented as primitive arrays, chunked).
      * This method mocks the BigInteger chunking and relies on Java 26 Vector API for SIMD.
      */
+    @AIDraft(instructions = "Replace stand-in long arithmetic with true vectorized modular reduction: "
+            + "implement Barrett or Montgomery reduction across SIMD lanes to handle BigInteger-scale "
+            + "carry propagation. Each lane must reduce mod n² correctly; see PaillierKeyPair.getN2().")
     public static void batchAdd(long[] c1Array, long[] c2Array, long[] result, long modN2) {
         int length = c1Array.length;
         int i = 0;

@@ -3,7 +3,18 @@ package com.blindbean.math;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import se.deversity.vibetags.annotations.AIImmutable;
+import se.deversity.vibetags.annotations.AILocked;
+import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+import se.deversity.vibetags.annotations.AISecure;
+
+@AIImmutable(note = "All key material is computed once in the constructor and stored in final fields; never add setters, non-final fields, or post-construction mutation")
+@AIPrivacy(reason = "Contains RSA-family private key components (lambda, mu) — never log values, include in test fixtures, or expose in suggestions")
+@AISecure(aspect = "key-generation")
+@AISchemaSafe
 public class PaillierKeyPair implements java.io.Serializable {
+    @AILocked(reason = "Serialization UID — changing this breaks deserialization of persisted KeyBundle files")
     private static final long serialVersionUID = 1L;
 
     private final BigInteger n;

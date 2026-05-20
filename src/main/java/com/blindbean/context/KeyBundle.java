@@ -4,12 +4,19 @@ import com.blindbean.annotations.Scheme;
 import com.blindbean.math.PaillierKeyPair;
 import java.io.Serializable;
 
+import se.deversity.vibetags.annotations.AILocked;
+import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+
 /**
  * Encapsulates the entire cryptographic state of BlindContext.
- * Securely holds Paillier KeyPair instances natively and massive 
+ * Securely holds Paillier KeyPair instances natively and massive
  * native FHE binary arrays encoding Microsoft SEAL engine data.
  */
+@AIPrivacy(reason = "Contains serialized Paillier private key material and SEAL key bytes — never log, transmit in plaintext, or expose field values in suggestions or test fixtures")
+@AISchemaSafe
 public class KeyBundle implements Serializable {
+    @AILocked(reason = "Serialization UID — altering this invalidates all persisted key bundles and breaks key import/export across versions")
     private static final long serialVersionUID = 1L;
 
     private final PaillierKeyPair paillierKeyPair;
