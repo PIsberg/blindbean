@@ -3,3 +3,7 @@ blindbean-example/target/
 build-native/
 vcpkg/
 vcpkg_installed/
+
+.vibetags-cache
+.vibetags-mod-_root_
+vibetags.log

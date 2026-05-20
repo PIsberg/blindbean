@@ -29,7 +29,7 @@
             <dependency>
                 <groupId>se.deversity.vibetags</groupId>
                 <artifactId>vibetags-bom</artifactId>
-                <version>0.8.0</version>
+                <version>0.9.7</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -112,7 +112,7 @@
                         <path>
                             <groupId>se.deversity.vibetags</groupId>
                             <artifactId>vibetags-processor</artifactId>
-                            <version>0.8.0</version>
+                            <version>0.9.7</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

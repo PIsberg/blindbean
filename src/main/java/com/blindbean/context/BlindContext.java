@@ -7,6 +7,11 @@ import com.blindbean.math.PaillierMath;
 
 import se.deversity.vibetags.annotations.AIAudit;
 import se.deversity.vibetags.annotations.AICore;
+import se.deversity.vibetags.annotations.AIIdempotent;
+import se.deversity.vibetags.annotations.AIPublicAPI;
+import se.deversity.vibetags.annotations.AISecure;
+import se.deversity.vibetags.annotations.AITestDriven;
+import se.deversity.vibetags.annotations.AIThreadSafe;
 
 /**
  * Thread-local context holder for all BlindBean cryptographic backends.
@@ -16,7 +21,12 @@ import se.deversity.vibetags.annotations.AICore;
  * manual lifecycle management and try-with-resources via {@link #clear()}.
  */
 @AICore
+@AIPublicAPI
 @AIAudit(checkFor = {"Resource Leaks", "Thread Safety", "Context Closure failures"})
+@AIThreadSafe(strategy = AIThreadSafe.Strategy.THREAD_LOCAL,
+              note = "Paillier and FHE state isolated in ThreadLocal fields; snapshot()/restore() required to propagate across virtual-thread boundaries")
+@AISecure(aspect = "key-management")
+@AITestDriven(coverageGoal = 90, testLocation = "src/test/java/com/blindbean/context")
 public class BlindContext {
     private static final ThreadLocal<PaillierMath> paillierInstance = new ThreadLocal<>();
     private static final ThreadLocal<FheContext>    fheInstance      = new ThreadLocal<>();
@@ -81,6 +91,7 @@ public class BlindContext {
      * This secures the keys allowing the application to persist data over restarts.
      * @param filePath the destination binary path to stream the bundle to.
      */
+    @AISecure(aspect = "key-serialization")
     public static void exportKeys(String filePath) {
         try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
             PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
@@ -107,6 +118,7 @@ public class BlindContext {
      * Restores encryption context from a previously exported state file.
      * @param filePath the binary bundle path.
      */
+    @AISecure(aspect = "key-deserialization")
     public static void loadKeys(String filePath) {
         try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(filePath))) {
             KeyBundle bundle = (KeyBundle) ois.readObject();
@@ -138,6 +150,7 @@ public class BlindContext {
      * Clears all thread-local state, releasing Paillier keys and
      * closing the native FHE context if present.
      */
+    @AIIdempotent(reason = "ThreadLocal.remove() and FheContext.close() are both safe to call when no state is present")
     public static void clear() {
         paillierInstance.remove();
         closeExistingFhe();

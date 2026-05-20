@@ -7,10 +7,18 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 
+import se.deversity.vibetags.annotations.AIAudit;
+import se.deversity.vibetags.annotations.AIContract;
+import se.deversity.vibetags.annotations.AIIdempotent;
+import se.deversity.vibetags.annotations.AIStrictExceptions;
+
 /**
  * An AutoCloseable wrapper around a native FHE ciphertext handle.
  * Provides serialization support for persistence and conversion to BlindBean's {@link Ciphertext} record.
  */
+@AIAudit(checkFor = {"Resource Leaks", "Memory Segment lifecycle", "Double-free"})
+@AIContract(reason = "Serialization format and handle lifecycle are part of the public FFM contract; do not change method signatures")
+@AIStrictExceptions
 public class FheCiphertextNative implements AutoCloseable {
 
     private final MemorySegment handle;
@@ -98,6 +106,7 @@ public class FheCiphertextNative implements AutoCloseable {
         }
     }
 
+    @AIIdempotent(reason = "Guarded by freed flag; calling close() on an already-freed handle is a no-op")
     @Override
     public void close() {
         if (!freed) {

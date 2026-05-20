@@ -5,6 +5,14 @@ import com.blindbean.context.BlindContext;
 import com.blindbean.fhe.FheCiphertextNative;
 import com.blindbean.fhe.FheContext;
 
+import se.deversity.vibetags.annotations.AIArchitecture;
+import se.deversity.vibetags.annotations.AIPublicAPI;
+import se.deversity.vibetags.annotations.AIStrictTypes;
+
+@AIPublicAPI
+@AIArchitecture(belongsTo = "math-layer",
+                cannotReference = {"com.blindbean.fhe.FheNativeBridge"})
+@AIStrictTypes
 public class BlindMath {
     
     /**

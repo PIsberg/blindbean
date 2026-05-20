@@ -8,6 +8,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
+import se.deversity.vibetags.annotations.AIAudit;
+import se.deversity.vibetags.annotations.AIFeatureFlag;
+import se.deversity.vibetags.annotations.AIIgnore;
+import se.deversity.vibetags.annotations.AIParallelTests;
+import se.deversity.vibetags.annotations.AIThreadSafe;
+
 /**
  * Virtual-thread dispatcher for async BlindBean wrapper operations.
  *
@@ -25,10 +31,16 @@ import java.util.function.Supplier;
  * locking). Sync-only users pay no initialization cost. Call {@link #shutdown()} in tests or
  * application teardown.
  */
+@AIThreadSafe(strategy = AIThreadSafe.Strategy.OTHER,
+              note = "Double-checked locking for lazy executor init; CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races handled with retry loop")
+@AIAudit(checkFor = {"Thread Safety", "Resource Leaks", "Shutdown race conditions"})
+@AIParallelTests
+@AIFeatureFlag(flag = "blindbean.apt.async", defaultValue = false)
 public final class BlindAsync {
 
     private static volatile ExecutorService executor;
     private static volatile Semaphore semaphore;
+    @AIIgnore(reason = "Internal DCL synchronization monitor — not relevant to AI-assisted development workflows")
     private static final Object INIT_LOCK = new Object();
 
     private BlindAsync() {}

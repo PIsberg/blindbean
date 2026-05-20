@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Set;
 
 import se.deversity.vibetags.annotations.AIContext;
+import se.deversity.vibetags.annotations.AIFeatureFlag;
+import se.deversity.vibetags.annotations.AIIgnore;
+import se.deversity.vibetags.annotations.AIInternationalized;
+import se.deversity.vibetags.annotations.AIStrictClasspath;
 
 @SupportedAnnotationTypes({
     "com.blindbean.annotations.BlindEntity",
@@ -38,6 +42,8 @@ import se.deversity.vibetags.annotations.AIContext;
 @SupportedSourceVersion(SourceVersion.RELEASE_26)
 @AutoService(Processor.class)
 @AIContext(focus = "Strictly maintain high-performance AST compilation speed", avoids = "Heavy internal object allocations")
+@AIStrictClasspath
+@AIInternationalized
 public class HomomorphicProcessor extends AbstractProcessor {
 
     /** Immutable model for one @Homomorphic field. */
@@ -201,6 +207,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     // ── Code generation ───────────────────────────────────────────────────
 
+    @AIFeatureFlag(flag = "blindbean.apt.async", defaultValue = false)
     private void generateBlindWrapper(String packageName, String className,
                                       TypeElement typeElement, List<FieldModel> fields) {
         String wrapperName = className + "BlindWrapper";
@@ -754,6 +761,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
         };
     }
 
+    @AIIgnore(reason = "Pure internal type-dispatch helper — not part of the public processor API")
     private boolean isIntegral(String typeName) {
         return typeName.equals("byte")   || typeName.equals("java.lang.Byte") ||
                typeName.equals("short")  || typeName.equals("java.lang.Short") ||
@@ -761,11 +769,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
                typeName.equals("long")   || typeName.equals("java.lang.Long");
     }
 
+    @AIIgnore(reason = "Pure internal type-dispatch helper — not part of the public processor API")
     private boolean isFloatingPoint(String typeName) {
         return typeName.equals("float")  || typeName.equals("java.lang.Float") ||
                typeName.equals("double") || typeName.equals("java.lang.Double");
     }
 
+    @AIIgnore(reason = "Pure internal type-mapping helper — not part of the public processor API")
     private String getPrimitiveType(String typeName) {
         return switch (typeName) {
             case "java.lang.Byte"    -> "byte";
@@ -778,6 +788,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
         };
     }
 
+    @AIIgnore(reason = "Pure internal type-mapping helper — not part of the public processor API")
     private String getBoxedType(String typeName) {
         return switch (typeName) {
             case "byte"   -> "Byte";

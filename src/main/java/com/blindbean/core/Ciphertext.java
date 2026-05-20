@@ -4,6 +4,10 @@ import com.blindbean.annotations.Scheme;
 
 import java.util.Objects;
 
+import se.deversity.vibetags.annotations.AIImmutable;
+import se.deversity.vibetags.annotations.AIPublicAPI;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+
 /**
  * An immutable representation of encrypted data.
  * <p>
@@ -11,6 +15,9 @@ import java.util.Objects;
  * For SEAL-backed schemes (BFV, CKKS), data is stored as raw serialized bytes
  * with hex encoding provided for backward compatibility.
  */
+@AIImmutable(note = "Java record — hexData and scheme are final record components; do not convert to a mutable class")
+@AISchemaSafe
+@AIPublicAPI
 public record Ciphertext(String hexData, Scheme scheme) {
     public Ciphertext {
         Objects.requireNonNull(hexData);
