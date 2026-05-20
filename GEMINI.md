@@ -70,6 +70,7 @@ Never introduce O(n²) complexity into these elements. Always reason about compl
 - `com.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
 - `com.blindbean.math.PaillierMath`: Encryption/decryption are modPow-heavy over large BigIntegers — never introduce extra copies, unnecessary allocations, or redundant modular reductions on the hot path
 - `com.blindbean.math.PaillierVectorized`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
 
 ## CONTRACT-FROZEN SIGNATURES
 Internal implementation may be changed, but MUST NOT alter method names, parameter types, parameter order, return types, or checked exceptions:

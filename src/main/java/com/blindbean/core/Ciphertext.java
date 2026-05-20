@@ -20,8 +20,21 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
 @AIPublicAPI
 public record Ciphertext(String hexData, Scheme scheme) {
     public Ciphertext {
-        Objects.requireNonNull(hexData);
-        Objects.requireNonNull(scheme);
+        Objects.requireNonNull(hexData, "hexData must not be null");
+        Objects.requireNonNull(scheme, "scheme must not be null");
+        if ((hexData.length() & 1) != 0) {
+            throw new IllegalArgumentException(
+                "Ciphertext hexData has odd length " + hexData.length()
+                + "; a valid hex-encoded byte array must have even length");
+        }
+        for (int i = 0, n = hexData.length(); i < n; i++) {
+            char c = hexData.charAt(i);
+            if ((c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F')) {
+                throw new IllegalArgumentException(
+                    "Ciphertext hexData contains invalid hex character '" + c
+                    + "' at index " + i);
+            }
+        }
     }
     
     // Helper to extract bytes from hex encoding

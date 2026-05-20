@@ -26,7 +26,6 @@ public class BlindMath {
         return switch (a.scheme()) {
             case PAILLIER -> BlindContext.getPaillier().add(a, b);
             case BFV, CKKS -> fheAdd(a, b);
-            case ELGAMAL -> throw new UnsupportedOperationException("Addition not supported for ElGamal (multiplicative scheme)");
         };
     }
 
@@ -40,7 +39,6 @@ public class BlindMath {
         return switch (a.scheme()) {
             case PAILLIER -> BlindContext.getPaillier().subtract(a, b);
             case BFV, CKKS -> fheSubtract(a, b);
-            case ELGAMAL -> throw new UnsupportedOperationException("Subtraction not supported for ElGamal");
         };
     }
 
@@ -54,8 +52,8 @@ public class BlindMath {
         }
         return switch (a.scheme()) {
             case BFV, CKKS -> fheMultiply(a, b);
-            case PAILLIER -> throw new UnsupportedOperationException("Multiplication not supported for Paillier (additive scheme)");
-            case ELGAMAL -> throw new UnsupportedOperationException("Multiplication not yet implemented for ElGamal");
+            case PAILLIER -> throw new UnsupportedOperationException(
+                "Multiplication not supported for Paillier (additive scheme). Use BFV or CKKS for homomorphic multiplication.");
         };
     }
 
