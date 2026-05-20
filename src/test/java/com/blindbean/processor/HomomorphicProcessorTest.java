@@ -344,15 +344,20 @@ public class HomomorphicProcessorTest {
         List<Diagnostic<? extends JavaFileObject>> diags =
             compile("ElgamalEntity", source, genDir, classesDir);
 
+        // ELGAMAL was removed from Scheme; the Java compiler now rejects
+        // "Scheme.ELGAMAL" as a non-existent enum constant before the APT even runs.
+        // Accept any error diagnostic — APT message ("ELGAMAL"/"not supported") OR
+        // a javac enum-constant error ("enum constant" / "cannot find symbol").
         boolean hasAptError = diags.stream()
             .filter(d -> d.getKind() == Diagnostic.Kind.ERROR)
             .anyMatch(d -> {
                 String msg = d.getMessage(Locale.ROOT);
-                return msg.contains("ELGAMAL") || msg.contains("not supported");
+                return msg.contains("ELGAMAL") || msg.contains("not supported")
+                    || msg.contains("enum constant") || msg.contains("cannot find symbol");
             });
 
         assertTrue(hasAptError,
-            "Expected APT error for ELGAMAL scheme; diagnostics: " + diags);
+            "Expected compile error for removed Scheme.ELGAMAL; diagnostics: " + diags);
     }
 
     @Test
@@ -687,11 +692,32 @@ public class HomomorphicProcessorTest {
             }
             """;
 
-        compile("UnsupportedEntity", source, genDir, classesDir);
-        Path wrapper = genDir.resolve("com/example/apt/UnsupportedEntityBlindWrapper.java");
-        String wrapperSrc = Files.readString(wrapper);
-        
-        assertTrue(wrapperSrc.contains("throw new UnsupportedOperationException(\"String encryption not supported securely on FHE without batching\")"), "Missing String BFV encryption error");
-        assertTrue(wrapperSrc.contains("throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\")"), "Missing floating point Paillier error");
+        // Since Issue 4, unsupported type-scheme combinations are rejected at compile
+        // time via APT errors rather than generating wrapper stubs that throw at runtime.
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("UnsupportedEntity", source, genDir, classesDir);
+
+        // String type with a non-PAILLIER FHE scheme must produce an APT error
+        // mentioning both "String" and the required "PAILLIER" scheme.
+        boolean hasStringFheError = diags.stream()
+            .filter(d -> d.getKind() == Diagnostic.Kind.ERROR)
+            .anyMatch(d -> {
+                String msg = d.getMessage(Locale.ROOT);
+                return msg.contains("String") && msg.contains("PAILLIER");
+            });
+
+        // Floating-point type with a non-CKKS scheme must produce an APT error
+        // mentioning the type family ("float"/"double") and the required "CKKS" scheme.
+        boolean hasFloatSchemeError = diags.stream()
+            .filter(d -> d.getKind() == Diagnostic.Kind.ERROR)
+            .anyMatch(d -> {
+                String msg = d.getMessage(Locale.ROOT);
+                return (msg.contains("float") || msg.contains("double")) && msg.contains("CKKS");
+            });
+
+        assertTrue(hasStringFheError,
+            "Expected APT error for String type with Scheme.BFV; diagnostics: " + diags);
+        assertTrue(hasFloatSchemeError,
+            "Expected APT error for double type with non-CKKS scheme; diagnostics: " + diags);
     }
 }
