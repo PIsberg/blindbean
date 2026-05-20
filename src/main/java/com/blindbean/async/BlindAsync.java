@@ -38,6 +38,13 @@ import se.deversity.vibetags.annotations.AIThreadSafe;
 @AIFeatureFlag(flag = "blindbean.apt.async", defaultValue = false)
 public final class BlindAsync {
 
+    /**
+     * Maximum number of dispatch attempts before {@link #runAsync}/{@link #supplyAsync}
+     * give up and return a future completed exceptionally with {@link BlindAsyncException}.
+     * Guards against spinning forever when {@link #shutdown()} races with submission.
+     */
+    public static final int MAX_ATTEMPTS = 3;
+
     private static volatile ExecutorService executor;
     private static volatile Semaphore semaphore;
     @AIIgnore(reason = "Internal DCL synchronization monitor — not relevant to AI-assisted development workflows")
@@ -73,7 +80,7 @@ public final class BlindAsync {
      */
     public static CompletableFuture<Void> runAsync(Runnable task) {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
-        for (;;) {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             ExecutorService exec = executor();
             Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialization
             if (sem == null) continue; // shutdown() raced between executor() and our volatile read; retry
@@ -91,6 +98,11 @@ public final class BlindAsync {
                 // exec was concurrently shut down; executor() will reinitialize on the next iteration
             }
         }
+        CompletableFuture<Void> failed = new CompletableFuture<>();
+        failed.completeExceptionally(new BlindAsyncException(
+                "Failed to dispatch runAsync task after " + MAX_ATTEMPTS
+                + " attempts due to repeated executor shutdown races", MAX_ATTEMPTS));
+        return failed;
     }
 
     /**
@@ -103,9 +115,9 @@ public final class BlindAsync {
      */
     public static <T> CompletableFuture<T> supplyAsync(Supplier<T> task) {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
-        for (;;) {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             ExecutorService exec = executor();
-            Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialization
+            Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialized
             if (sem == null) continue; // shutdown() raced between executor() and our volatile read; retry
             try {
                 return CompletableFuture.supplyAsync(() -> {
@@ -121,6 +133,11 @@ public final class BlindAsync {
                 // exec was concurrently shut down; executor() will reinitialize on the next iteration
             }
         }
+        CompletableFuture<T> failed = new CompletableFuture<>();
+        failed.completeExceptionally(new BlindAsyncException(
+                "Failed to dispatch supplyAsync task after " + MAX_ATTEMPTS
+                + " attempts due to repeated executor shutdown races", MAX_ATTEMPTS));
+        return failed;
     }
 
     /**

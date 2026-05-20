@@ -179,18 +179,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 continue;
             }
 
-            // 4. Scheme must be supported
+            // 4. Resolve the declared type
             Scheme scheme = ann.scheme();
-            if (scheme == Scheme.ELGAMAL) {
-                processingEnv.getMessager().printMessage(
-                    Diagnostic.Kind.ERROR,
-                    "@Homomorphic field '" + fieldName + "': scheme ELGAMAL is not supported "
-                        + "by BlindMath — use PAILLIER, BFV, or CKKS",
-                    field);
-                hadError = true;
-                continue;
-            }
-
             TypeMirror typeMirror = null;
             try {
                 ann.type();
@@ -198,6 +188,40 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 typeMirror = e.getTypeMirror();
             }
             String typeName = typeMirror != null ? typeMirror.toString() : "java.lang.Void";
+
+            // 5. Type-scheme compatibility — emit errors at compile time rather than
+            //    generating methods that unconditionally throw at runtime.
+            boolean isFhe  = (scheme == Scheme.BFV || scheme == Scheme.CKKS);
+            boolean isBfv  = (scheme == Scheme.BFV);
+            boolean isCkks = (scheme == Scheme.CKKS);
+
+            if (typeName.equals("java.lang.String") && isFhe) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': String fields require Scheme.PAILLIER; "
+                    + "Scheme." + scheme + " does not support string encoding. "
+                    + "Change to @Homomorphic(scheme = Scheme.PAILLIER, type = String.class).",
+                    field);
+                hadError = true;
+                continue;
+            }
+            if (isFloatingPoint(typeName) && !isCkks) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': float/double fields require Scheme.CKKS; "
+                    + "found Scheme." + scheme + ". "
+                    + "Change to @Homomorphic(scheme = Scheme.CKKS, type = " + typeName + ".class).",
+                    field);
+                hadError = true;
+                continue;
+            }
+            if (typeName.equals("long[]") && !isBfv) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': long[] fields require Scheme.BFV for SIMD batching; "
+                    + "found Scheme." + scheme + ". "
+                    + "Change to @Homomorphic(scheme = Scheme.BFV, type = long[].class).",
+                    field);
+                hadError = true;
+                continue;
+            }
 
             result.add(new FieldModel(fieldName, capName, scheme, typeName));
         }

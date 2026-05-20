@@ -163,6 +163,9 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
     <element path="com.blindbean.math.PaillierVectorized">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
+    <element path="com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)">
+      <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
+    </element>
   </performance_constraints>
 
 <rule>Elements listed in <performance_constraints> are on a hot path. Never introduce O(n²) or worse complexity. Always reason about time and space complexity before suggesting changes.</rule>

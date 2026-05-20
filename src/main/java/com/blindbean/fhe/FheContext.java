@@ -234,7 +234,13 @@ public class FheContext implements AutoCloseable {
         }
     }
 
-    /** Homomorphic multiplication of two ciphertexts (auto-relinearized). */
+    /**
+     * Homomorphic multiplication of two ciphertexts.
+     * The result is automatically relinearized (both BFV and CKKS) to reduce ciphertext
+     * size back to two components, and rescaled (CKKS only) to maintain the scale invariant.
+     * Without relinearization, repeated multiplications grow the ciphertext degree and
+     * exhaust the noise budget far faster.
+     */
     @AIPerformance
     public MemorySegment multiply(MemorySegment a, MemorySegment b) {
         synchronized (nativeLock) {
@@ -242,6 +248,13 @@ public class FheContext implements AutoCloseable {
             MemorySegment result = FheNativeBridge.fhe_multiply(handle, a, b);
             if (result.equals(MemorySegment.NULL)) {
                 throw new FheException("fhe_multiply returned NULL");
+            }
+            // Relinearize: reduces degree-2 ciphertext back to degree-1 (both BFV and CKKS).
+            FheNativeBridge.fhe_relinearize(handle, result);
+            // Rescale: CKKS only — divides the ciphertext modulus by the scale factor to
+            // prevent accumulated scale growth over a chain of multiplications.
+            if (scheme == Scheme.CKKS) {
+                FheNativeBridge.fhe_rescale(handle, result);
             }
             return result;
         }
