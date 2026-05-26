@@ -77,7 +77,7 @@
         <dependency>
             <groupId>se.deversity.async-test-lib</groupId>
             <artifactId>async-test-lib</artifactId>
-            <version>0.8.0</version>
+            <version>1.4.0</version>
             <scope>test</scope>
         </dependency>
 
