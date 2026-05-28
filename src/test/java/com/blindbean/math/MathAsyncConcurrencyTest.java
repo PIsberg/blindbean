@@ -1,6 +1,6 @@
 package com.blindbean.math;
 
-import com.github.asynctest.AsyncTest;
+import se.deversity.asynctest.AsyncTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
