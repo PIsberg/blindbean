@@ -3,7 +3,7 @@ package com.blindbean.fhe;
 import com.blindbean.annotations.Scheme;
 import com.blindbean.async.BlindAsync;
 import com.blindbean.context.BlindContext;
-import com.github.asynctest.AsyncTest;
+import se.deversity.asynctest.AsyncTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 

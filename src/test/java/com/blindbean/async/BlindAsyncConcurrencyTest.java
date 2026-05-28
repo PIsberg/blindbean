@@ -4,9 +4,9 @@ import com.blindbean.context.BlindContext;
 import com.blindbean.core.Ciphertext;
 import com.blindbean.math.PaillierKeyPair;
 import com.blindbean.math.PaillierMath;
-import com.github.asynctest.AsyncTest;
-import com.github.asynctest.BeforeEachInvocation;
-import com.github.asynctest.DetectorType;
+import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.BeforeEachInvocation;
+import se.deversity.asynctest.DetectorType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
