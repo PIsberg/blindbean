@@ -8,6 +8,7 @@ import com.blindbean.math.PaillierMath;
 import se.deversity.vibetags.annotations.AIAudit;
 import se.deversity.vibetags.annotations.AICore;
 import se.deversity.vibetags.annotations.AIIdempotent;
+import se.deversity.vibetags.annotations.AIInputSanitized;
 import se.deversity.vibetags.annotations.AIPublicAPI;
 import se.deversity.vibetags.annotations.AISecure;
 import se.deversity.vibetags.annotations.AITestDriven;
@@ -92,7 +93,8 @@ public class BlindContext {
      * @param filePath the destination binary path to stream the bundle to.
      */
     @AISecure(aspect = "key-serialization")
-    public static void exportKeys(String filePath) {
+    public static void exportKeys(
+            @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
         try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
             PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
             FheContext ctx = fheInstance.get();
@@ -109,20 +111,39 @@ public class BlindContext {
                     ctx != null ? ctx.exportState() : null
             );
             oos.writeObject(bundle);
+        } catch (FheException e) {
+            throw e;
         } catch (Exception e) {
             throw new FheException("Key export failed", e);
         }
     }
 
     /**
+     * Deserialization allowlist for {@link #loadKeys(String)}: only the classes that a
+     * legitimate {@link KeyBundle} graph can contain. Everything else is rejected before
+     * instantiation, blocking deserialization-gadget attacks via tampered key files.
+     */
+    private static final java.io.ObjectInputFilter KEY_BUNDLE_FILTER =
+            java.io.ObjectInputFilter.Config.createFilter(
+                "com.blindbean.context.KeyBundle;"
+                + "com.blindbean.math.PaillierKeyPair;"
+                + "com.blindbean.annotations.Scheme;"
+                + "java.lang.Enum;"
+                + "java.lang.Number;"
+                + "java.math.BigInteger;"
+                + "maxdepth=10;!*");
+
+    /**
      * Restores encryption context from a previously exported state file.
      * @param filePath the binary bundle path.
      */
     @AISecure(aspect = "key-deserialization")
-    public static void loadKeys(String filePath) {
+    public static void loadKeys(
+            @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
         try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(filePath))) {
+            ois.setObjectInputFilter(KEY_BUNDLE_FILTER);
             KeyBundle bundle = (KeyBundle) ois.readObject();
-            
+
             // Paillier resumption
             if (bundle.getPaillierKeyPair() != null) {
                 init(bundle.getPaillierKeyPair());
@@ -135,10 +156,18 @@ public class BlindContext {
                 } else if (bundle.getFheScheme() == com.blindbean.annotations.Scheme.CKKS) {
                     initCkks(bundle.getPolyModulusDegree(), bundle.getScale());
                 }
-                
-                // Mount native pointers strictly
-                fheInstance.get().importState(bundle.getNativeFhePayload());
+
+                // Mount native pointers strictly; on failure close the freshly created
+                // context rather than leaving one installed with non-imported default keys
+                try {
+                    fheInstance.get().importState(bundle.getNativeFhePayload());
+                } catch (RuntimeException e) {
+                    closeExistingFhe();
+                    throw e;
+                }
             }
+        } catch (FheException e) {
+            throw e;
         } catch (Exception e) {
             throw new FheException("Key import failed", e);
         }

@@ -4,9 +4,11 @@ import com.blindbean.annotations.Scheme;
 import com.blindbean.math.PaillierKeyPair;
 import java.io.Serializable;
 
+import se.deversity.vibetags.annotations.AICallersOnly;
 import se.deversity.vibetags.annotations.AILocked;
 import se.deversity.vibetags.annotations.AIPrivacy;
 import se.deversity.vibetags.annotations.AISchemaSafe;
+import se.deversity.vibetags.annotations.AISecureLogging;
 
 /**
  * Encapsulates the entire cryptographic state of BlindContext.
@@ -15,6 +17,7 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
  */
 @AIPrivacy(reason = "Contains serialized Paillier private key material and SEAL key bytes — never log, transmit in plaintext, or expose field values in suggestions or test fixtures")
 @AISchemaSafe
+@AICallersOnly({"com.blindbean.context.BlindContext"})
 public class KeyBundle implements Serializable {
     @AILocked(reason = "Serialization UID — altering this invalidates all persisted key bundles and breaks key import/export across versions")
     private static final long serialVersionUID = 1L;
@@ -25,12 +28,14 @@ public class KeyBundle implements Serializable {
     /** Format version of this bundle. 0 = pre-versioning (legacy), 1 = current. */
     private final short formatVersion;
 
+    @AISecureLogging(AISecureLogging.MaskingPolicy.OMIT)
     private final PaillierKeyPair paillierKeyPair;
 
     // FHE Parameters
     private final Scheme fheScheme;
     private final int polyModulusDegree;
     private final double scale;
+    @AISecureLogging(AISecureLogging.MaskingPolicy.OMIT)
     private final byte[] nativeFhePayload;
 
     public KeyBundle(PaillierKeyPair paillierKeyPair, Scheme fheScheme, int polyModulusDegree, double scale, byte[] nativeFhePayload) {

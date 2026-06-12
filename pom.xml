@@ -29,7 +29,7 @@
             <dependency>
                 <groupId>se.deversity.vibetags</groupId>
                 <artifactId>vibetags-bom</artifactId>
-                <version>0.9.7</version>
+                <version>0.9.9</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>se.deversity.async-test-lib</groupId>
             <artifactId>async-test-lib</artifactId>
-            <version>1.4.0</version>
+            <version>1.6.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -112,7 +112,7 @@
                         <path>
                             <groupId>se.deversity.vibetags</groupId>
                             <artifactId>vibetags-processor</artifactId>
-                            <version>0.9.7</version>
+                            <version>0.9.9</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -130,6 +130,10 @@
                         --add-modules jdk.incubator.vector
                         --enable-native-access=ALL-UNNAMED
                     </argLine>
+                    <systemPropertyVariables>
+                        <!-- lib owner: async-test-lib license gate runs in auto-mocked mode by default -->
+                        <license.mock.mode>${license.mock.mode}</license.mock.mode>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 
