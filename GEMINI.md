@@ -166,4 +166,44 @@ Do not weaken security properties of these elements. Flag any change for securit
 - `com.blindbean.fhe.FheContext`: Security-critical code [fhe-encryption]. Do not weaken security properties. Flag any change for security review.
 - `com.blindbean.math.PaillierKeyPair`: Security-critical code [key-generation]. Do not weaken security properties. Flag any change for security review.
 - `com.blindbean.math.PaillierMath`: Security-critical code [paillier-encryption]. Do not weaken security properties. Flag any change for security review.
+
+## ACCESS & CALLS LIMITATIONS
+The following elements have strict caller access limits. AI must not invoke them from outside the allowed boundaries:
+
+- `com.blindbean.context.KeyBundle`: Only callable by: [com.blindbean.context.BlindContext]
+
+## MEMORY ALLOCATION BUDGETS
+The following elements have strict heap allocation, autoboxing, or garbage budgets. Optimize allocations carefully:
+
+- `com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Strict memory budget policy: NO_AUTOBOXING. Minimize or prevent runtime allocations.
+
+## DETERMINISTIC PURE FUNCTIONS
+The following elements must remain pure functions without side effects or mutations:
+
+- `com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)`: Must remain a pure function. Forbid assignments to enclosing state, fields, or static members.
+
+## FRAMEWORK-FREE DOMAIN ENTITIES
+The following elements are pure Domain Models. Do not import Spring, JPA/Hibernate, Jackson, or other framework packages:
+
+- `com.blindbean.core.Ciphertext`: Pure Domain Model. Banned imports: [Spring, JPA, Hibernate, Jackson, etc.]. Allowed imports: [com.blindbean.annotations.Scheme]
+
+## MANDATORY INPUT SANITIZATION
+The following parameters/fields must go through strict sanitizers before hitting queries or renderers:
+
+- `filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
+- `filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
+
+## SECURE LOGGING MASKING
+The following sensitive elements must be masked, hashed, or omitted from log/stdout streams:
+
+- `com.blindbean.context.KeyBundle.paillierKeyPair`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `com.blindbean.context.KeyBundle.nativeFhePayload`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `com.blindbean.math.PaillierKeyPair.lambda`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `com.blindbean.math.PaillierKeyPair.mu`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+
+## REQUIRED CHAIN-OF-THOUGHT EXPLANATIONS
+Any change made to these elements requires a step-by-step mathematical/architectural proof of correctness in the PR/walkthrough:
+
+- `com.blindbean.math.PaillierMath`: Requires step-by-step mathematical or logical explanation (Chain-of-Thought) of all changes. Complexity: HIGH
+- `com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Requires step-by-step mathematical or logical explanation (Chain-of-Thought) of all changes. Complexity: HIGH
 <!-- VIBETAGS-END -->

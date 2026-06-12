@@ -1,6 +1,9 @@
 package com.blindbean.math;
 
+import se.deversity.vibetags.annotations.AIExplain;
+import se.deversity.vibetags.annotations.AIMemoryBudget;
 import se.deversity.vibetags.annotations.AIPerformance;
+import se.deversity.vibetags.annotations.AIPure;
 import se.deversity.vibetags.annotations.AIThreadSafe;
 
 import java.math.BigInteger;
@@ -54,6 +57,8 @@ public class PaillierVectorized {
      * @throws IllegalArgumentException if array lengths are inconsistent, the modulus is
      *         out of range, or any operand is not reduced into {@code [0, modN2)}
      */
+    @AIExplain(AIExplain.ComplexityLevel.HIGH)
+    @AIMemoryBudget(AIMemoryBudget.AllocationPolicy.NO_AUTOBOXING)
     public static void batchAdd(long[] c1Array, long[] c2Array, long[] result, long modN2) {
         if (c1Array.length != c2Array.length) {
             throw new IllegalArgumentException(
@@ -155,6 +160,7 @@ public class PaillierVectorized {
      * @throws IllegalArgumentException if the input arrays have different lengths
      */
     @AIPerformance
+    @AIPure
     public static BigInteger[] batchAddBigInteger(BigInteger[] c1Array, BigInteger[] c2Array, BigInteger n2) {
         if (c1Array.length != c2Array.length) {
             throw new IllegalArgumentException(

@@ -348,6 +348,71 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
   </security_elements>
 
 <rule>Elements listed in <security_elements> are security-critical. Never weaken their security properties. Every proposed change must be explicitly reviewed for security impact.</rule>
+  <access_limitations>
+    <file path="com.blindbean.context.KeyBundle">
+      <allowed_callers>com.blindbean.context.BlindContext</allowed_callers>
+    </file>
+  </access_limitations>
+
+<rule>Do not invoke elements in <access_limitations> from outside their specified allowed caller packages or classes.</rule>
+  <memory_budget_elements>
+    <file path="com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
+      <allocation_policy>NO_AUTOBOXING</allocation_policy>
+    </file>
+  </memory_budget_elements>
+
+<rule>Avoid runtime heap object allocations, autoboxing, or dynamic overhead within classes/methods in <memory_budget_elements>.</rule>
+  <pure_functions>
+    <file path="com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)">
+      <policy>Pure function: no side effects, deterministic.</policy>
+    </file>
+  </pure_functions>
+
+<rule>Methods in <pure_functions> must remain mathematically pure. Side effects, mutations of class/static state, or blocking operations are strictly forbidden.</rule>
+  <domain_model_elements>
+    <file path="com.blindbean.core.Ciphertext">
+      <domain_model_boundary>Pure Domain Model</domain_model_boundary>
+      <allowed_imports>com.blindbean.annotations.Scheme</allowed_imports>
+    </file>
+  </domain_model_elements>
+
+<rule>Classes in <domain_model_elements> are pure domain models. Do not import or reference database or web framework dependencies (Spring, Hibernate, JPA, Jackson).</rule>
+  <sanitization_elements>
+    <file path="filePath">
+      <sanitization_types>PATH_TRAVERSAL</sanitization_types>
+    </file>
+    <file path="filePath">
+      <sanitization_types>PATH_TRAVERSAL</sanitization_types>
+    </file>
+  </sanitization_elements>
+
+<rule>Strict input sanitization is mandatory for elements in <sanitization_elements>. Raw input must pass through approved filters before hitting queries or renderers.</rule>
+  <secure_logging_elements>
+    <file path="com.blindbean.context.KeyBundle.paillierKeyPair">
+      <logging_policy>OMIT</logging_policy>
+    </file>
+    <file path="com.blindbean.context.KeyBundle.nativeFhePayload">
+      <logging_policy>OMIT</logging_policy>
+    </file>
+    <file path="com.blindbean.math.PaillierKeyPair.lambda">
+      <logging_policy>OMIT</logging_policy>
+    </file>
+    <file path="com.blindbean.math.PaillierKeyPair.mu">
+      <logging_policy>OMIT</logging_policy>
+    </file>
+  </secure_logging_elements>
+
+<rule>Sensitive variables in <secure_logging_elements> must never be printed or logged in raw form. Enforce secure masking or hashing.</rule>
+  <explain_elements>
+    <file path="com.blindbean.math.PaillierMath">
+      <explanation_required>HIGH</explanation_required>
+    </file>
+    <file path="com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
+      <explanation_required>HIGH</explanation_required>
+    </file>
+  </explain_elements>
+
+<rule>Any modification to elements in <explain_elements> requires an explicit, structured Chain-of-Thought markdown description of changes and complexity analysis.</rule>
 </project_guardrails>
 
 <rule>Never propose edits to files listed in <locked_files>.</rule>

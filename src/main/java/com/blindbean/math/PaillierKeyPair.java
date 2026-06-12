@@ -8,6 +8,7 @@ import se.deversity.vibetags.annotations.AILocked;
 import se.deversity.vibetags.annotations.AIPrivacy;
 import se.deversity.vibetags.annotations.AISchemaSafe;
 import se.deversity.vibetags.annotations.AISecure;
+import se.deversity.vibetags.annotations.AISecureLogging;
 
 @AIImmutable(note = "All key material is computed once in the constructor and stored in final fields; never add setters, non-final fields, or post-construction mutation")
 @AIPrivacy(reason = "Contains RSA-family private key components (lambda, mu) — never log values, include in test fixtures, or expose in suggestions")
@@ -22,7 +23,9 @@ public class PaillierKeyPair implements java.io.Serializable {
     private final BigInteger g;
 
     // Private key components
+    @AISecureLogging(AISecureLogging.MaskingPolicy.OMIT)
     private final BigInteger lambda;
+    @AISecureLogging(AISecureLogging.MaskingPolicy.OMIT)
     private final BigInteger mu;
 
     public PaillierKeyPair(int bitLength) {

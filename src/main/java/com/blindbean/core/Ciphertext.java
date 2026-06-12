@@ -4,6 +4,7 @@ import com.blindbean.annotations.Scheme;
 
 import java.util.Objects;
 
+import se.deversity.vibetags.annotations.AIDomainModel;
 import se.deversity.vibetags.annotations.AIImmutable;
 import se.deversity.vibetags.annotations.AIPublicAPI;
 import se.deversity.vibetags.annotations.AISchemaSafe;
@@ -18,6 +19,7 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
 @AIImmutable(note = "Java record — hexData and scheme are final record components; do not convert to a mutable class")
 @AISchemaSafe
 @AIPublicAPI
+@AIDomainModel(allow = {"com.blindbean.annotations.Scheme"})
 public record Ciphertext(String hexData, Scheme scheme) {
     public Ciphertext {
         Objects.requireNonNull(hexData, "hexData must not be null");

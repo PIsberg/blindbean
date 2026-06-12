@@ -6,6 +6,7 @@ import com.blindbean.annotations.Scheme;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import se.deversity.vibetags.annotations.AIExplain;
 import se.deversity.vibetags.annotations.AIPerformance;
 import se.deversity.vibetags.annotations.AISecure;
 import se.deversity.vibetags.annotations.AIStrictExceptions;
@@ -13,6 +14,7 @@ import se.deversity.vibetags.annotations.AIStrictExceptions;
 @AISecure(aspect = "paillier-encryption")
 @AIStrictExceptions
 @AIPerformance(constraint = "Encryption/decryption are modPow-heavy over large BigIntegers — never introduce extra copies, unnecessary allocations, or redundant modular reductions on the hot path")
+@AIExplain(AIExplain.ComplexityLevel.HIGH)
 public class PaillierMath {
     private final SecureRandom random = new SecureRandom();
     private final PaillierKeyPair keyPair;
