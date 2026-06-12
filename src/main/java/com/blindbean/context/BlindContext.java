@@ -109,10 +109,27 @@ public class BlindContext {
                     ctx != null ? ctx.exportState() : null
             );
             oos.writeObject(bundle);
+        } catch (FheException e) {
+            throw e;
         } catch (Exception e) {
             throw new FheException("Key export failed", e);
         }
     }
+
+    /**
+     * Deserialization allowlist for {@link #loadKeys(String)}: only the classes that a
+     * legitimate {@link KeyBundle} graph can contain. Everything else is rejected before
+     * instantiation, blocking deserialization-gadget attacks via tampered key files.
+     */
+    private static final java.io.ObjectInputFilter KEY_BUNDLE_FILTER =
+            java.io.ObjectInputFilter.Config.createFilter(
+                "com.blindbean.context.KeyBundle;"
+                + "com.blindbean.math.PaillierKeyPair;"
+                + "com.blindbean.annotations.Scheme;"
+                + "java.lang.Enum;"
+                + "java.lang.Number;"
+                + "java.math.BigInteger;"
+                + "maxdepth=10;!*");
 
     /**
      * Restores encryption context from a previously exported state file.
@@ -121,8 +138,9 @@ public class BlindContext {
     @AISecure(aspect = "key-deserialization")
     public static void loadKeys(String filePath) {
         try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(filePath))) {
+            ois.setObjectInputFilter(KEY_BUNDLE_FILTER);
             KeyBundle bundle = (KeyBundle) ois.readObject();
-            
+
             // Paillier resumption
             if (bundle.getPaillierKeyPair() != null) {
                 init(bundle.getPaillierKeyPair());
@@ -135,10 +153,18 @@ public class BlindContext {
                 } else if (bundle.getFheScheme() == com.blindbean.annotations.Scheme.CKKS) {
                     initCkks(bundle.getPolyModulusDegree(), bundle.getScale());
                 }
-                
-                // Mount native pointers strictly
-                fheInstance.get().importState(bundle.getNativeFhePayload());
+
+                // Mount native pointers strictly; on failure close the freshly created
+                // context rather than leaving one installed with non-imported default keys
+                try {
+                    fheInstance.get().importState(bundle.getNativeFhePayload());
+                } catch (RuntimeException e) {
+                    closeExistingFhe();
+                    throw e;
+                }
             }
+        } catch (FheException e) {
+            throw e;
         } catch (Exception e) {
             throw new FheException("Key import failed", e);
         }

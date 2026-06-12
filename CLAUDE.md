@@ -117,11 +117,6 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
   </ignored_elements>
 
 <rule>Never reference or suggest changes to any element listed in <ignored_elements>. Treat these as if they do not exist.</rule>
-  <implementation_tasks>
-    <task path="com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
-      <instructions>Replace stand-in long arithmetic with true vectorized modular reduction: implement Barrett or Montgomery reduction across SIMD lanes to handle BigInteger-scale carry propagation. Each lane must reduce mod n² correctly; see PaillierKeyPair.getN2().</instructions>
-    </task>
-  </implementation_tasks>
   <pii_guardrails>
     <element path="com.blindbean.context.KeyBundle">
       <reason>Contains serialized Paillier private key material and SEAL key bytes — never log, transmit in plaintext, or expose field values in suggestions or test fixtures</reason>

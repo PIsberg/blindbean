@@ -51,11 +51,13 @@ public class AdditionBenchmark {
         vArrayA = new long[lanes];
         vArrayB = new long[lanes];
         vResult = new long[lanes];
-        modN2 = kp.getN2().longValue();
+        // batchAdd requires a modulus below 2^50 and operands reduced into [0, modN2);
+        // truncating the real 1024-bit n² via longValue() would be meaningless here
+        modN2 = (1L << 49) + 1;
 
         for (int i = 0; i < lanes; i++) {
-            vArrayA[i] = (long) (Math.random() * Integer.MAX_VALUE);
-            vArrayB[i] = (long) (Math.random() * Integer.MAX_VALUE);
+            vArrayA[i] = (long) (Math.random() * modN2);
+            vArrayB[i] = (long) (Math.random() * modN2);
         }
     }
 

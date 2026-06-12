@@ -44,10 +44,6 @@ The following elements must be completely excluded from AI context and completio
 - `com.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)` 
 - `com.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)` 
 - `com.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)` 
-## IMPLEMENTATION TASKS
-The following elements are drafts that need implementation:
-
-- `com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Replace stand-in long arithmetic with true vectorized modular reduction: implement Barrett or Montgomery reduction across SIMD lanes to handle BigInteger-scale carry propagation. Each lane must reduce mod n² correctly; see PaillierKeyPair.getN2().
 ## PII / PRIVACY GUARDRAILS
 The following elements handle Personally Identifiable Information (PII).
 Never include their runtime values in logs, console output, external API calls,

@@ -40,7 +40,10 @@ public class PaillierMath {
     }
 
     public BigInteger decrypt(Ciphertext c) {
-        if (c.scheme() != Scheme.PAILLIER) throw new IllegalArgumentException();
+        if (c.scheme() != Scheme.PAILLIER) {
+            throw new IllegalArgumentException(
+                "PaillierMath.decrypt requires a PAILLIER ciphertext, got " + c.scheme());
+        }
         BigInteger cipher = new BigInteger(1, c.getBytes());
 
         // m = L(c^lambda mod n^2) * mu mod n
@@ -51,10 +54,14 @@ public class PaillierMath {
 
     public Ciphertext add(Ciphertext a, Ciphertext b) {
         if (a.scheme() != Scheme.PAILLIER || b.scheme() != Scheme.PAILLIER) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(
+                "PaillierMath.add requires PAILLIER ciphertexts, got "
+                + a.scheme() + " and " + b.scheme());
         }
-        BigInteger numA = new BigInteger(a.getBytes());
-        BigInteger numB = new BigInteger(b.getBytes());
+        // Ciphertext bytes are an unsigned magnitude — parse with signum 1, matching
+        // decrypt(); the signed constructor misreads magnitudes whose top bit is set
+        BigInteger numA = new BigInteger(1, a.getBytes());
+        BigInteger numB = new BigInteger(1, b.getBytes());
 
         // Addition in Paillier is multiplication of ciphertexts mod n^2
         BigInteger result = numA.multiply(numB).mod(keyPair.getN2());
@@ -63,10 +70,12 @@ public class PaillierMath {
 
     public Ciphertext subtract(Ciphertext a, Ciphertext b) {
         if (a.scheme() != Scheme.PAILLIER || b.scheme() != Scheme.PAILLIER) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(
+                "PaillierMath.subtract requires PAILLIER ciphertexts, got "
+                + a.scheme() + " and " + b.scheme());
         }
-        BigInteger numA = new BigInteger(a.getBytes());
-        BigInteger numB = new BigInteger(b.getBytes());
+        BigInteger numA = new BigInteger(1, a.getBytes());
+        BigInteger numB = new BigInteger(1, b.getBytes());
 
         // Subtraction in Paillier is multiplication by the modular inverse mod n^2
         BigInteger inverseB = numB.modInverse(keyPair.getN2());

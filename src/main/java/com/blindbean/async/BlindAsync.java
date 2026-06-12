@@ -47,6 +47,8 @@ public final class BlindAsync {
 
     private static volatile ExecutorService executor;
     private static volatile Semaphore semaphore;
+    /** Guarded by the init monitor; the JVM shutdown hook survives executor recycling, so register it once. */
+    private static boolean shutdownHookRegistered;
     @AIIgnore(reason = "Internal DCL synchronization monitor — not relevant to AI-assisted development workflows")
     private static final Object INIT_LOCK = new Object();
 
@@ -62,7 +64,10 @@ public final class BlindAsync {
                 if (e == null) {
                     semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());
                     e = executor = Executors.newVirtualThreadPerTaskExecutor();
-                    Runtime.getRuntime().addShutdownHook(new Thread(BlindAsync::shutdown, "blindbean-async-shutdown"));
+                    if (!shutdownHookRegistered) {
+                        Runtime.getRuntime().addShutdownHook(new Thread(BlindAsync::shutdown, "blindbean-async-shutdown"));
+                        shutdownHookRegistered = true;
+                    }
                 }
             }
         }
