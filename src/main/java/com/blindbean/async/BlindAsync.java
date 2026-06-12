@@ -5,6 +5,7 @@ import com.blindbean.context.BlindContext;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
@@ -27,26 +28,36 @@ import se.deversity.vibetags.annotations.AIThreadSafe;
  * before dispatch and re-installed on the virtual thread, solving the {@link ThreadLocal}
  * propagation gap across thread boundaries.
  *
- * <p>The internal {@link ExecutorService} is lazily initialized on first use (double-checked
- * locking). Sync-only users pay no initialization cost. Call {@link #shutdown()} in tests or
- * application teardown.
+ * <p>The executor and its companion semaphore live in a single immutable {@link State} holder
+ * behind one volatile field, so a reader can never observe one without the other. The state is
+ * lazily initialized on first use (double-checked locking); sync-only users pay no
+ * initialization cost. Call {@link #shutdown()} in tests or application teardown.
+ *
+ * <p>Dispatch is guaranteed even while {@link #shutdown()} is being called concurrently: an
+ * optimistic submission outside the lock is retried once under the init monitor, where the
+ * freshly created executor cannot be closed before the task is accepted — and
+ * {@link ExecutorService#close()} waits for accepted tasks, so the task always runs.
  */
 @AIThreadSafe(strategy = AIThreadSafe.Strategy.OTHER,
-              note = "Double-checked locking for lazy executor init; CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races handled with retry loop")
+              note = "Executor + semaphore held as one immutable State behind a single volatile (DCL lazy init); "
+                   + "CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races resolved by "
+                   + "re-submitting under the init monitor, which shutdown() must also acquire")
 @AIAudit(checkFor = {"Thread Safety", "Resource Leaks", "Shutdown race conditions"})
 @AIParallelTests
 @AIFeatureFlag(flag = "blindbean.apt.async", defaultValue = false)
 public final class BlindAsync {
 
     /**
-     * Maximum number of dispatch attempts before {@link #runAsync}/{@link #supplyAsync}
-     * give up and return a future completed exceptionally with {@link BlindAsyncException}.
-     * Guards against spinning forever when {@link #shutdown()} races with submission.
+     * Historical retry bound from the attempt-counting dispatcher. Dispatch no longer gives
+     * up — a lost shutdown race is resolved by re-submitting under the init monitor — so this
+     * constant is retained only for backward compatibility and is no longer consulted.
      */
     public static final int MAX_ATTEMPTS = 3;
 
-    private static volatile ExecutorService executor;
-    private static volatile Semaphore semaphore;
+    /** Immutable pairing of the executor and its semaphore — readers see both or neither. */
+    private record State(ExecutorService executor, Semaphore semaphore) {}
+
+    private static volatile State state;
     /** Guarded by the init monitor; the JVM shutdown hook survives executor recycling, so register it once. */
     private static boolean shutdownHookRegistered;
     @AIIgnore(reason = "Internal DCL synchronization monitor — not relevant to AI-assisted development workflows")
@@ -56,14 +67,15 @@ public final class BlindAsync {
 
     // ── Lazy initialization ───────────────────────────────────────────────
 
-    private static ExecutorService executor() {
-        ExecutorService e = executor; // read volatile once into local
-        if (e == null) {
+    private static State state() {
+        State s = state; // read volatile once into local
+        if (s == null) {
             synchronized (INIT_LOCK) {
-                e = executor;
-                if (e == null) {
-                    semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());
-                    e = executor = Executors.newVirtualThreadPerTaskExecutor();
+                s = state;
+                if (s == null) {
+                    s = state = new State(
+                            Executors.newVirtualThreadPerTaskExecutor(),
+                            new Semaphore(Runtime.getRuntime().availableProcessors()));
                     if (!shutdownHookRegistered) {
                         Runtime.getRuntime().addShutdownHook(new Thread(BlindAsync::shutdown, "blindbean-async-shutdown"));
                         shutdownHookRegistered = true;
@@ -71,7 +83,7 @@ public final class BlindAsync {
                 }
             }
         }
-        return e; // always return the local — never re-reads the volatile
+        return s; // always return the local — never re-reads the volatile
     }
 
     // ── Public API ────────────────────────────────────────────────────────
@@ -85,29 +97,16 @@ public final class BlindAsync {
      */
     public static CompletableFuture<Void> runAsync(Runnable task) {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-            ExecutorService exec = executor();
-            Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialization
-            if (sem == null) continue; // shutdown() raced between executor() and our volatile read; retry
-            try {
-                return CompletableFuture.runAsync(() -> {
-                    sem.acquireUninterruptibly(); // sem is a closed-over local — never null, acquire and release are symmetric
-                    try {
-                        BlindContext.restore(snapshot);
-                        task.run();
-                    } finally {
-                        sem.release();
-                    }
-                }, exec);
-            } catch (java.util.concurrent.RejectedExecutionException ignored) {
-                // exec was concurrently shut down; executor() will reinitialize on the next iteration
+        try {
+            return dispatchRun(task, snapshot, state());
+        } catch (RejectedExecutionException raced) {
+            // shutdown() closed the executor between state() and submission. Re-submit while
+            // holding the init monitor: shutdown() must also acquire it, so the (possibly fresh)
+            // executor observed here cannot be closed before the task is accepted.
+            synchronized (INIT_LOCK) {
+                return dispatchRun(task, snapshot, state());
             }
         }
-        CompletableFuture<Void> failed = new CompletableFuture<>();
-        failed.completeExceptionally(new BlindAsyncException(
-                "Failed to dispatch runAsync task after " + MAX_ATTEMPTS
-                + " attempts due to repeated executor shutdown races", MAX_ATTEMPTS));
-        return failed;
     }
 
     /**
@@ -120,44 +119,52 @@ public final class BlindAsync {
      */
     public static <T> CompletableFuture<T> supplyAsync(Supplier<T> task) {
         BlindContext.Snapshot snapshot = BlindContext.snapshot();
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-            ExecutorService exec = executor();
-            Semaphore sem = semaphore; // capture volatile after executor() has ensured co-initialized
-            if (sem == null) continue; // shutdown() raced between executor() and our volatile read; retry
-            try {
-                return CompletableFuture.supplyAsync(() -> {
-                    sem.acquireUninterruptibly(); // sem is a closed-over local — never null, acquire and release are symmetric
-                    try {
-                        BlindContext.restore(snapshot);
-                        return task.get();
-                    } finally {
-                        sem.release();
-                    }
-                }, exec);
-            } catch (java.util.concurrent.RejectedExecutionException ignored) {
-                // exec was concurrently shut down; executor() will reinitialize on the next iteration
+        try {
+            return dispatchSupply(task, snapshot, state());
+        } catch (RejectedExecutionException raced) {
+            synchronized (INIT_LOCK) {
+                return dispatchSupply(task, snapshot, state());
             }
         }
-        CompletableFuture<T> failed = new CompletableFuture<>();
-        failed.completeExceptionally(new BlindAsyncException(
-                "Failed to dispatch supplyAsync task after " + MAX_ATTEMPTS
-                + " attempts due to repeated executor shutdown races", MAX_ATTEMPTS));
-        return failed;
+    }
+
+    private static CompletableFuture<Void> dispatchRun(Runnable task, BlindContext.Snapshot snapshot, State s) {
+        return CompletableFuture.runAsync(() -> {
+            s.semaphore().acquireUninterruptibly(); // s is immutable — acquire and release hit the same instance
+            try {
+                BlindContext.restore(snapshot);
+                task.run();
+            } finally {
+                s.semaphore().release();
+            }
+        }, s.executor());
+    }
+
+    private static <T> CompletableFuture<T> dispatchSupply(Supplier<T> task, BlindContext.Snapshot snapshot, State s) {
+        return CompletableFuture.supplyAsync(() -> {
+            s.semaphore().acquireUninterruptibly(); // s is immutable — acquire and release hit the same instance
+            try {
+                BlindContext.restore(snapshot);
+                return task.get();
+            } finally {
+                s.semaphore().release();
+            }
+        }, s.executor());
     }
 
     /**
-     * Shuts down the internal executor. Safe to call multiple times.
-     * Subsequent calls to {@link #runAsync} or {@link #supplyAsync} will reinitialize it.
+     * Shuts down the internal executor, waiting for already-accepted tasks to finish.
+     * Safe to call multiple times. Subsequent calls to {@link #runAsync} or
+     * {@link #supplyAsync} will reinitialize it.
      */
     public static void shutdown() {
-        ExecutorService toClose;
+        State toClose;
         synchronized (INIT_LOCK) {
-            toClose   = executor;
-            executor  = null;  // null before close() so concurrent runAsync callers block on INIT_LOCK instead of spinning
-            semaphore = null;
+            toClose = state;
+            state = null; // null before close() so concurrent callers reinitialize instead of racing the close
         }
         if (toClose != null) {
-            toClose.close();
+            toClose.executor().close();
         }
     }
 }

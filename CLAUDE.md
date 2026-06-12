@@ -191,7 +191,7 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
   <thread_safe_elements>
     <element path="com.blindbean.async.BlindAsync">
       <strategy>OTHER</strategy>
-      <note>Double-checked locking for lazy executor init; CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races handled with retry loop</note>
+      <note>Executor + semaphore held as one immutable State behind a single volatile (DCL lazy init); CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races resolved by re-submitting under the init monitor, which shutdown() must also acquire</note>
     </element>
     <element path="com.blindbean.context.BlindContext">
       <strategy>THREAD_LOCAL</strategy>

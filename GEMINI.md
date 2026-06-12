@@ -83,7 +83,7 @@ Changes to the following elements MUST be accompanied by matching test code in t
 ## THREAD-SAFE BY DESIGN
 These elements are thread-safe by design — preserve the synchronization invariant on every change:
 
-- `com.blindbean.async.BlindAsync`: Strategy: OTHER. Note: Double-checked locking for lazy executor init; CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races handled with retry loop
+- `com.blindbean.async.BlindAsync`: Strategy: OTHER. Note: Executor + semaphore held as one immutable State behind a single volatile (DCL lazy init); CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races resolved by re-submitting under the init monitor, which shutdown() must also acquire
 - `com.blindbean.context.BlindContext`: Strategy: THREAD_LOCAL. Note: Paillier and FHE state isolated in ThreadLocal fields; snapshot()/restore() required to propagate across virtual-thread boundaries
 - `com.blindbean.fhe.FheContext`: Strategy: SYNCHRONIZED. Note: All native FFM operations are guarded by nativeLock to prevent concurrent SEAL context access
 - `com.blindbean.math.PaillierVectorized`: Strategy: IMMUTABLE. Note: Stateless utility class — SPECIES is a compile-time constant; no instance state
