@@ -53,6 +53,33 @@ public class BlindBeanExtensionTest {
         }
     }
 
+    @Nested
+    @BlindBeanTest(scheme = Scheme.CKKS, polyModulusDegree = 8192, ckksScale = 1099511627776.0)
+    class CkksConfigured {
+
+        @Test
+        void nativeCkksContextIsBooted() {
+            try (var ctx = BlindContext.getFheContext()) {
+                var ct = ctx.encryptDouble(3.14);
+                var doubled = ctx.add(ct, ct);
+                assertEquals(6.28, ctx.decryptDouble(doubled), 0.001);
+            }
+        }
+    }
+
+    @Nested
+    @org.junit.jupiter.api.extension.ExtendWith(BlindBeanExtension.class)
+    class DirectExtendWithoutAnnotation {
+
+        @Test
+        void behavesLikePaillierDefaults() {
+            // No @BlindBeanTest anywhere in the hierarchy: the extension must
+            // fall back to plain init() (Paillier only) and still clean up.
+            Ciphertext ct = BlindContext.getPaillier().encrypt(BigInteger.valueOf(7));
+            assertEquals(BigInteger.valueOf(7), BlindContext.getPaillier().decrypt(ct));
+        }
+    }
+
     @Test
     void extensionOnlyAppliesToAnnotatedClasses() {
         // This method is NOT under @BlindBeanTest, so the extension has not

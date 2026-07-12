@@ -72,4 +72,40 @@ public class FheContextTest {
         assertTrue(msg.contains(System.getProperty("os.name")), "must state the detected OS");
         assertTrue(msg.contains(System.getProperty("os.arch")), "must state the detected arch");
     }
+
+    @Test
+    public void guidanceTreatsBlankPropertyAsUnset() {
+        stashProperty();
+        System.setProperty(PROP, "   ");
+        String msg = FheContext.nativeLoadGuidance(new UnsatisfiedLinkError("x"));
+        assertTrue(msg.contains("NOT set"), "a blank property must be treated as missing");
+    }
+
+    @Test
+    public void initNativeConvertsUnsatisfiedLinkErrorToGuidedFheException() {
+        stashProperty();
+        UnsatisfiedLinkError boom = new UnsatisfiedLinkError("no blindbean_fhe found");
+        FheException ex = assertThrows(FheException.class,
+            () -> FheContext.initNative(() -> { throw boom; }));
+        assertSame(boom, ex.getCause(), "original linkage error must be preserved as the cause");
+        assertTrue(ex.getMessage().contains("blindbean.native.path"), "message must be the guided one");
+        assertTrue(ex.getMessage().contains("no blindbean_fhe found"), "underlying error must be echoed");
+    }
+
+    @Test
+    public void initNativeConvertsInitializerErrorToGuidedFheException() {
+        stashProperty();
+        ExceptionInInitializerError boom = new ExceptionInInitializerError("static init failed");
+        FheException ex = assertThrows(FheException.class,
+            () -> FheContext.initNative(() -> { throw boom; }));
+        assertSame(boom, ex.getCause());
+        assertTrue(ex.getMessage().contains("could not load the native FHE library"));
+    }
+
+    @Test
+    public void initNativePassesThroughOnSuccess() {
+        stashProperty();
+        var segment = java.lang.foreign.MemorySegment.NULL;
+        assertSame(segment, FheContext.initNative(() -> segment), "successful init must return the handle untouched");
+    }
 }

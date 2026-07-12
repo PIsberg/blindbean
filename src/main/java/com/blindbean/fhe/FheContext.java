@@ -55,25 +55,28 @@ public class FheContext implements AutoCloseable {
     /** Creates a BFV context with the given polynomial modulus degree. */
     public static FheContext bfv(int polyModulusDegree) {
         Arena arena = Arena.ofShared();
-        MemorySegment h;
-        try {
-            h = FheNativeBridge.fhe_init_bfv(polyModulusDegree);
-        } catch (UnsatisfiedLinkError | ExceptionInInitializerError | NoClassDefFoundError e) {
-            throw new FheException(nativeLoadGuidance(e), e);
-        }
+        MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_bfv(polyModulusDegree));
         return new FheContext(h, Scheme.BFV, arena, polyModulusDegree, 0.0);
     }
 
     /** Creates a CKKS context with the given polynomial modulus degree and scale. */
     public static FheContext ckks(int polyModulusDegree, double scale) {
         Arena arena = Arena.ofShared();
-        MemorySegment h;
+        MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale));
+        return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
+    }
+
+    /**
+     * Runs a native context initializer, converting linkage failures (missing
+     * or unloadable native library) into an {@link FheException} carrying the
+     * guided fix-it message from {@link #nativeLoadGuidance(Throwable)}.
+     */
+    static MemorySegment initNative(java.util.function.Supplier<MemorySegment> init) {
         try {
-            h = FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale);
+            return init.get();
         } catch (UnsatisfiedLinkError | ExceptionInInitializerError | NoClassDefFoundError e) {
             throw new FheException(nativeLoadGuidance(e), e);
         }
-        return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
     }
 
     /**
