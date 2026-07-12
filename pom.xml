@@ -59,12 +59,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit for Unit Testing -->
+        <!-- JUnit for Unit Testing. Scope is provided (not test) because
+             com.blindbean.junit ships a JUnit 5 extension in the main jar;
+             consumers bring their own JUnit at runtime. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>6.1.1</version>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

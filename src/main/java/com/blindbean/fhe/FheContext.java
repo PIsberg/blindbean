@@ -55,15 +55,61 @@ public class FheContext implements AutoCloseable {
     /** Creates a BFV context with the given polynomial modulus degree. */
     public static FheContext bfv(int polyModulusDegree) {
         Arena arena = Arena.ofShared();
-        MemorySegment h = FheNativeBridge.fhe_init_bfv(polyModulusDegree);
+        MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_bfv(polyModulusDegree));
         return new FheContext(h, Scheme.BFV, arena, polyModulusDegree, 0.0);
     }
 
     /** Creates a CKKS context with the given polynomial modulus degree and scale. */
     public static FheContext ckks(int polyModulusDegree, double scale) {
         Arena arena = Arena.ofShared();
-        MemorySegment h = FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale);
+        MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale));
         return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
+    }
+
+    /**
+     * Runs a native context initializer, converting linkage failures (missing
+     * or unloadable native library) into an {@link FheException} carrying the
+     * guided fix-it message from {@link #nativeLoadGuidance(Throwable)}.
+     */
+    static MemorySegment initNative(java.util.function.Supplier<MemorySegment> init) {
+        try {
+            return init.get();
+        } catch (UnsatisfiedLinkError | ExceptionInInitializerError | NoClassDefFoundError e) {
+            throw new FheException(nativeLoadGuidance(e), e);
+        }
+    }
+
+    /**
+     * Builds an actionable message for the very first failure a new user is
+     * likely to hit: the native SEAL bridge could not be loaded. Explains what
+     * was searched and exactly how to fix it, instead of a bare linkage error.
+     */
+    static String nativeLoadGuidance(Throwable cause) {
+        String configured = System.getProperty("blindbean.native.path");
+        String os = System.getProperty("os.name", "unknown");
+        String arch = System.getProperty("os.arch", "unknown");
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("BlindBean could not load the native FHE library (blindbean_fhe).\n");
+        sb.append("  OS/arch: ").append(os).append('/').append(arch).append('\n');
+        if (configured == null || configured.isBlank()) {
+            sb.append("  The system property 'blindbean.native.path' is NOT set.\n");
+            sb.append("  Fix: pass -Dblindbean.native.path=<dir containing the built library>\n");
+        } else {
+            sb.append("  Searched 'blindbean.native.path' = ").append(configured).append('\n');
+            sb.append("  Fix: verify the library exists there for this OS/arch");
+            if (os.toLowerCase(java.util.Locale.ROOT).contains("win")) {
+                sb.append(" (MSVC builds place it under a Release/ subdirectory)");
+            }
+            sb.append(".\n");
+        }
+        sb.append("  Build it once with: cmake -S src/main/native -B build-native "
+                + "-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake && "
+                + "cmake --build build-native --config Release\n");
+        sb.append("  Docs: README.md 'Prerequisites' and CLAUDE.md 'Build & Test'.");
+        if (cause != null && cause.getMessage() != null) {
+            sb.append("\n  Underlying error: ").append(cause.getMessage());
+        }
+        return sb.toString();
     }
 
     public int polyModulusDegree() { return polyModulusDegree; }

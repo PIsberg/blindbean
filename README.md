@@ -75,9 +75,22 @@ UserAccount user = repository.findById(1); // User whose balance is entirely enc
 // 3. Transparently Wrap using the Auto-Generated Helper
 UserAccountBlindWrapper wrapper = new UserAccountBlindWrapper(user);
 
-// 4. Add the encrypted amount
-Ciphertext amountToAdd = BlindContext.getPaillier().encrypt(BigInteger.valueOf(500));
-wrapper.addBalance(amountToAdd); // Math happens right there, without decryption!
+// 4. Add 500 — the wrapper encrypts the plaintext for you
+wrapper.addBalance(BigInteger.valueOf(500)); // Math happens right there, without decryption!
+```
+
+Every generated wrapper also accepts pre-encrypted values (`wrapper.addBalance(ciphertext)`), and BFV/CKKS fields get matching `long`/`double`/`long[]` plaintext overloads.
+
+### Testing your entities
+
+Skip the `init()`/`clear()` boilerplate in test suites — annotate the class and every test gets a fresh, automatically-cleaned context:
+
+```java
+@BlindBeanTest                                            // Paillier
+class WalletTest { ... }
+
+@BlindBeanTest(scheme = Scheme.BFV, polyModulusDegree = 8192)  // + native FHE
+class PortfolioTest { ... }
 ```
 
 ### Storing Arbitrary Types
@@ -136,3 +149,25 @@ java -jar target/benchmarks.jar
 ```
 
 *Note: Requires JDK 26 with `--enable-preview` and `--add-modules jdk.incubator.vector` enabled.*
+
+## Using BlindBean from your own build
+
+Until published artifacts ship, install locally (`./mvnw clean install`) and depend on `com.blindbean:blindbean:1.0-SNAPSHOT`. Your build and runtime must carry the same JVM flags this library is compiled with:
+
+```xml
+<!-- maven-compiler-plugin -->
+<compilerArgs>
+    <arg>--enable-preview</arg>
+    <arg>--add-modules</arg><arg>jdk.incubator.vector</arg>
+</compilerArgs>
+<!-- surefire / your runtime -->
+<argLine>--enable-preview --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED</argLine>
+```
+
+Point `-Dblindbean.native.path=<dir>` at the built native library for BFV/CKKS (Paillier needs no native code). If loading fails, the error message walks you through the fix.
+
+**IntelliJ note:** enable *Settings → Build → Compiler → Annotation Processors → Enable annotation processing*, and mark `target/generated-sources/annotations` as a generated-sources root so `<Entity>BlindWrapper` classes resolve in the editor.
+
+## Security model & limitations
+
+What each scheme does and doesn't give you (no encrypted comparisons, malleability, CKKS approximation), noise-budget rules, and key-rotation guidance: see [docs/SECURITY-AND-LIMITATIONS.md](docs/SECURITY-AND-LIMITATIONS.md).
