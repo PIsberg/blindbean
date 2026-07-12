@@ -23,26 +23,30 @@ cmake --build build-native --config Release
 # 3. Run tests
 ./mvnw clean test -Dblindbean.native.path=build-native
 
-# Single test
-./mvnw test -Dtest=FheContextTest -Dblindbean.native.path=build-native
-./mvnw test -Dtest=FheContextTest#encryptsAndDecryptsLong -Dblindbean.native.path=build-native
+# Single test / single method
+./mvnw test -Dtest=FheNativeBridgeTest -Dblindbean.native.path=build-native
+./mvnw test -Dtest=FheContextTest#guidanceEchoesTheConfiguredPathWhenSet -Dblindbean.native.path=build-native
 
 # JMH benchmarks
 ./mvnw clean verify
 java --enable-preview --add-modules jdk.incubator.vector -jar target/benchmarks.jar
 ```
 
-On Windows use `mvnw.cmd` and `-Dblindbean.native.path=build-native/Release` (MSVC puts artifacts under the config subdir; non-Windows builds do not).
+On Windows use `mvnw.cmd` and `-Dblindbean.native.path=build-native/Release` (MSVC puts artifacts under the config subdir; non-Windows builds do not). `JAVA_HOME` must point at the JDK 26 install — if it points at an older JDK, surefire forks that JVM and the run dies on "class file version 70.0".
 
 The `blindbean-example` module is a separate Maven project demonstrating consumer usage of `@Homomorphic` / `@BlindEntity` and the generated wrappers — build the main library with `install` first so the example can resolve it.
+
+Tests that touch BFV/CKKS need the native library; pure-Paillier, processor and JUnit-extension tests do not. Consumer-style tests should use `@BlindBeanTest` (below) rather than hand-rolling context setup.
 
 ## Architecture (three layers)
 
 1. **Developer layer — `com.blindbean.annotations` + `com.blindbean.processor.HomomorphicProcessor`.** An annotation processor (registered via AutoService) runs at compile time, reads `@BlindEntity` / `@Homomorphic` classes, resolves the `type()` TypeMirror (e.g. `String.class`, `long[].class`, `boolean.class`), and generates `<Entity>BlindWrapper` source files. Proxies are **source-generated, not reflective** — do not add runtime reflection or bytecode weaving. The processor must also enforce algebraic boundaries: math operations (`add*`/`multiply*`) are omitted for String / boolean fields because they would corrupt the encoded value.
 
-2. **Java FFM layer — `com.blindbean.fhe` + `com.blindbean.math` + `com.blindbean.context`.** `FheContext` owns a native `BlindBeanContext*` as an opaque `MemorySegment` and is `AutoCloseable`; callers must use try-with-resources or leak native heap. `FheNativeBridge` resolves all ~15 native symbols **once at class-load** via `SymbolLookup.loaderLookup()` into `MethodHandle` statics (`MH_ADD`, `MH_MULTIPLY`, etc.) — any new native call must follow the same pattern. `FheCiphertextNative` wraps individual ciphertext handles and provides `toBlindCiphertext()` / `fromBlindCiphertext()` for serialization across the FFM boundary. `BlindMath` is the dispatcher that routes operations to either the pure-Java Paillier (`com.blindbean.math`, Vector API / SIMD) path or the native FHE path via `BlindContext`.
+2. **Java FFM layer — `com.blindbean.fhe` + `com.blindbean.math` + `com.blindbean.context`.** `FheContext` owns a native `BlindBeanContext*` as an opaque `MemorySegment` and is `AutoCloseable`; callers must use try-with-resources or leak native heap. Its `bfv()`/`ckks()` factories route the native call through the package-private `initNative(Supplier)` helper, which converts linkage failures (`UnsatisfiedLinkError`, `ExceptionInInitializerError`, `NoClassDefFoundError`) into an `FheException` carrying `nativeLoadGuidance()` — a message stating the detected OS/arch, whether `blindbean.native.path` is set and where it pointed, the exact `-D` flag, the Windows `Release/` subdir gotcha and the cmake build command. Keep new native entry points behind that helper so the first-run failure stays actionable; `FheNativeBridge` itself is locked. `FheNativeBridge` resolves all ~15 native symbols **once at class-load** via `SymbolLookup.loaderLookup()` into `MethodHandle` statics (`MH_ADD`, `MH_MULTIPLY`, etc.) — any new native call must follow the same pattern. `FheCiphertextNative` wraps individual ciphertext handles and provides `toBlindCiphertext()` / `fromBlindCiphertext()` for serialization across the FFM boundary. `BlindMath` is the dispatcher that routes operations to either the pure-Java Paillier (`com.blindbean.math`, Vector API / SIMD) path or the native FHE path via `BlindContext`.
 
-3. **Native layer — `src/main/native/blindbean_fhe.{h,cpp}`.** Single DLL (`blindbean_fhe.dll`) built statically against SEAL + CRT (`x64-windows-static` triplet) so deployment needs no extra runtime. All exported symbols use `extern "C"` and `__declspec(dllexport)` on Windows. State lives in a `BlindBeanContext` struct on the C++ heap; Java never sees SEAL types directly. BFV auto-relinearizes after multiply; CKKS auto-relinearizes and rescales. Parameters target 128-bit security per the HomomorphicEncryption.org standard — **do not lower poly modulus degree below 8192 or weaken coeff modulus without an explicit request**.
+3. **Test-support layer — `com.blindbean.junit`.** `@BlindBeanTest` (class-level) + `BlindBeanExtension` manage the `BlindContext` lifecycle per test method: `init()` before each test, `clear()` after, with `scheme` / `polyModulusDegree` / `ckksScale` attributes additionally booting the native BFV or CKKS context. The extension walks parent contexts so `@Nested` classes inherit the enclosing annotation, and `@ExtendWith(BlindBeanExtension.class)` alone behaves like the Paillier defaults. This ships in the **main** jar (that is why `junit-jupiter-api` is scope `provided`, not `test`) so consumers get it with the library. Prefer it over hand-rolled `@BeforeEach`/`@AfterEach` context wiring, in this repo's tests and in the example module.
+
+4. **Native layer — `src/main/native/blindbean_fhe.{h,cpp}`.** Single DLL (`blindbean_fhe.dll`) built statically against SEAL + CRT (`x64-windows-static` triplet) so deployment needs no extra runtime. All exported symbols use `extern "C"` and `__declspec(dllexport)` on Windows. State lives in a `BlindBeanContext` struct on the C++ heap; Java never sees SEAL types directly. BFV auto-relinearizes after multiply; CKKS auto-relinearizes and rescales. Parameters target 128-bit security per the HomomorphicEncryption.org standard — **do not lower poly modulus degree below 8192 or weaken coeff modulus without an explicit request**.
 
 ## Runtime flags
 
@@ -62,9 +66,11 @@ The native library location is controlled by the `blindbean.native.path` system 
 
 GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation processor + core regressions), a native build matrix on Linux/macOS/Windows publishing the shared library as an artifact, and the full Maven test suite on Windows against the published `blindbean_fhe.dll`. Changes touching `src/main/native/**` require the native matrix to stay green before the Windows test job can consume the artifact.
 
+Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which enforces a patch-coverage gate on pull requests: new/changed lines must be covered, so ship tests with the code. Coverage is only collected where the code actually runs — a native-dependent branch tested nowhere but Windows still counts, but a branch nothing exercises (e.g. duplicated linkage-error catch blocks) will fail the patch gate; factor such paths into one testable helper instead.
+
 ## Further reading
 
-`docs/ARCHITECTURE.md` has PlantUML class/sequence diagrams of the FHE multiply flow and the full FFM bridge parameter table. `README.md` has the annotation-level quickstart and scheme parameter choices.
+`docs/ARCHITECTURE.md` has PlantUML class/sequence diagrams of the FHE multiply flow and the full FFM bridge parameter table. `README.md` has the annotation-level quickstart, the consumer-build flags and scheme parameter choices. `docs/SECURITY-AND-LIMITATIONS.md` states what each scheme does and does not provide (no encrypted comparisons, malleability, CKKS approximation), the noise-budget rules and key-rotation guidance — consult it before changing crypto-adjacent behavior or advising users. `docs/DX-REVIEW.md` tracks the developer-experience backlog (publish + bundle natives, LTS baseline, Spring/JPA modules) with status.
 
 <!-- VIBETAGS-START -->
 <!-- # Generated by VibeTags | https://github.com/PIsberg/vibetags -->
@@ -81,6 +87,10 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
     </file>
   </locked_files>
   <contextual_instructions>
+    <file path="com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
+      <focus>Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable</focus>
+      <avoids>Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance</avoids>
+    </file>
     <file path="com.blindbean.processor.HomomorphicProcessor">
       <focus>Strictly maintain high-performance AST compilation speed</focus>
       <avoids>Heavy internal object allocations</avoids>
@@ -171,6 +181,9 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
     <element path="com.blindbean.fhe.FheContext">
       <reason>Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump</reason>
     </element>
+    <element path="com.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)">
+      <reason>JUnit 5 BeforeEachCallback contract — signature is fixed by the framework SPI</reason>
+    </element>
   </contract_signatures>
 
 <rule>You may refactor the internal logic of elements listed in <contract_signatures>, but you MUST NOT change their public signatures: method names, parameter types, parameter order, return types, or checked exceptions.</rule>
@@ -184,6 +197,11 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
       <coverage_goal>90</coverage_goal>
       <frameworks>JUNIT_5</frameworks>
       <test_location>src/test/java/com/blindbean/fhe</test_location>
+    </element>
+    <element path="com.blindbean.junit.BlindBeanExtension">
+      <coverage_goal>90</coverage_goal>
+      <frameworks>JUNIT_5</frameworks>
+      <test_location>src/test/java/com/blindbean/junit</test_location>
     </element>
   </test_driven_requirements>
 
@@ -248,6 +266,14 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
     <element path="com.blindbean.core.Ciphertext">
       <api>public</api>
     </element>
+    <element path="com.blindbean.junit.BlindBeanExtension">
+      <api>public</api>
+      <reason>Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite</reason>
+    </element>
+    <element path="com.blindbean.junit.BlindBeanTest">
+      <api>public</api>
+      <reason>Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot</reason>
+    </element>
     <element path="com.blindbean.math.BlindMath">
       <api>public</api>
     </element>
@@ -257,6 +283,10 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
   <strict_exceptions_elements>
     <element path="com.blindbean.fhe.FheCiphertextNative">
       <exceptions>strict</exceptions>
+    </element>
+    <element path="com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
+      <exceptions>strict</exceptions>
+      <reason>Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem</reason>
     </element>
     <element path="com.blindbean.math.PaillierMath">
       <exceptions>strict</exceptions>
@@ -311,6 +341,10 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
       <idempotent>true</idempotent>
       <reason>Guarded by closed flag; subsequent calls after first close() are no-ops</reason>
     </element>
+    <element path="com.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)">
+      <idempotent>true</idempotent>
+      <reason>Cleanup must tolerate a failed/partial beforeEach and repeated invocation — BlindContext.clear() is itself idempotent; never make teardown conditional on setup having succeeded, or a failing test would leak keys and native handles into the next one</reason>
+    </element>
   </idempotent_elements>
 
 <rule>Operations listed in <idempotent_elements> must remain idempotent. Never introduce side effects that cause repeated invocations to produce different results.</rule>
@@ -319,7 +353,7 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>
-    <element path="com.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List<com.blindbean.processor.HomomorphicProcessor.FieldModel>)">
+    <element path="com.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List&lt;com.blindbean.processor.HomomorphicProcessor.FieldModel&gt;)">
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>

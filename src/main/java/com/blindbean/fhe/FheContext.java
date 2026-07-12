@@ -5,9 +5,11 @@ import com.blindbean.annotations.Scheme;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
+import se.deversity.vibetags.annotations.AIContext;
 import se.deversity.vibetags.annotations.AIContract;
 import se.deversity.vibetags.annotations.AICore;
 import se.deversity.vibetags.annotations.AIIdempotent;
+import se.deversity.vibetags.annotations.AIStrictExceptions;
 import se.deversity.vibetags.annotations.AIObservability;
 import se.deversity.vibetags.annotations.AIPerformance;
 import se.deversity.vibetags.annotations.AISecure;
@@ -71,6 +73,9 @@ public class FheContext implements AutoCloseable {
      * or unloadable native library) into an {@link FheException} carrying the
      * guided fix-it message from {@link #nativeLoadGuidance(Throwable)}.
      */
+    @AIContext(focus = "Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable",
+               avoids = "Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance")
+    @AIStrictExceptions(reason = "Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem")
     static MemorySegment initNative(java.util.function.Supplier<MemorySegment> init) {
         try {
             return init.get();
