@@ -190,8 +190,8 @@ The following elements are pure Domain Models. Do not import Spring, JPA/Hiberna
 ## MANDATORY INPUT SANITIZATION
 The following parameters/fields must go through strict sanitizers before hitting queries or renderers:
 
-- `filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
-- `filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
+- `com.blindbean.context.BlindContext.exportKeys(java.lang.String)#filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
+- `com.blindbean.context.BlindContext.loadKeys(java.lang.String)#filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
 
 ## SECURE LOGGING MASKING
 The following sensitive elements must be masked, hashed, or omitted from log/stdout streams:

@@ -378,10 +378,10 @@ GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (annotation
 
 <rule>Classes in <domain_model_elements> are pure domain models. Do not import or reference database or web framework dependencies (Spring, Hibernate, JPA, Jackson).</rule>
   <sanitization_elements>
-    <file path="filePath">
+    <file path="com.blindbean.context.BlindContext.exportKeys(java.lang.String)#filePath">
       <sanitization_types>PATH_TRAVERSAL</sanitization_types>
     </file>
-    <file path="filePath">
+    <file path="com.blindbean.context.BlindContext.loadKeys(java.lang.String)#filePath">
       <sanitization_types>PATH_TRAVERSAL</sanitization_types>
     </file>
   </sanitization_elements>
