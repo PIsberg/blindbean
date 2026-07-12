@@ -76,10 +76,10 @@ One string, outsized first-impression payoff.
   `setBalance("hello")`. **Proposal:** document the *why* (column-friendly), and
   offer an optional `Ciphertext`-typed field variant for non-JPA users, which the
   processor already has the type machinery to support.
-- Wrapper convenience: `wrapper.addFunds(Ciphertext)` requires the caller to
-  encrypt first. **Proposal:** generate plaintext overloads —
-  `wrapper.addFunds(500)` (encrypt-then-add) — matching the README's "add 500 in
-  under 5 lines" promise even more literally.
+- ~~Wrapper convenience: plaintext overloads~~ **Already shipped**: generated
+  wrappers accept plaintext directly (BigInteger for Paillier, long/double/
+  long[] for BFV/CKKS) via emitAddPlain/emitSubPlain — the README Quickstart
+  now leads with it.
 
 ### 5. The integrations the pitch implies
 
@@ -123,12 +123,12 @@ clearly marked test-only.
 | # | Item | Effort | Leverage |
 |---|------|--------|----------|
 | 1 | Publish jar + bundle prebuilt natives from the existing CI matrix | M | Removes the biggest adoption cliff |
-| 2 | Guided native-load error message | S | First impression |
-| 3 | Plaintext convenience overloads in generated wrappers | S | Everyday ergonomics |
+| 2 | Guided native-load error message | S | ✅ Done in this PR |
+| 3 | Plaintext convenience overloads in generated wrappers | S | ✅ Already shipped upstream |
 | 4 | LTS-baseline artifact with optional SIMD accelerator module | L | Unlocks the 99% of shops on LTS |
 | 5 | Spring Boot starter + JPA converter | M | Converts the pitch into pilots |
-| 6 | `blindbean-test` JUnit extension | S | Consumer test hygiene |
-| 7 | Javadoc + security/limitations page + runnable quickstart | M | Trust for a crypto library |
+| 6 | @BlindBeanTest JUnit extension | S | ✅ Done in this PR |
+| 7 | Javadoc + security/limitations page + runnable quickstart | M | Partial in this PR (security page, consumer-build + IntelliJ docs) |
 
 Items 2, 3 and 6 are self-contained afternoon-sized changes; item 1 is mostly CI
 plumbing around artifacts that already build; item 4 is the only one that touches
