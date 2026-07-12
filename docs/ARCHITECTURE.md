@@ -23,8 +23,15 @@ package "Native Layer (C++)" {
     [MethodHandles] --> [blindbean_fhe.dll]
     [blindbean_fhe.dll] --> [Microsoft SEAL 4.1]
 }
+
+package "Test Support (ships in main jar)" {
+    [@BlindBeanTest] --> [BlindBeanExtension]
+    [BlindBeanExtension] --> [BlindContext] : init / clear per test
+}
 @enduml
 ```
+
+> The rendered PNG above predates the Test Support package; the PlantUML source is authoritative.
 
 ---
 
@@ -139,6 +146,27 @@ We target **128-bit security** based on the parameters recommended by the Homomo
 
 - **Deterministic Cleanup**: Native resources are tied to Java `AutoCloseable` wrappers. We strictly follow the `try-with-resources` pattern to prevent memory leaks in the native heap.
 - **Static DLL**: The native library is built as a self-contained DLL (`x64-windows-static`). It bundles Microsoft SEAL and the C Runtime (CRT), requiring zero external dependencies on the host machine.
+
+### Native Load Diagnostics
+
+`FheContext.bfv()` / `ckks()` do not call the bridge directly — they route through the package-private `initNative(Supplier<MemorySegment>)` helper. It catches linkage failures (`UnsatisfiedLinkError`, `ExceptionInInitializerError`, `NoClassDefFoundError`) and rethrows an `FheException` whose message is built by `nativeLoadGuidance()`: detected OS/arch, whether `blindbean.native.path` was set and what it pointed at, the exact `-D` flag to pass, the Windows `Release/` subdirectory caveat, the one-time CMake command, and the original error as the cause.
+
+This exists because the missing-library failure is the first error most new users ever see. Any future native entry point should be created through the same helper so that property stays true.
+
+---
+
+## 3.5 Test Support Layer (`com.blindbean.junit`)
+
+Ships in the **main** artifact — `junit-jupiter-api` is therefore scoped `provided`, so consumers inherit the extension with the library while supplying their own JUnit at runtime.
+
+| Type | Role |
+|:-----|:-----|
+| `@BlindBeanTest` | Class-level annotation. Attributes: `scheme` (default `PAILLIER`), `polyModulusDegree` (8192), `ckksScale` (2^40). |
+| `BlindBeanExtension` | `BeforeEachCallback` / `AfterEachCallback`. Calls `BlindContext.init()` before each test, plus `initBfv`/`initCkks` when the annotation requests a native scheme, and `BlindContext.clear()` afterwards. |
+
+The extension resolves its configuration by walking parent `ExtensionContext`s, so `@Nested` classes inherit the enclosing class's annotation. Applying `@ExtendWith(BlindBeanExtension.class)` without the annotation yields the Paillier defaults.
+
+Consequence for tests: no `@BeforeEach BlindContext.init()` / `@AfterEach clear()` boilerplate, and no key or native-handle leakage between test methods.
 
 ---
 
