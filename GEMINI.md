@@ -13,6 +13,7 @@ Do not suggest modifications to the following files:
 ## CONTEXTUAL RULES
 Apply the following context when assisting with these files:
 
+- `com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`: Focus - Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable. Avoid - Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance
 - `com.blindbean.processor.HomomorphicProcessor`: Focus - Strictly maintain high-performance AST compilation speed. Avoid - Heavy internal object allocations
 
 ## CONTINUOUS AUDIT REQUIREMENTS
@@ -73,12 +74,14 @@ Internal implementation may be changed, but MUST NOT alter method names, paramet
 
 - `com.blindbean.fhe.FheCiphertextNative`: Serialization format and handle lifecycle are part of the public FFM contract; do not change method signatures
 - `com.blindbean.fhe.FheContext`: Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump
+- `com.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)`: JUnit 5 BeforeEachCallback contract — signature is fixed by the framework SPI
 
 ## TEST-DRIVEN REQUIREMENTS
 Changes to the following elements MUST be accompanied by matching test code in the same response:
 
 - `com.blindbean.context.BlindContext`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/com/blindbean/context.
 - `com.blindbean.fhe.FheContext`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/com/blindbean/fhe.
+- `com.blindbean.junit.BlindBeanExtension`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/com/blindbean/junit.
 
 ## THREAD-SAFE BY DESIGN
 These elements are thread-safe by design — preserve the synchronization invariant on every change:
@@ -114,12 +117,15 @@ Preserve public signatures, Javadoc, and backwards compatibility:
 
 - `com.blindbean.context.BlindContext`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
 - `com.blindbean.core.Ciphertext`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
+- `com.blindbean.junit.BlindBeanExtension`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability. Reason: Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite
+- `com.blindbean.junit.BlindBeanTest`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability. Reason: Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot
 - `com.blindbean.math.BlindMath`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
 
 ## STRICT EXCEPTION HANDLING
 Catching/throwing generic Exception is prohibited. Use precise exceptions:
 
 - `com.blindbean.fhe.FheCiphertextNative`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited.
+- `com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited. Reason: Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem
 - `com.blindbean.math.PaillierMath`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited.
 
 ## STRICT TYPE SAFETY
@@ -150,6 +156,7 @@ These operations must remain idempotent — calling them multiple times must pro
 - `com.blindbean.context.BlindContext.clear()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: ThreadLocal.remove() and FheContext.close() are both safe to call when no state is present
 - `com.blindbean.fhe.FheCiphertextNative.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by freed flag; calling close() on an already-freed handle is a no-op
 - `com.blindbean.fhe.FheContext.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by closed flag; subsequent calls after first close() are no-ops
+- `com.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Cleanup must tolerate a failed/partial beforeEach and repeated invocation — BlindContext.clear() is itself idempotent; never make teardown conditional on setup having succeeded, or a failing test would leak keys and native handles into the next one
 
 ## FEATURE FLAG GATED CODE
 These elements are gated behind a feature flag. Never assume the flag is always active:

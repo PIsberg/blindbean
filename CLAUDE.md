@@ -87,6 +87,10 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
     </file>
   </locked_files>
   <contextual_instructions>
+    <file path="com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
+      <focus>Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable</focus>
+      <avoids>Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance</avoids>
+    </file>
     <file path="com.blindbean.processor.HomomorphicProcessor">
       <focus>Strictly maintain high-performance AST compilation speed</focus>
       <avoids>Heavy internal object allocations</avoids>
@@ -177,6 +181,9 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
     <element path="com.blindbean.fhe.FheContext">
       <reason>Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump</reason>
     </element>
+    <element path="com.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)">
+      <reason>JUnit 5 BeforeEachCallback contract — signature is fixed by the framework SPI</reason>
+    </element>
   </contract_signatures>
 
 <rule>You may refactor the internal logic of elements listed in <contract_signatures>, but you MUST NOT change their public signatures: method names, parameter types, parameter order, return types, or checked exceptions.</rule>
@@ -190,6 +197,11 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
       <coverage_goal>90</coverage_goal>
       <frameworks>JUNIT_5</frameworks>
       <test_location>src/test/java/com/blindbean/fhe</test_location>
+    </element>
+    <element path="com.blindbean.junit.BlindBeanExtension">
+      <coverage_goal>90</coverage_goal>
+      <frameworks>JUNIT_5</frameworks>
+      <test_location>src/test/java/com/blindbean/junit</test_location>
     </element>
   </test_driven_requirements>
 
@@ -254,6 +266,14 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
     <element path="com.blindbean.core.Ciphertext">
       <api>public</api>
     </element>
+    <element path="com.blindbean.junit.BlindBeanExtension">
+      <api>public</api>
+      <reason>Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite</reason>
+    </element>
+    <element path="com.blindbean.junit.BlindBeanTest">
+      <api>public</api>
+      <reason>Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot</reason>
+    </element>
     <element path="com.blindbean.math.BlindMath">
       <api>public</api>
     </element>
@@ -263,6 +283,10 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
   <strict_exceptions_elements>
     <element path="com.blindbean.fhe.FheCiphertextNative">
       <exceptions>strict</exceptions>
+    </element>
+    <element path="com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
+      <exceptions>strict</exceptions>
+      <reason>Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem</reason>
     </element>
     <element path="com.blindbean.math.PaillierMath">
       <exceptions>strict</exceptions>
@@ -317,6 +341,10 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
       <idempotent>true</idempotent>
       <reason>Guarded by closed flag; subsequent calls after first close() are no-ops</reason>
     </element>
+    <element path="com.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)">
+      <idempotent>true</idempotent>
+      <reason>Cleanup must tolerate a failed/partial beforeEach and repeated invocation — BlindContext.clear() is itself idempotent; never make teardown conditional on setup having succeeded, or a failing test would leak keys and native handles into the next one</reason>
+    </element>
   </idempotent_elements>
 
 <rule>Operations listed in <idempotent_elements> must remain idempotent. Never introduce side effects that cause repeated invocations to produce different results.</rule>
@@ -325,7 +353,7 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>
-    <element path="com.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List<com.blindbean.processor.HomomorphicProcessor.FieldModel>)">
+    <element path="com.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List&lt;com.blindbean.processor.HomomorphicProcessor.FieldModel&gt;)">
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>

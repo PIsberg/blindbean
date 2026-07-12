@@ -4,6 +4,8 @@ import com.blindbean.annotations.Scheme;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import se.deversity.vibetags.annotations.AIPublicAPI;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -33,6 +35,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(BlindBeanExtension.class)
+@AIPublicAPI(reason = "Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot")
 public @interface BlindBeanTest {
 
     /**
