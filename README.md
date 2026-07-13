@@ -168,6 +168,49 @@ Point `-Dblindbean.native.path=<dir>` at the built native library for BFV/CKKS (
 
 **IntelliJ note:** enable *Settings → Build → Compiler → Annotation Processors → Enable annotation processing*, and mark `target/generated-sources/annotations` as a generated-sources root so `<Entity>BlindWrapper` classes resolve in the editor.
 
+## Rotating keys
+
+Ciphertexts are bound to the keys that produced them, so rotation means re-encryption.
+`BlindRotation` holds both key generations at once — the plaintext exists only inside
+`rotate()`, and your thread keeps running on the old keys until you `commit()`:
+
+```java
+PaillierKeyPair next = new PaillierKeyPair(1024);
+
+try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
+    for (Wallet w : repository.findAll()) {
+        new WalletBlindWrapper(w).rotateBalance(rotation);   // generated for every Paillier field
+        repository.save(w);
+    }
+    rotation.commit();                  // new keys become this thread's context
+    BlindContext.exportKeys("keys.bin");
+}
+```
+
+BFV and CKKS rotate the same way, onto a fresh native context with newly generated SEAL keys:
+
+```java
+BlindContext.initBfv(8192);
+
+try (BlindRotation rotation = BlindRotation.fromCurrentFhe()) {   // fresh keys, same params
+    for (SensorData d : repository.findAll()) {
+        new SensorDataBlindWrapper(d).rotateBatchedReadings(rotation);
+        repository.save(d);
+    }
+    rotation.commit();          // installs the new context, retires the old one
+}
+```
+
+Every `@Homomorphic` field gets a matching `rotate<Field>(BlindRotation)` on its wrapper, so you
+never hand-roll a decrypt/re-encrypt loop and the plaintext never surfaces. A rotated ciphertext
+stays a first-class operand — you can keep computing on it. `rotate()` is safe to call
+concurrently, and an abandoned session leaves you on your original keys.
+
+Rotation is **not** atomic across your datastore: persisting each rotated value is your job, and
+a crash midway leaves some rows on old keys and some on new. Keep the old bundle until the batch
+is verified. See [KeyRotationTest](blindbean-example/src/test/java/com/example/KeyRotationTest.java)
+for a runnable end-to-end example.
+
 ## Security model & limitations
 
 What each scheme does and doesn't give you (no encrypted comparisons, malleability, CKKS approximation), noise-budget rules, and key-rotation guidance: see [docs/SECURITY-AND-LIMITATIONS.md](docs/SECURITY-AND-LIMITATIONS.md).

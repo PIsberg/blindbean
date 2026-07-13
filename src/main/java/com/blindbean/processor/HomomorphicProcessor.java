@@ -255,6 +255,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("import com.blindbean.core.Ciphertext;");
                 out.println("import com.blindbean.math.BlindMath;");
                 out.println("import com.blindbean.context.BlindContext;");
+                out.println("import com.blindbean.context.BlindRotation;");
                 out.println("import com.blindbean.annotations.Scheme;");
                 if (needsBigInteger) {
                     out.println("import java.math.BigInteger;");
@@ -292,6 +293,12 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     out.println();
                     emitDecrypt(out, f);
                     if (asyncEnabled) { out.println(); emitDecryptAsync(out, f); }
+
+                    // Rotation is ciphertext-level: it applies to every field regardless of scheme
+                    // or encoded type — String and boolean included.
+                    out.println();
+                    emitRotate(out, f);
+                    if (asyncEnabled) { out.println(); emitRotateAsync(out, f); }
 
                     if (mathSupported) {
                         out.println();
@@ -558,6 +565,22 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 }
             }
         }
+    }
+
+    /**
+     * Emits the key-rotation hook: re-encrypts the stored ciphertext under the session's target
+     * keys and writes it straight back to the entity, so the plaintext never surfaces to the
+     * caller.
+     */
+    private void emitRotate(PrintWriter out, FieldModel f) {
+        out.println("    public void rotate" + f.capName() + "(BlindRotation rotation) {");
+        out.println("        Ciphertext rotated = rotation.rotate(getCiphertext" + f.capName() + "());");
+        out.println("        entity.set" + f.capName() + "(rotated.hexData());");
+        out.println("    }");
+    }
+
+    private void emitRotateAsync(PrintWriter out, FieldModel f) {
+        emitRunAsync(out, "rotate", f.capName(), "BlindRotation", "rotation");
     }
 
     private void emitAdd(PrintWriter out, FieldModel f) {

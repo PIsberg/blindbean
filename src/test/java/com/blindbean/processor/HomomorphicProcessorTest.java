@@ -417,6 +417,107 @@ public class HomomorphicProcessorTest {
         }
     }
 
+    /**
+     * The generated rotate<Field>(BlindRotation) hook must re-encrypt the stored ciphertext in
+     * place, so a consumer rotating keys never handles plaintext and never hand-rolls a
+     * decrypt/encrypt loop.
+     */
+    @Test
+    public void generatedWrapperRotatesAPaillierFieldInPlace(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class Account {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)
+                private String balance;
+
+                public String getBalance() { return balance; }
+                public void setBalance(String b) { this.balance = b; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("Account", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        assertTrue(Files.readString(genDir.resolve("com/example/apt/AccountBlindWrapper.java"))
+                .contains("rotateBalance(BlindRotation rotation)"),
+            "Paillier fields must get a rotation hook");
+
+        com.blindbean.context.BlindContext.init();
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.Account");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.AccountBlindWrapper");
+
+            Object entity  = entityClass.getConstructor().newInstance();
+            Object wrapper = wrapperClass.getConstructor(entityClass).newInstance(entity);
+
+            wrapperClass.getMethod("encryptBalance", long.class).invoke(wrapper, 5000L);
+            String beforeRotation = (String) entityClass.getMethod("getBalance").invoke(entity);
+
+            var newKeys = new com.blindbean.math.PaillierKeyPair(512);
+            try (var rotation = com.blindbean.context.BlindRotation.fromCurrent(newKeys)) {
+                wrapperClass.getMethod("rotateBalance", com.blindbean.context.BlindRotation.class)
+                    .invoke(wrapper, rotation);
+                rotation.commit();
+            }
+
+            String afterRotation = (String) entityClass.getMethod("getBalance").invoke(entity);
+            assertNotEquals(beforeRotation, afterRotation,
+                "the stored ciphertext must have been re-encrypted under the new keys");
+            assertEquals(5000L, wrapperClass.getMethod("decryptBalance").invoke(wrapper),
+                "the rotated field must still decrypt to the original value, now under the new keys");
+        } finally {
+            com.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    @Test
+    public void everySchemeGetsARotationHook(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class Reading {
+                @Homomorphic(scheme = Scheme.BFV, type = long.class)
+                private String value;
+
+                public String getValue() { return value; }
+                public void setValue(String v) { this.value = v; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("Reading", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        // Rotation is ciphertext-level, so BFV/CKKS fields get the hook too.
+        assertTrue(Files.readString(genDir.resolve("com/example/apt/ReadingBlindWrapper.java"))
+                .contains("rotateValue(BlindRotation rotation)"),
+            "BFV fields must get a rotation hook now that native rotation is implemented");
+    }
+
     @Test
     public void allNumericPrimitivesGenerateCorrectSignatures(@TempDir Path tmpDir) throws Exception {
         Path genDir     = tmpDir.resolve("gen");
