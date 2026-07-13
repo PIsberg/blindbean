@@ -449,7 +449,12 @@ public class HomomorphicProcessor extends AbstractProcessor {
             out.println("    public String decrypt" + f.capName() + "() {");
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        java.math.BigInteger encoded = BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
-                out.println("        return new String(encoded.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);");
+                out.println("        if (encoded.signum() == 0) return \"\";");
+                out.println("        byte[] raw = encoded.toByteArray();");
+                out.println("        // encrypt() encoded the UTF-8 bytes as an unsigned magnitude, so drop the");
+                out.println("        // sign byte toByteArray() prepends when the leading byte is >= 0x80");
+                out.println("        int off = (raw[0] == 0) ? 1 : 0;");
+                out.println("        return new String(raw, off, raw.length - off, java.nio.charset.StandardCharsets.UTF_8);");
             } else {
                 out.println("        throw new UnsupportedOperationException(\"String decryption not supported on FHE.\");");
             }
