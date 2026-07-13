@@ -105,20 +105,15 @@ public class BlindContext {
             throw new FheException("No open BlindContext elements available to export");
         }
 
-        KeyBundle bundle;
-        try {
-            bundle = new KeyBundle(
-                    kp,
-                    ctx != null ? ctx.scheme() : null,
-                    ctx != null ? ctx.polyModulusDegree() : 0,
-                    ctx != null ? ctx.scale() : 0.0,
-                    ctx != null ? ctx.exportState() : null
-            );
-        } catch (FheException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw new FheException("Key export failed", e);
-        }
+        // A failure here (e.g. the native exportState) propagates as-is and leaves the
+        // destination untouched, which is the whole point of building the bundle first.
+        KeyBundle bundle = new KeyBundle(
+                kp,
+                ctx != null ? ctx.scheme() : null,
+                ctx != null ? ctx.polyModulusDegree() : 0,
+                ctx != null ? ctx.scale() : 0.0,
+                ctx != null ? ctx.exportState() : null
+        );
 
         try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
             oos.writeObject(bundle);

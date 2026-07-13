@@ -168,6 +168,17 @@ public class BlindContextTest {
     }
 
     @Test
+    public void exportToAnUnwritableDestinationThrowsFheException() {
+        BlindContext.init();
+        // A directory can never be opened as a file — the write failure must surface as an
+        // FheException rather than a raw FileNotFoundException.
+        FheException e = assertThrows(FheException.class,
+            () -> BlindContext.exportKeys(tempDir.toString()));
+        assertTrue(e.getMessage().contains("Key export failed"),
+            "a write failure must be reported as an export failure, got: " + e.getMessage());
+    }
+
+    @Test
     public void loadKeysFromMissingFileThrowsFheException() {
         assertThrows(FheException.class,
             () -> BlindContext.loadKeys(tempDir.resolve("does-not-exist.bin").toString()));
