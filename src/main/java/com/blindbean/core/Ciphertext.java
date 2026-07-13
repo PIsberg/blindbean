@@ -21,6 +21,14 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
 @AIPublicAPI
 @AIDomainModel(allow = {"com.blindbean.annotations.Scheme"})
 public record Ciphertext(String hexData, Scheme scheme) {
+
+    /**
+     * Lowercase hex codec, matching the historical {@code String.format("%02x", b)} encoding
+     * byte for byte. SEAL ciphertexts run to hundreds of kilobytes and every homomorphic
+     * operation re-encodes one, so the per-byte formatter was the dominant cost on that path.
+     */
+    private static final java.util.HexFormat HEX = java.util.HexFormat.of();
+
     public Ciphertext {
         Objects.requireNonNull(hexData, "hexData must not be null");
         Objects.requireNonNull(scheme, "scheme must not be null");
@@ -41,21 +49,11 @@ public record Ciphertext(String hexData, Scheme scheme) {
     
     // Helper to extract bytes from hex encoding
     public byte[] getBytes() {
-        int len = hexData.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hexData.charAt(i), 16) << 4)
-                                 + Character.digit(hexData.charAt(i+1), 16));
-        }
-        return data;
+        return HEX.parseHex(hexData);
     }
 
     public static Ciphertext fromBytes(byte[] bytes, Scheme scheme) {
-        StringBuilder hex = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            hex.append(String.format("%02x", b));
-        }
-        return new Ciphertext(hex.toString(), scheme);
+        return new Ciphertext(HEX.formatHex(bytes), scheme);
     }
 
     /**
