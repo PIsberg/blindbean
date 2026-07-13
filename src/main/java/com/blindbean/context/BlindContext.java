@@ -95,24 +95,33 @@ public class BlindContext {
     @AISecure(aspect = "key-serialization")
     public static void exportKeys(
             @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
-        try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
-            PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
-            FheContext ctx = fheInstance.get();
-            
-            if (ctx == null && kp == null) {
-                throw new FheException("No open BlindContext elements available to export");
-            }
-            
-            KeyBundle bundle = new KeyBundle(
+        // Assemble the bundle *before* touching the destination: opening a FileOutputStream
+        // truncates it, so validating (or serializing the native state) afterwards would
+        // destroy a previously exported bundle on the way to throwing.
+        PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
+        FheContext ctx = fheInstance.get();
+
+        if (ctx == null && kp == null) {
+            throw new FheException("No open BlindContext elements available to export");
+        }
+
+        KeyBundle bundle;
+        try {
+            bundle = new KeyBundle(
                     kp,
                     ctx != null ? ctx.scheme() : null,
                     ctx != null ? ctx.polyModulusDegree() : 0,
                     ctx != null ? ctx.scale() : 0.0,
                     ctx != null ? ctx.exportState() : null
             );
-            oos.writeObject(bundle);
         } catch (FheException e) {
             throw e;
+        } catch (RuntimeException e) {
+            throw new FheException("Key export failed", e);
+        }
+
+        try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
+            oos.writeObject(bundle);
         } catch (Exception e) {
             throw new FheException("Key export failed", e);
         }
