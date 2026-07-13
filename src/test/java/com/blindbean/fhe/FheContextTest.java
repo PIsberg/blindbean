@@ -108,4 +108,44 @@ public class FheContextTest {
         var segment = java.lang.foreign.MemorySegment.NULL;
         assertSame(segment, FheContext.initNative(() -> segment), "successful init must return the handle untouched");
     }
+
+    /**
+     * A context SEAL refuses (here: a non-power-of-two degree) must fail cleanly. The arena is
+     * opened only after the native init succeeds and closed again if construction fails, so a
+     * rejected context does not leak a shared arena on every attempt.
+     */
+    @Test
+    public void rejectedParametersFailWithoutLeakingTheArena() {
+        for (int attempt = 0; attempt < 50; attempt++) {
+            FheException ex = assertThrows(FheException.class, () -> FheContext.bfv(12345),
+                "SEAL must reject a non-power-of-two poly modulus degree");
+            assertTrue(ex.getMessage().contains("NULL"), "must report the failed native init");
+        }
+    }
+
+    /**
+     * A BFV context exposes exactly polyModulusDegree batch slots. decryptLongArray must size
+     * its output buffer from the context, not from a fixed constant, or every slot past the
+     * constant is silently dropped on contexts larger than it.
+     */
+    @Test
+    public void decryptLongArrayReturnsEverySlotOnALargeContext() {
+        int degree = 16384;
+        try (FheContext ctx = FheContext.bfv(degree)) {
+            long[] values = new long[degree];
+            for (int i = 0; i < degree; i++) {
+                values[i] = i;
+            }
+
+            var ct = ctx.encryptLongArray(values);
+            try {
+                long[] decrypted = ctx.decryptLongArray(ct);
+                assertEquals(degree, decrypted.length,
+                    "batch must round-trip all " + degree + " slots, not a truncated prefix");
+                assertArrayEquals(values, decrypted);
+            } finally {
+                ctx.freeCiphertext(ct);
+            }
+        }
+    }
 }

@@ -31,7 +31,14 @@ public class PaillierKeyPair implements java.io.Serializable {
     public PaillierKeyPair(int bitLength) {
         SecureRandom random = new SecureRandom();
         BigInteger p = BigInteger.probablePrime(bitLength / 2, random);
-        BigInteger q = BigInteger.probablePrime(bitLength / 2, random);
+        BigInteger q;
+        // Paillier requires two *distinct* primes: p == q gives n = p^2, whose gcd with
+        // phi(n) is p rather than 1, so the scheme's correctness condition no longer holds
+        // and mu = L(...)^-1 mod n is not invertible. Vanishingly rare at the 1024-bit
+        // default, but reachable at the small bit lengths this constructor accepts.
+        do {
+            q = BigInteger.probablePrime(bitLength / 2, random);
+        } while (q.equals(p));
 
         this.n = p.multiply(q);
         this.n2 = n.multiply(n);

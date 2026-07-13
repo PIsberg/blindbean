@@ -56,16 +56,30 @@ public class FheContext implements AutoCloseable {
 
     /** Creates a BFV context with the given polynomial modulus degree. */
     public static FheContext bfv(int polyModulusDegree) {
-        Arena arena = Arena.ofShared();
         MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_bfv(polyModulusDegree));
-        return new FheContext(h, Scheme.BFV, arena, polyModulusDegree, 0.0);
+        return create(h, Scheme.BFV, polyModulusDegree, 0.0);
     }
 
     /** Creates a CKKS context with the given polynomial modulus degree and scale. */
     public static FheContext ckks(int polyModulusDegree, double scale) {
-        Arena arena = Arena.ofShared();
         MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale));
-        return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
+        return create(h, Scheme.CKKS, polyModulusDegree, scale);
+    }
+
+    /**
+     * Wraps a freshly initialized native handle. The arena is opened only once the native
+     * call has succeeded, and is closed again if construction still fails (NULL handle), so
+     * a rejected context — an unloadable library, or parameters SEAL refuses — cannot leak
+     * a shared arena on every attempt.
+     */
+    private static FheContext create(MemorySegment handle, Scheme scheme, int polyModulusDegree, double scale) {
+        Arena arena = Arena.ofShared();
+        try {
+            return new FheContext(handle, scheme, arena, polyModulusDegree, scale);
+        } catch (RuntimeException e) {
+            arena.close();
+            throw e;
+        }
     }
 
     /**
@@ -184,8 +198,12 @@ public class FheContext implements AutoCloseable {
                 throw new FheException("decryptLongArray requires BFV context, got " + scheme);
             }
             try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
-                java.lang.foreign.MemorySegment outBuffer = arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG, 8192);
-                int count = FheNativeBridge.fhe_decrypt_long_array(handle, ct, outBuffer, 8192);
+                // BFV batching exposes exactly polyModulusDegree slots; a fixed-size buffer
+                // would silently drop the tail of the batch on larger contexts.
+                long slots = polyModulusDegree;
+                java.lang.foreign.MemorySegment outBuffer =
+                        arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG, slots);
+                int count = FheNativeBridge.fhe_decrypt_long_array(handle, ct, outBuffer, slots);
                 if (count == 0) return new long[0];
                 return outBuffer.asSlice(0, count * 8L).toArray(java.lang.foreign.ValueLayout.JAVA_LONG);
             }

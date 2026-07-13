@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -136,6 +137,45 @@ public class BlindContextTest {
             () -> BlindContext.exportKeys(bundleFile.toString()));
         assertTrue(e.getMessage().contains("No open BlindContext"),
             "the original failure must not be wrapped in a generic export error, got: " + e.getMessage());
+    }
+
+    /**
+     * A failed export must not destroy the destination. FileOutputStream truncates on open, so
+     * validating after opening it would wipe a previously exported bundle — irrecoverable key
+     * loss — on the way to throwing.
+     */
+    @Test
+    public void failedExportLeavesAnExistingBundleIntact() throws Exception {
+        Path bundleFile = tempDir.resolve("keys.bin");
+        BigInteger message = BigInteger.valueOf(987654321L);
+
+        BlindContext.init();
+        Ciphertext encrypted = BlindContext.getPaillier().encrypt(message);
+        BlindContext.exportKeys(bundleFile.toString());
+        byte[] goodBundle = Files.readAllBytes(bundleFile);
+
+        // Same path, but nothing initialized on this thread — the export must refuse.
+        BlindContext.clear();
+        assertThrows(FheException.class, () -> BlindContext.exportKeys(bundleFile.toString()));
+
+        assertArrayEquals(goodBundle, Files.readAllBytes(bundleFile),
+            "a rejected export must leave the previously exported bundle byte-for-byte intact");
+
+        // And the surviving bundle must still be usable.
+        BlindContext.loadKeys(bundleFile.toString());
+        assertEquals(message, BlindContext.getPaillier().decrypt(encrypted),
+            "the preserved bundle must still decrypt ciphertexts from before the failed export");
+    }
+
+    @Test
+    public void exportToAnUnwritableDestinationThrowsFheException() {
+        BlindContext.init();
+        // A directory can never be opened as a file — the write failure must surface as an
+        // FheException rather than a raw FileNotFoundException.
+        FheException e = assertThrows(FheException.class,
+            () -> BlindContext.exportKeys(tempDir.toString()));
+        assertTrue(e.getMessage().contains("Key export failed"),
+            "a write failure must be reported as an export failure, got: " + e.getMessage());
     }
 
     @Test

@@ -95,24 +95,28 @@ public class BlindContext {
     @AISecure(aspect = "key-serialization")
     public static void exportKeys(
             @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
+        // Assemble the bundle *before* touching the destination: opening a FileOutputStream
+        // truncates it, so validating (or serializing the native state) afterwards would
+        // destroy a previously exported bundle on the way to throwing.
+        PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
+        FheContext ctx = fheInstance.get();
+
+        if (ctx == null && kp == null) {
+            throw new FheException("No open BlindContext elements available to export");
+        }
+
+        // A failure here (e.g. the native exportState) propagates as-is and leaves the
+        // destination untouched, which is the whole point of building the bundle first.
+        KeyBundle bundle = new KeyBundle(
+                kp,
+                ctx != null ? ctx.scheme() : null,
+                ctx != null ? ctx.polyModulusDegree() : 0,
+                ctx != null ? ctx.scale() : 0.0,
+                ctx != null ? ctx.exportState() : null
+        );
+
         try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
-            PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
-            FheContext ctx = fheInstance.get();
-            
-            if (ctx == null && kp == null) {
-                throw new FheException("No open BlindContext elements available to export");
-            }
-            
-            KeyBundle bundle = new KeyBundle(
-                    kp,
-                    ctx != null ? ctx.scheme() : null,
-                    ctx != null ? ctx.polyModulusDegree() : 0,
-                    ctx != null ? ctx.scale() : 0.0,
-                    ctx != null ? ctx.exportState() : null
-            );
             oos.writeObject(bundle);
-        } catch (FheException e) {
-            throw e;
         } catch (Exception e) {
             throw new FheException("Key export failed", e);
         }

@@ -360,6 +360,63 @@ public class HomomorphicProcessorTest {
             "Expected compile error for removed Scheme.ELGAMAL; diagnostics: " + diags);
     }
 
+    /**
+     * The generated Paillier String round-trip must be byte-exact. encrypt() encodes the UTF-8
+     * bytes as an unsigned magnitude (new BigInteger(1, bytes)), so decrypt() must strip the sign
+     * byte that toByteArray() prepends whenever the leading byte is >= 0x80 — otherwise every
+     * string starting with a non-ASCII character comes back with a leading NUL.
+     */
+    @Test
+    public void paillierStringRoundTripsNonAsciiExactly(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import com.blindbean.annotations.BlindEntity;
+            import com.blindbean.annotations.Homomorphic;
+            import com.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class SecretNote {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = String.class)
+                private String note;
+
+                public String getNote() { return note; }
+                public void setNote(String n) { this.note = n; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("SecretNote", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        com.blindbean.context.BlindContext.init();
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.SecretNote");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.SecretNoteBlindWrapper");
+
+            Object entity  = entityClass.getConstructor().newInstance();
+            Object wrapper = wrapperClass.getConstructor(entityClass).newInstance(entity);
+
+            var encrypt = wrapperClass.getMethod("encryptNote", String.class);
+            var decrypt = wrapperClass.getMethod("decryptNote");
+
+            // "é" is 0xC3 0xA9 — a leading byte >= 0x80, which is what triggers the sign byte.
+            for (String plain : List.of("élan vital", "hello", "ünïcødé ✓", "")) {
+                encrypt.invoke(wrapper, plain);
+                assertEquals(plain, decrypt.invoke(wrapper),
+                    "Paillier String round-trip must be exact for: " + plain);
+            }
+        } finally {
+            com.blindbean.context.BlindContext.clear();
+        }
+    }
+
     @Test
     public void allNumericPrimitivesGenerateCorrectSignatures(@TempDir Path tmpDir) throws Exception {
         Path genDir     = tmpDir.resolve("gen");

@@ -39,6 +39,7 @@ public class FheCiphertextNative implements AutoCloseable {
 
     private final MemorySegment handle;
     private final FheContext context;
+    private final Object freeLock = new Object();
     private volatile boolean freed = false;
 
     public FheCiphertextNative(MemorySegment handle, FheContext context) {
@@ -170,9 +171,13 @@ public class FheCiphertextNative implements AutoCloseable {
     @AIIdempotent(reason = "Guarded by freed flag; calling close() on an already-freed handle is a no-op")
     @Override
     public void close() {
-        if (!freed) {
-            freed = true;
-            FheNativeBridge.fhe_free_ciphertext(handle);
+        // The test-and-set must be atomic: a plain volatile read/write lets two threads both
+        // observe freed == false and both hand the same handle to the native allocator.
+        synchronized (freeLock) {
+            if (!freed) {
+                freed = true;
+                FheNativeBridge.fhe_free_ciphertext(handle);
+            }
         }
     }
 }
