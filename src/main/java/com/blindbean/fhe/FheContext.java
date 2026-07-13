@@ -184,8 +184,12 @@ public class FheContext implements AutoCloseable {
                 throw new FheException("decryptLongArray requires BFV context, got " + scheme);
             }
             try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
-                java.lang.foreign.MemorySegment outBuffer = arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG, 8192);
-                int count = FheNativeBridge.fhe_decrypt_long_array(handle, ct, outBuffer, 8192);
+                // BFV batching exposes exactly polyModulusDegree slots; a fixed-size buffer
+                // would silently drop the tail of the batch on larger contexts.
+                long slots = polyModulusDegree;
+                java.lang.foreign.MemorySegment outBuffer =
+                        arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG, slots);
+                int count = FheNativeBridge.fhe_decrypt_long_array(handle, ct, outBuffer, slots);
                 if (count == 0) return new long[0];
                 return outBuffer.asSlice(0, count * 8L).toArray(java.lang.foreign.ValueLayout.JAVA_LONG);
             }

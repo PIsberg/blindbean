@@ -108,4 +108,30 @@ public class FheContextTest {
         var segment = java.lang.foreign.MemorySegment.NULL;
         assertSame(segment, FheContext.initNative(() -> segment), "successful init must return the handle untouched");
     }
+
+    /**
+     * A BFV context exposes exactly polyModulusDegree batch slots. decryptLongArray must size
+     * its output buffer from the context, not from a fixed constant, or every slot past the
+     * constant is silently dropped on contexts larger than it.
+     */
+    @Test
+    public void decryptLongArrayReturnsEverySlotOnALargeContext() {
+        int degree = 16384;
+        try (FheContext ctx = FheContext.bfv(degree)) {
+            long[] values = new long[degree];
+            for (int i = 0; i < degree; i++) {
+                values[i] = i;
+            }
+
+            var ct = ctx.encryptLongArray(values);
+            try {
+                long[] decrypted = ctx.decryptLongArray(ct);
+                assertEquals(degree, decrypted.length,
+                    "batch must round-trip all " + degree + " slots, not a truncated prefix");
+                assertArrayEquals(values, decrypted);
+            } finally {
+                ctx.freeCiphertext(ct);
+            }
+        }
+    }
 }
