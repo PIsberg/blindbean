@@ -56,16 +56,30 @@ public class FheContext implements AutoCloseable {
 
     /** Creates a BFV context with the given polynomial modulus degree. */
     public static FheContext bfv(int polyModulusDegree) {
-        Arena arena = Arena.ofShared();
         MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_bfv(polyModulusDegree));
-        return new FheContext(h, Scheme.BFV, arena, polyModulusDegree, 0.0);
+        return create(h, Scheme.BFV, polyModulusDegree, 0.0);
     }
 
     /** Creates a CKKS context with the given polynomial modulus degree and scale. */
     public static FheContext ckks(int polyModulusDegree, double scale) {
-        Arena arena = Arena.ofShared();
         MemorySegment h = initNative(() -> FheNativeBridge.fhe_init_ckks(polyModulusDegree, scale));
-        return new FheContext(h, Scheme.CKKS, arena, polyModulusDegree, scale);
+        return create(h, Scheme.CKKS, polyModulusDegree, scale);
+    }
+
+    /**
+     * Wraps a freshly initialized native handle. The arena is opened only once the native
+     * call has succeeded, and is closed again if construction still fails (NULL handle), so
+     * a rejected context — an unloadable library, or parameters SEAL refuses — cannot leak
+     * a shared arena on every attempt.
+     */
+    private static FheContext create(MemorySegment handle, Scheme scheme, int polyModulusDegree, double scale) {
+        Arena arena = Arena.ofShared();
+        try {
+            return new FheContext(handle, scheme, arena, polyModulusDegree, scale);
+        } catch (RuntimeException e) {
+            arena.close();
+            throw e;
+        }
     }
 
     /**
