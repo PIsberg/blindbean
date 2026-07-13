@@ -9,12 +9,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -151,31 +145,20 @@ public class BlindRotationTest {
         }
     }
 
+    /**
+     * The counter must not lose increments. Concurrent rotation — including the shared-SecureRandom
+     * and stateful-crypto detectors on that path — is stressed by {@link RotationAsyncConcurrencyTest}.
+     */
     @Test
-    public void rotateIsSafeUnderConcurrentUse() throws Exception {
+    public void rotatedCountTracksEveryRotation() {
         PaillierKeyPair oldKeys = new PaillierKeyPair(512);
-        PaillierKeyPair newKeys = new PaillierKeyPair(512);
         PaillierMath oldMath = new PaillierMath(oldKeys);
-        PaillierMath newMath = new PaillierMath(newKeys);
 
-        int count = 64;
-        List<Ciphertext> underOld = IntStream.range(0, count)
-            .mapToObj(i -> oldMath.encrypt(BigInteger.valueOf(i)))
-            .toList();
-
-        try (BlindRotation rotation = BlindRotation.paillier(oldKeys, newKeys);
-             ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor()) {
-
-            List<Callable<Ciphertext>> jobs = underOld.stream()
-                .map(ct -> (Callable<Ciphertext>) () -> rotation.rotate(ct))
-                .toList();
-
-            List<Future<Ciphertext>> results = pool.invokeAll(jobs);
-            for (int i = 0; i < count; i++) {
-                assertEquals(BigInteger.valueOf(i), newMath.decrypt(results.get(i).get()),
-                    "every concurrently rotated ciphertext must survive intact");
+        try (BlindRotation rotation = BlindRotation.paillier(oldKeys, new PaillierKeyPair(512))) {
+            for (int i = 0; i < 8; i++) {
+                rotation.rotate(oldMath.encrypt(BigInteger.valueOf(i)));
             }
-            assertEquals(count, rotation.rotatedCount(), "the counter must not lose increments");
+            assertEquals(8, rotation.rotatedCount());
         }
     }
 }

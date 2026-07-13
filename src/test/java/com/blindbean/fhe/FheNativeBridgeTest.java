@@ -228,40 +228,16 @@ public class FheNativeBridgeTest {
             });
         }
 
-        /**
-         * Concurrent close() must hand the handle to the native allocator exactly once.
-         * A non-atomic test-and-set lets several threads through the guard at once and
-         * double-frees the SEAL ciphertext, corrupting the native heap.
-         */
+        /** Idempotency of close(). The concurrent double-free race is stressed by
+         *  {@link FheCiphertextCloseConcurrencyTest} under async-test-lib. */
         @Test
-        public void testConcurrentCloseFreesTheHandleExactlyOnce() throws Exception {
-            int threads = 16;
+        public void testCloseIsIdempotent() {
             try (var ctx = FheContext.bfv(4096)) {
                 var nativeCt = new FheCiphertextNative(ctx.encryptLong(7L), ctx);
+                nativeCt.close();
 
-                var start = new java.util.concurrent.CountDownLatch(1);
-                var done = new java.util.concurrent.CountDownLatch(threads);
-                var failures = new java.util.concurrent.atomic.AtomicInteger();
-
-                for (int i = 0; i < threads; i++) {
-                    Thread.ofVirtual().start(() -> {
-                        try {
-                            start.await();
-                            nativeCt.close();
-                        } catch (Throwable t) {
-                            failures.incrementAndGet();
-                        } finally {
-                            done.countDown();
-                        }
-                    });
-                }
-                start.countDown();
-                assertTrue(done.await(10, java.util.concurrent.TimeUnit.SECONDS), "closers must finish");
-                assertEquals(0, failures.get(), "concurrent close() must not throw");
-
-                // The handle is gone: further use is rejected rather than touching freed memory.
                 assertThrows(FheException.class, nativeCt::handle);
-                assertDoesNotThrow(nativeCt::close, "close() stays idempotent afterwards");
+                assertDoesNotThrow(nativeCt::close, "close() on an already-freed handle is a no-op");
             }
         }
     }

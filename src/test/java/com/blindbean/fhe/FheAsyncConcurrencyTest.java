@@ -90,12 +90,17 @@ class FheAsyncConcurrencyTest {
 
     /**
      * Stresses the native buffer allocation and serialization logic in exportState.
+     *
+     * <p>450 full SEAL key exports (15 x 30), each serializing the secret, public and relin keys
+     * of an 8192-degree context. That is genuinely slow work: the old 30s budget was clearing by a
+     * hair and tipped over under load, so it gets the same 60s the sibling stress test uses.
      */
     @AsyncTest(
         threads = 15,
         invocations = 30,
         detectRaceConditions = true,
-        timeoutMs = 30000
+        detectResourceLeaks = true,
+        timeoutMs = 60000
     )
     void simultaneousKeyExport() {
         byte[] state = bfvContext.exportState();

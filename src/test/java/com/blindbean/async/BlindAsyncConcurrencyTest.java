@@ -170,14 +170,19 @@ class BlindAsyncConcurrencyTest {
 
     /**
      * Hammers PaillierMath.encrypt() and decrypt() from 20 concurrent threads.
-     * PaillierMath is designed thread-safe (immutable key pair, SecureRandom per call).
-     * This confirms no latent race or atomicity violation exists at high contention.
+     * PaillierMath is designed thread-safe: the key pair is immutable and its SecureRandom is
+     * itself thread-safe. The crypto detectors added in async-test-lib 1.7.0 police exactly that
+     * claim — a shared SecureRandom used unsafely, or stateful crypto (Cipher/Mac/Signature)
+     * shared across threads, would silently weaken or corrupt every ciphertext this library
+     * produces, so they are asserted here rather than assumed.
      */
     @AsyncTest(
         threads = 20,
         invocations = 20,
         detectRaceConditions = true,
         detectAtomicityViolations = true,
+        detectSharedSecureRandom = true,
+        detectSharedStatefulCrypto = true,
         timeoutMs = 30000
     )
     void paillierEncryptDecryptIsThreadSafe() {
