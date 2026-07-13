@@ -168,6 +168,30 @@ Point `-Dblindbean.native.path=<dir>` at the built native library for BFV/CKKS (
 
 **IntelliJ note:** enable *Settings → Build → Compiler → Annotation Processors → Enable annotation processing*, and mark `target/generated-sources/annotations` as a generated-sources root so `<Entity>BlindWrapper` classes resolve in the editor.
 
+## Rotating keys
+
+Ciphertexts are bound to the keys that produced them, so rotation means re-encryption.
+`BlindRotation` holds both key generations at once — the plaintext exists only inside
+`rotate()`, and your thread keeps running on the old keys until you `commit()`:
+
+```java
+PaillierKeyPair next = new PaillierKeyPair(1024);
+
+try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
+    for (Wallet w : repository.findAll()) {
+        new WalletBlindWrapper(w).rotateBalance(rotation);   // generated for every Paillier field
+        repository.save(w);
+    }
+    rotation.commit();                  // new keys become this thread's context
+    BlindContext.exportKeys("keys.bin");
+}
+```
+
+Every `@Homomorphic` Paillier field gets a matching `rotate<Field>(BlindRotation)` on its
+wrapper, so you never hand-roll a decrypt/re-encrypt loop. `rotate()` is safe to call
+concurrently. Rotation is not atomic across your datastore — keep the old bundle until the
+batch is verified. Paillier only for now; BFV/CKKS rotation fails fast rather than pretending.
+
 ## Security model & limitations
 
 What each scheme does and doesn't give you (no encrypted comparisons, malleability, CKKS approximation), noise-budget rules, and key-rotation guidance: see [docs/SECURITY-AND-LIMITATIONS.md](docs/SECURITY-AND-LIMITATIONS.md).
