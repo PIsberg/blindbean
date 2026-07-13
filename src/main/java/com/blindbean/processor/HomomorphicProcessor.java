@@ -255,10 +255,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("import com.blindbean.core.Ciphertext;");
                 out.println("import com.blindbean.math.BlindMath;");
                 out.println("import com.blindbean.context.BlindContext;");
+                out.println("import com.blindbean.context.BlindRotation;");
                 out.println("import com.blindbean.annotations.Scheme;");
                 if (needsBigInteger) {
                     out.println("import java.math.BigInteger;");
-                    out.println("import com.blindbean.context.BlindRotation;");
                 }
                 if (needsFhe) {
                     out.println("import com.blindbean.fhe.FheCiphertextNative;");
@@ -294,13 +294,11 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     emitDecrypt(out, f);
                     if (asyncEnabled) { out.println(); emitDecryptAsync(out, f); }
 
-                    // Rotation is ciphertext-level, so it applies to every Paillier field
-                    // regardless of the encoded type — String and boolean included.
-                    if (f.scheme() == Scheme.PAILLIER) {
-                        out.println();
-                        emitRotate(out, f);
-                        if (asyncEnabled) { out.println(); emitRotateAsync(out, f); }
-                    }
+                    // Rotation is ciphertext-level: it applies to every field regardless of scheme
+                    // or encoded type — String and boolean included.
+                    out.println();
+                    emitRotate(out, f);
+                    if (asyncEnabled) { out.println(); emitRotateAsync(out, f); }
 
                     if (mathSupported) {
                         out.println();
