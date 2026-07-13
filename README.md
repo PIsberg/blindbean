@@ -187,10 +187,29 @@ try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
 }
 ```
 
-Every `@Homomorphic` Paillier field gets a matching `rotate<Field>(BlindRotation)` on its
-wrapper, so you never hand-roll a decrypt/re-encrypt loop. `rotate()` is safe to call
-concurrently. Rotation is not atomic across your datastore — keep the old bundle until the
-batch is verified. Paillier only for now; BFV/CKKS rotation fails fast rather than pretending.
+BFV and CKKS rotate the same way, onto a fresh native context with newly generated SEAL keys:
+
+```java
+BlindContext.initBfv(8192);
+
+try (BlindRotation rotation = BlindRotation.fromCurrentFhe()) {   // fresh keys, same params
+    for (SensorData d : repository.findAll()) {
+        new SensorDataBlindWrapper(d).rotateBatchedReadings(rotation);
+        repository.save(d);
+    }
+    rotation.commit();          // installs the new context, retires the old one
+}
+```
+
+Every `@Homomorphic` field gets a matching `rotate<Field>(BlindRotation)` on its wrapper, so you
+never hand-roll a decrypt/re-encrypt loop and the plaintext never surfaces. A rotated ciphertext
+stays a first-class operand — you can keep computing on it. `rotate()` is safe to call
+concurrently, and an abandoned session leaves you on your original keys.
+
+Rotation is **not** atomic across your datastore: persisting each rotated value is your job, and
+a crash midway leaves some rows on old keys and some on new. Keep the old bundle until the batch
+is verified. See [KeyRotationTest](blindbean-example/src/test/java/com/example/KeyRotationTest.java)
+for a runnable end-to-end example.
 
 ## Security model & limitations
 

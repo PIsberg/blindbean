@@ -484,7 +484,7 @@ public class HomomorphicProcessorTest {
     }
 
     @Test
-    public void bfvFieldGetsNoRotationHookYet(@TempDir Path tmpDir) throws Exception {
+    public void everySchemeGetsARotationHook(@TempDir Path tmpDir) throws Exception {
         Path genDir     = tmpDir.resolve("gen");
         Path classesDir = tmpDir.resolve("classes");
         Files.createDirectories(genDir);
@@ -507,13 +507,15 @@ public class HomomorphicProcessorTest {
             }
             """;
 
-        compile("Reading", source, genDir, classesDir);
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("Reading", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
 
-        // BFV rotation is not implemented; emitting a hook that always throws would be worse
-        // than not emitting one at all.
-        assertFalse(Files.readString(genDir.resolve("com/example/apt/ReadingBlindWrapper.java"))
-                .contains("rotateValue"),
-            "BFV fields must not get a rotation hook until native rotation lands");
+        // Rotation is ciphertext-level, so BFV/CKKS fields get the hook too.
+        assertTrue(Files.readString(genDir.resolve("com/example/apt/ReadingBlindWrapper.java"))
+                .contains("rotateValue(BlindRotation rotation)"),
+            "BFV fields must get a rotation hook now that native rotation is implemented");
     }
 
     @Test

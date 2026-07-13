@@ -127,20 +127,28 @@ public class BlindRotationTest {
     }
 
     @Test
-    public void nonPaillierCiphertextIsRefusedWithGuidance() {
+    public void aSessionRefusesCiphertextsFromAnotherScheme() {
         try (BlindRotation rotation =
                  BlindRotation.paillier(new PaillierKeyPair(512), new PaillierKeyPair(512))) {
+            assertEquals(Scheme.PAILLIER, rotation.scheme());
             Ciphertext bfv = new Ciphertext("abcd", Scheme.BFV);
-            UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> rotation.rotate(bfv));
-            assertTrue(e.getMessage().contains("not implemented yet"));
+            assertTrue(e.getMessage().contains("rotates PAILLIER"));
         }
     }
 
     @Test
-    public void nativeSchemeFactoriesFailFast() {
-        assertThrows(UnsupportedOperationException.class, () -> BlindRotation.bfv(8192));
-        assertThrows(UnsupportedOperationException.class, () -> BlindRotation.ckks(8192, Math.pow(2, 40)));
+    public void rotatingAfterCommitIsRefused() {
+        BlindContext.init();
+        Ciphertext ct = BlindContext.getPaillier().encrypt(BigInteger.TEN);
+
+        try (BlindRotation rotation = BlindRotation.fromCurrent(new PaillierKeyPair(512))) {
+            rotation.commit();
+            IllegalStateException e = assertThrows(IllegalStateException.class, () -> rotation.rotate(ct));
+            assertTrue(e.getMessage().contains("has been committed"),
+                "rotating under retired keys after the app moved on is a bug, not a no-op");
+        }
     }
 
     @Test

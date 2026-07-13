@@ -83,14 +83,24 @@ produced under the context.
   }
   ```
 
+  BFV and CKKS rotate the same way, through a second native context holding
+  fresh SEAL keys — `BlindRotation.fromCurrentFhe()` derives it from the
+  installed context's scheme and parameters, or pass two contexts explicitly
+  with `BlindRotation.fhe(source, target)`. A BFV ciphertext carries every
+  batch slot, so single values and batches rotate identically, and a rotated
+  ciphertext remains a first-class operand under the new keys.
+
   Rotation is **not** atomic across your datastore: persisting each rotated
   value is yours to do, and a crash midway leaves some rows under the old
   keys and some under the new. Keep the old bundle until the batch has been
   verified, and retire it only afterwards. An abandoned (uncommitted)
-  session leaves the installed context untouched.
-- Rotation currently covers **Paillier only**. `BlindRotation.bfv()` /
-  `.ckks()` fail fast rather than pretending to rotate; rotate BFV/CKKS data
-  by decrypting under the old `FheContext` and re-encrypting under a new one.
+  session leaves the installed context untouched and frees any context it
+  created, so a failed batch cannot strand you without working keys.
+  `commit()` is terminal: it installs the new keys, closes the retired
+  native context, and refuses further rotation under the old keys.
+- Ciphertexts cannot move between parameter sets. Rotation requires the
+  source and target contexts to share a scheme and `polyModulusDegree`;
+  mismatches are rejected up front.
 - Ciphertexts are bound to the keys and (for BFV/CKKS) the context
   parameters that produced them; a ciphertext from one context cannot be
   operated on under another.
