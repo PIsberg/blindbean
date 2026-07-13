@@ -66,9 +66,31 @@ produced under the context.
   bundle **including private key material**. Treat the file like a private
   key: filesystem permissions, encrypted volumes, never in VCS, never in
   logs.
-- Rotation is re-encryption: there is no in-place re-key. To rotate, decrypt
-  under the old bundle and encrypt under a fresh one (batch job), then
-  retire the old file.
+- Rotation is re-encryption: there is no in-place re-key. Use
+  `BlindRotation`, which holds the old and new key generations side by side
+  so plaintext exists only inside `rotate()` and the thread's context is not
+  swapped until you `commit()`:
+
+  ```java
+  PaillierKeyPair next = new PaillierKeyPair(1024);
+  try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
+      for (Wallet w : repository.findAll()) {
+          new WalletBlindWrapper(w).rotateBalance(rotation);  // generated hook
+          repository.save(w);
+      }
+      rotation.commit();                 // new keys become this thread's context
+      BlindContext.exportKeys("keys.bin");
+  }
+  ```
+
+  Rotation is **not** atomic across your datastore: persisting each rotated
+  value is yours to do, and a crash midway leaves some rows under the old
+  keys and some under the new. Keep the old bundle until the batch has been
+  verified, and retire it only afterwards. An abandoned (uncommitted)
+  session leaves the installed context untouched.
+- Rotation currently covers **Paillier only**. `BlindRotation.bfv()` /
+  `.ckks()` fail fast rather than pretending to rotate; rotate BFV/CKKS data
+  by decrypting under the old `FheContext` and re-encrypting under a new one.
 - Ciphertexts are bound to the keys and (for BFV/CKKS) the context
   parameters that produced them; a ciphertext from one context cannot be
   operated on under another.
