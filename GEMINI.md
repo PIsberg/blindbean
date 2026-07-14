@@ -168,7 +168,7 @@ These operations must remain idempotent — calling them multiple times must pro
 These elements are gated behind a feature flag. Never assume the flag is always active:
 
 - `se.deversity.blindbean.async.BlindAsync`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
-- `se.deversity.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List<se.deversity.blindbean.processor.HomomorphicProcessor.FieldModel>)`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
+- `se.deversity.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List<se.deversity.blindbean.processor.HomomorphicProcessor.FieldModel>,java.util.List<se.deversity.blindbean.processor.HomomorphicProcessor.NestedModel>)`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
 
 ## SECURITY-CRITICAL CODE
 Do not weaken security properties of these elements. Flag any change for security review:

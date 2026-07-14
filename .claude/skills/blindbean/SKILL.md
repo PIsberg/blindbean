@@ -156,6 +156,38 @@ not going through an entity.
 
 ---
 
+## 3b. Nested entities
+
+An entity that owns another entity reaches into it with `@BlindNested`:
+
+```java
+@BlindEntity
+public class Order {
+    @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+    private String total;
+
+    @BlindNested
+    private UserAccount customer;      // itself a @BlindEntity
+    // ... getter + setter
+}
+
+var order = new OrderBlindWrapper(o);
+order.customer().subBalance(new BigDecimal("19.99"));   // straight through, still encrypted
+```
+
+The generated `customer()` hands back the nested entity's **own wrapper**, so everything it supports
+— encrypt, decrypt, arithmetic, rotation — is reachable, and each entity keeps its own scheme. It
+writes through to the same object, not a copy. A null nested entity yields a **null wrapper** rather
+than an NPE several frames deep.
+
+It's deliberately explicit: the processor does not go hunting for `@BlindEntity`-typed fields on its
+own. A field cannot be both `@Homomorphic` and `@BlindNested` — it is either an encrypted value or a
+nested entity.
+
+**Records are not supported**, and won't be without a redesign: the wrapper stores each ciphertext by
+calling `setX(...)` on the entity, and a record's components are final. Use a class with a getter and
+setter per field. The processor says so rather than failing obscurely.
+
 ## 4. Keys are the whole game
 
 Encrypted data is worthless without the key and unrecoverable if you lose it. `BlindContext.init()`

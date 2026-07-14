@@ -111,6 +111,18 @@ Rules worth knowing before adding another type:
 - `byte[]` is deliberately a Paillier **blob**, not a BFV vector; use `short[]`/`int[]` for small
   integer vectors.
 
+**Composition (`@BlindNested`).** A field whose type is itself a `@BlindEntity` gets an accessor
+returning that entity's wrapper (`order.customer().subBalance(...)`), so the whole inner API is
+reachable without wrapping by hand at every call site. It writes through to the same object; a null
+nested entity yields a null wrapper. Explicit by design — the processor does not hunt for
+`@BlindEntity`-typed fields on its own, and a field may not be both `@Homomorphic` and
+`@BlindNested`.
+
+**Records are unsupported by construction**, not by omission: the wrapper stores each ciphertext with
+`entity.setX(hex)`, and a record's components are final. Supporting them means a different generated
+API that returns a new record rather than mutating one. The processor rejects them with that reason
+rather than a bare "only applies to classes".
+
 ## Releasing
 
 Coordinates are `se.deversity:blindbean` (packages live under `se.deversity.blindbean.*`). Cutting a release is tagging one — `.github/workflows/release.yml` fires on `v*`:
@@ -440,7 +452,7 @@ Javadoc needs `--enable-preview`/`--add-modules` passed explicitly (`additionalJ
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>
-    <element path="se.deversity.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List&lt;se.deversity.blindbean.processor.HomomorphicProcessor.FieldModel&gt;)">
+    <element path="se.deversity.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List&lt;se.deversity.blindbean.processor.HomomorphicProcessor.FieldModel&gt;,java.util.List&lt;se.deversity.blindbean.processor.HomomorphicProcessor.NestedModel&gt;)">
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>

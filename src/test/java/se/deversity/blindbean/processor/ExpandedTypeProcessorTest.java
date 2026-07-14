@@ -285,4 +285,103 @@ public class ExpandedTypeProcessorTest {
         assertFalse(prim.wrapper().contains("return null;"),
             "a primitive cannot be null — a guard there would not even compile");
     }
+
+    // ── Nested entities ──────────────────────────────────────────────────────
+
+    /** Two entities in one compilation unit: an outer one nesting an inner one. */
+    private static String nestedPair(String outerAnnotation) {
+        return """
+            package com.example.apt;
+            import se.deversity.blindbean.annotations.*;
+            @BlindEntity
+            class Inner {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)
+                private String secret;
+                public Inner() {}
+                public String getSecret() { return secret; }
+                public void setSecret(String v) { this.secret = v; }
+            }
+            @BlindEntity
+            public class Outer {
+                %s
+                private Inner inner;
+                public Outer() {}
+                public Inner getInner() { return inner; }
+                public void setInner(Inner v) { this.inner = v; }
+            }
+            """.formatted(outerAnnotation);
+    }
+
+    @Test
+    public void aNestedEntityGetsAnAccessorIntoItsOwnWrapper(@TempDir Path tmp) throws Exception {
+        Result r = compile("Outer", nestedPair("@BlindNested"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("InnerBlindWrapper inner()"),
+            "the accessor must hand back the nested entity's own wrapper");
+        assertTrue(r.wrapper().contains("return inner == null ? null : new"),
+            "a null nested entity must yield a null wrapper, not an NPE several frames deep");
+    }
+
+    @Test
+    public void nestingSomethingThatIsNotAnEntityIsRejected(@TempDir Path tmp) throws Exception {
+        String src = """
+            package com.example.apt;
+            import se.deversity.blindbean.annotations.*;
+            @BlindEntity
+            public class Outer {
+                @BlindNested
+                private String notAnEntity;
+                public Outer() {}
+                public String getNotAnEntity() { return notAnEntity; }
+                public void setNotAnEntity(String v) { this.notAnEntity = v; }
+            }
+            """;
+        Result r = compile("Outer", src, tmp);
+
+        // Without this, the failure would surface as "cannot find symbol StringBlindWrapper" in
+        // generated code the author never wrote.
+        assertTrue(r.failed());
+        assertTrue(r.errors().contains("not a @BlindEntity"), r.errors());
+    }
+
+    @Test
+    public void aFieldCannotBeBothEncryptedAndNested(@TempDir Path tmp) throws Exception {
+        // The field is a String, so it passes the "@Homomorphic must be a String" check and
+        // actually reaches the both-annotations guard. (When the field is typed as the nested
+        // entity instead, the String check fires first — see the next test.)
+        Result r = compile("Outer", entity("Outer",
+            "@BlindNested\n    @Homomorphic(scheme = Scheme.PAILLIER)", "thing"), tmp);
+
+        assertTrue(r.failed());
+        assertTrue(r.errors().contains("either an encrypted value or a nested entity"), r.errors());
+    }
+
+    @Test
+    public void anEntityTypedFieldMarkedEncryptedIsCaughtByTheStringRule(@TempDir Path tmp) throws Exception {
+        Result r = compile("Outer",
+            nestedPair("@BlindNested\n    @Homomorphic(scheme = Scheme.PAILLIER)"), tmp);
+
+        assertTrue(r.failed());
+        assertTrue(r.errors().contains("must be of type String"), r.errors());
+    }
+
+    // ── Records ──────────────────────────────────────────────────────────────
+
+    @Test
+    public void aRecordIsRefusedWithAReasonNotJustARejection(@TempDir Path tmp) throws Exception {
+        String src = """
+            package com.example.apt;
+            import se.deversity.blindbean.annotations.*;
+            @BlindEntity
+            public record Rec(String balance) {}
+            """;
+        Result r = compile("Rec", src, tmp);
+
+        assertTrue(r.failed());
+        // The wrapper stores each ciphertext with setX(...); a record's components are final.
+        // Saying so is the difference between a fixable error and a baffling one.
+        assertTrue(r.errors().contains("record"), r.errors());
+        assertTrue(r.errors().contains("final"), r.errors());
+    }
 }

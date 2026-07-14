@@ -1,6 +1,7 @@
 package se.deversity.blindbean.processor;
 
 import se.deversity.blindbean.annotations.BlindEntity;
+import se.deversity.blindbean.annotations.BlindNested;
 import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 import com.google.auto.service.AutoService;
@@ -138,6 +139,18 @@ public class HomomorphicProcessor extends AbstractProcessor {
         }
 
         for (Element element : roundEnv.getElementsAnnotatedWith(BlindEntity.class)) {
+            if (element.getKind() == ElementKind.RECORD) {
+                // Not an oversight. The wrapper writes back in place — entity.setX(hex) — and a
+                // record's components are final, so there is nothing to write to. Supporting
+                // records means a different generated API that returns a new record rather than
+                // mutating one, which is a design, not a patch.
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@BlindEntity does not support records: the generated wrapper stores each "
+                    + "ciphertext by calling setX(...) on the entity, and a record's components are "
+                    + "final. Use a class with a getter and setter per @Homomorphic field.",
+                    element);
+                continue;
+            }
             if (element.getKind() != ElementKind.CLASS) {
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR, "@BlindEntity only applies to classes", element);
@@ -155,12 +168,83 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 continue;
             }
 
+            List<NestedModel> nested = collectNested(typeElement);
+            if (nested == null) {
+                continue;
+            }
+
             String className   = typeElement.getSimpleName().toString();
             String packageName = processingEnv.getElementUtils()
                     .getPackageOf(typeElement).getQualifiedName().toString();
-            generateBlindWrapper(packageName, className, typeElement, fields);
+            generateBlindWrapper(packageName, className, typeElement, fields, nested);
         }
         return true;
+    }
+
+    /** A @BlindNested field: the accessor reaches into another entity's wrapper. */
+    private record NestedModel(String name, String capName, String wrapperType) {}
+
+    /**
+     * Collects @BlindNested fields. The field's type must itself be a @BlindEntity — otherwise the
+     * wrapper it names would not exist, and the failure would surface as a bewildering
+     * "cannot find symbol XBlindWrapper" in generated code the author never wrote.
+     */
+    private List<NestedModel> collectNested(TypeElement typeElement) {
+        List<NestedModel> result = new ArrayList<>();
+        boolean hadError = false;
+
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+            processingEnv.getElementUtils().getAllMembers(typeElement));
+
+        for (VariableElement field : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+            if (field.getAnnotation(BlindNested.class) == null) {
+                continue;
+            }
+            String fieldName = field.getSimpleName().toString();
+            String capName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+
+            if (field.getAnnotation(Homomorphic.class) != null) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "Field '" + fieldName + "' is both @Homomorphic and @BlindNested. A field is "
+                    + "either an encrypted value or a nested entity, not both.", field);
+                hadError = true;
+                continue;
+            }
+
+            Element fieldType = processingEnv.getTypeUtils().asElement(field.asType());
+            if (fieldType == null || fieldType.getAnnotation(BlindEntity.class) == null) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@BlindNested field '" + fieldName + "' has type " + field.asType()
+                    + ", which is not a @BlindEntity — so it has no generated wrapper to reach into. "
+                    + "Annotate that type with @BlindEntity, or drop @BlindNested from this field.",
+                    field);
+                hadError = true;
+                continue;
+            }
+
+            String getterName = "get" + capName;
+            boolean hasGetter = methods.stream().anyMatch(m ->
+                m.getSimpleName().contentEquals(getterName)
+                && m.getParameters().isEmpty()
+                && m.getModifiers().contains(Modifier.PUBLIC));
+            if (!hasGetter) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@BlindNested field '" + fieldName + "' needs a public " + getterName + "().",
+                    field);
+                hadError = true;
+                continue;
+            }
+
+            // Fully qualified, so the nested entity can live in any package.
+            TypeElement nestedType = (TypeElement) fieldType;
+            String pkg = processingEnv.getElementUtils()
+                    .getPackageOf(nestedType).getQualifiedName().toString();
+            String wrapper = (pkg.isEmpty() ? "" : pkg + ".")
+                           + nestedType.getSimpleName() + "BlindWrapper";
+
+            result.add(new NestedModel(fieldName, capName, wrapper));
+        }
+        return hadError ? null : result;
     }
 
     // ── Validation ────────────────────────────────────────────────────────
@@ -345,7 +429,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     @AIFeatureFlag(flag = "blindbean.apt.async", defaultValue = false)
     private void generateBlindWrapper(String packageName, String className,
-                                      TypeElement typeElement, List<FieldModel> fields) {
+                                      TypeElement typeElement, List<FieldModel> fields,
+                                      List<NestedModel> nested) {
         String wrapperName = className + "BlindWrapper";
         try {
             JavaFileObject builderFile = processingEnv.getFiler()
@@ -439,6 +524,17 @@ public class HomomorphicProcessor extends AbstractProcessor {
                             if (asyncEnabled) { out.println(); emitMulPlainAsync(out, f); }
                         }
                     }
+                }
+
+                // Nested entities: hand back the inner entity's own wrapper, so everything it
+                // supports is reachable without wrapping it by hand at every call site.
+                for (NestedModel n : nested) {
+                    out.println();
+                    out.println("    /** The nested entity's wrapper, or null if the entity is null. */");
+                    out.println("    public " + n.wrapperType() + " " + n.name() + "() {");
+                    out.println("        var inner = entity.get" + n.capName() + "();");
+                    out.println("        return inner == null ? null : new " + n.wrapperType() + "(inner);");
+                    out.println("    }");
                 }
 
                 out.println("}");
