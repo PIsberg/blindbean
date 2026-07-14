@@ -8,6 +8,7 @@ import com.blindbean.fhe.FheContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -54,6 +55,7 @@ public class BlindMathTest {
     // BFV FHE Tests — through BlindMath dispatcher
     // ================================================================
     @Nested
+    @Tag("native")
     class BfvDispatchTests {
 
         @BeforeEach

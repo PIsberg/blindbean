@@ -3,6 +3,7 @@ package com.blindbean.fhe;
 import se.deversity.asynctest.AsyncTest;
 import se.deversity.asynctest.BeforeEachInvocation;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * {@code @BeforeEachInvocation} mints a fresh one per round so each round is a real race rather
  * than a no-op against an already-freed handle.
  */
+@Tag("native")
 class FheCiphertextCloseConcurrencyTest {
 
     private FheContext ctx;

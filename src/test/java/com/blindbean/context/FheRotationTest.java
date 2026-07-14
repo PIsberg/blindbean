@@ -8,6 +8,7 @@ import com.blindbean.fhe.FheException;
 import com.blindbean.core.WrongKeyException;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * BFV/CKKS key rotation. Needs the native SEAL bridge.
  */
+@Tag("native")
 public class FheRotationTest {
 
     private static final double CKKS_TOLERANCE = 0.01;

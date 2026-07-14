@@ -22,6 +22,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jmh.version>1.37</jmh.version>
         <license.mock.mode>true</license.mock.mode>
+        <!-- Overridden to "native" on the DLL-less Linux/macOS gate. -->
+        <excludedGroups></excludedGroups>
     </properties>
 
     <dependencyManagement>
@@ -136,6 +138,15 @@
                         <!-- lib owner: async-test-lib license gate runs in auto-mocked mode by default -->
                         <license.mock.mode>${license.mock.mode}</license.mock.mode>
                     </systemPropertyVariables>
+                    <!--
+                      Tests tagged "native" need blindbean_fhe.dll. The Linux/macOS gate has no
+                      DLL, so it runs with -DexcludedGroups=native and everything else still
+                      executes — which is the point: those platforms used to run a single test
+                      class, so JaCoCo saw almost nothing and Codecov judged the whole patch on
+                      a report where the code had never run.
+                      Empty by default, so a full local/Windows run executes the native tests too.
+                    -->
+                    <excludedGroups>${excludedGroups}</excludedGroups>
                 </configuration>
             </plugin>
 

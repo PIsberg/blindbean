@@ -1,6 +1,7 @@
 package com.blindbean.fhe;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * The happy-path native operations are covered by FheNativeBridgeTest;
  * this class focuses on the first-run failure experience.
  */
+@Tag("native")
 public class FheContextTest {
 
     private static final String PROP = "blindbean.native.path";

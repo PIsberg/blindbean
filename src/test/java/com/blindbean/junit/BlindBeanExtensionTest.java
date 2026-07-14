@@ -5,6 +5,7 @@ import com.blindbean.context.BlindContext;
 import com.blindbean.core.Ciphertext;
 
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -40,6 +41,7 @@ public class BlindBeanExtensionTest {
     }
 
     @Nested
+    @Tag("native")
     @BlindBeanTest(scheme = Scheme.BFV, polyModulusDegree = 8192)
     class BfvConfigured {
 
@@ -54,6 +56,7 @@ public class BlindBeanExtensionTest {
     }
 
     @Nested
+    @Tag("native")
     @BlindBeanTest(scheme = Scheme.CKKS, polyModulusDegree = 8192, ckksScale = 1099511627776.0)
     class CkksConfigured {
 
