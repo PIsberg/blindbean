@@ -132,4 +132,51 @@ public class KeyTagTest {
         assertArrayEquals(payload, KeyTag.payloadOf(enveloped));
         assertEquals(KeyTag.TAG_LENGTH, tag.length);
     }
+
+    @Test
+    public void wrapRejectsATagOfTheWrongLength() {
+        // A short tag would still produce a header that isTagged() accepts, and the bytes after
+        // it would be read as ciphertext — silently shifting the payload. Refuse it at the door.
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+            () -> KeyTag.wrap(new byte[] {1, 2, 3}, new byte[] {9}));
+        assertTrue(e.getMessage().contains("16 bytes"));
+    }
+
+    @Test
+    public void payloadsTooShortToHoldAHeaderAreLegacyNotCorrupt() {
+        // A ciphertext shorter than the header can never be tagged. It must read as legacy
+        // rather than have its first bytes mistaken for a header.
+        byte[] tiny = {1, 2, 3};
+        assertFalse(KeyTag.isTagged(tiny));
+        assertNull(KeyTag.tagOf(tiny));
+        assertArrayEquals(tiny, KeyTag.payloadOf(tiny));
+
+        // A payload whose bytes happen not to match the magic is likewise legacy.
+        byte[] notMagic = new byte[40];
+        Arrays.fill(notMagic, (byte) 0x7f);
+        assertFalse(KeyTag.isTagged(notMagic));
+        assertArrayEquals(notMagic, KeyTag.payloadOf(notMagic));
+    }
+
+    @Test
+    public void subtractionStillWorksAndStaysTagged() {
+        PaillierMath m = new PaillierMath(keys());
+        Ciphertext diff = m.subtract(m.encrypt(BigInteger.valueOf(50)), m.encrypt(BigInteger.valueOf(8)));
+
+        assertEquals(BigInteger.valueOf(42), m.decrypt(diff));
+        assertArrayEquals(m.keyTag(), KeyTag.tagOf(diff.getBytes()),
+            "the result of a homomorphic op must carry the tag too, or it is unrotatable");
+    }
+
+    @Test
+    public void paillierOpsRejectAForeignScheme() {
+        PaillierMath m = new PaillierMath(keys());
+        Ciphertext paillier = m.encrypt(BigInteger.ONE);
+        Ciphertext bfv = new Ciphertext("abcd", Scheme.BFV);
+
+        // Scheme is checked before the key tag — a BFV payload is not even the right kind of thing.
+        assertThrows(IllegalArgumentException.class, () -> m.decrypt(bfv));
+        assertThrows(IllegalArgumentException.class, () -> m.add(paillier, bfv));
+        assertThrows(IllegalArgumentException.class, () -> m.subtract(paillier, bfv));
+    }
 }

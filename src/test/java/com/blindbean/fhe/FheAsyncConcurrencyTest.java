@@ -4,6 +4,7 @@ import com.blindbean.annotations.Scheme;
 import com.blindbean.async.BlindAsync;
 import com.blindbean.context.BlindContext;
 import se.deversity.asynctest.AsyncTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Concurrency stress tests for FHE native components.
  */
+@Tag("native")
 class FheAsyncConcurrencyTest {
 
     private volatile FheContext bfvContext;

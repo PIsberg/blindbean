@@ -4,6 +4,7 @@ import com.blindbean.context.BlindContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.foreign.MemorySegment;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Exercises BFV (exact integer), CKKS (approximate real), serialization,
  * noise budget diagnostics, and resource management.
  */
+@Tag("native")
 public class FheNativeBridgeTest {
 
     @AfterEach
