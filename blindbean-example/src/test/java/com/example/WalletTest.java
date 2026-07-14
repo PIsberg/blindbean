@@ -1,8 +1,8 @@
 package com.example;
 
-import com.blindbean.context.BlindContext;
-import com.blindbean.core.Ciphertext;
-import com.blindbean.annotations.Scheme;
+import se.deversity.blindbean.context.BlindContext;
+import se.deversity.blindbean.core.Ciphertext;
+import se.deversity.blindbean.annotations.Scheme;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

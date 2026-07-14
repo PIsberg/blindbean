@@ -29,9 +29,9 @@
     <dependencies>
         <!-- The library we just built -->
         <dependency>
-            <groupId>com.blindbean</groupId>
+            <groupId>se.deversity</groupId>
             <artifactId>blindbean</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
 
         <!-- VibeTags AI Guardrail Annotations -->
@@ -67,9 +67,9 @@
                     <!-- Ensure the annotation processor from the library executes -->
                     <annotationProcessorPaths>
                         <path>
-                            <groupId>com.blindbean</groupId>
+                            <groupId>se.deversity</groupId>
                             <artifactId>blindbean</artifactId>
-                            <version>1.0-SNAPSHOT</version>
+                            <version>0.1.0</version>
                         </path>
                         <path>
                             <groupId>se.deversity.vibetags</groupId>

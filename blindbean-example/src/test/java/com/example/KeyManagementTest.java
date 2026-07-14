@@ -1,6 +1,6 @@
 package com.example;
 
-import com.blindbean.context.BlindContext;
+import se.deversity.blindbean.context.BlindContext;
 import com.example.entity.SensorData;
 import com.example.entity.SensorDataBlindWrapper;
 import org.junit.jupiter.api.AfterEach;

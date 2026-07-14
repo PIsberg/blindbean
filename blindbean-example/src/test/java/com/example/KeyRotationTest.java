@@ -1,8 +1,8 @@
 package com.example;
 
-import com.blindbean.context.BlindContext;
-import com.blindbean.context.BlindRotation;
-import com.blindbean.math.PaillierKeyPair;
+import se.deversity.blindbean.context.BlindContext;
+import se.deversity.blindbean.context.BlindRotation;
+import se.deversity.blindbean.math.PaillierKeyPair;
 import com.example.entity.SensorData;
 import com.example.entity.SensorDataBlindWrapper;
 import com.example.entity.UserAccount;

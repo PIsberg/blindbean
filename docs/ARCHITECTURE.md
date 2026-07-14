@@ -155,7 +155,7 @@ This exists because the missing-library failure is the first error most new user
 
 ---
 
-## 3.5 Test Support Layer (`com.blindbean.junit`)
+## 3.5 Test Support Layer (`se.deversity.blindbean.junit`)
 
 Ships in the **main** artifact — `junit-jupiter-api` is therefore scoped `provided`, so consumers inherit the extension with the library while supplying their own JUnit at runtime.
 
