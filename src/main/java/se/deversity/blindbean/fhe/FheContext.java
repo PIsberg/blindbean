@@ -488,13 +488,20 @@ public class FheContext implements AutoCloseable {
     }
 
     /**
-     * Set {@code -Dblindbean.noise.guard=false} to decrypt a BFV ciphertext whose noise budget is
+     * Set {@code blindbean.noise.guard=false} to decrypt a BFV ciphertext whose noise budget is
      * exhausted instead of refusing it. There is exactly one honest reason to: you are deliberately
      * studying the corruption. It is not a performance switch worth flipping — the budget check is
      * one native call against a decryption that costs far more.
+     *
+     * <p>Read <em>per call</em>, not cached in a static. A static would only honour the flag when it
+     * was set before this class first loaded — so a JVM {@code -D} would work but a programmatic
+     * {@code System.setProperty} silently would not, which is a trap, and it would leave the
+     * guard-off path untestable. A property lookup is a map read against a decryption that costs
+     * milliseconds.
      */
-    private static final boolean NOISE_GUARD =
-        !"false".equalsIgnoreCase(System.getProperty("blindbean.noise.guard"));
+    private static boolean noiseGuardEnabled() {
+        return !"false".equalsIgnoreCase(System.getProperty("blindbean.noise.guard"));
+    }
 
     /**
      * Refuses to decrypt a BFV ciphertext whose noise budget is spent.
@@ -514,7 +521,7 @@ public class FheContext implements AutoCloseable {
      * decay, not a cliff, and it cannot be detected this way.
      */
     private void requireDecryptable(MemorySegment ct) {
-        if (!NOISE_GUARD || scheme != Scheme.BFV) {
+        if (!noiseGuardEnabled() || scheme != Scheme.BFV) {
             return;
         }
         int budget = FheNativeBridge.fhe_noise_budget(handle, ct);

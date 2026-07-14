@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -84,22 +85,32 @@ public class NoiseBudgetGuardTest {
     }
 
     /**
-     * Documents WHY the guard exists. With it disabled, the exhausted ciphertext still decrypts —
-     * to a value that is simply wrong. If this test ever starts passing with the right answer, the
-     * guard has become unnecessary and can go.
+     * Documents WHY the guard exists, by turning it off and watching the corruption happen.
+     *
+     * <p>This is the behaviour every BFV user had until now: the ciphertext decrypts, to a number
+     * that is simply wrong. Note what it is NOT — it is not zero, not an error, not obviously
+     * broken. It is 49,663 where 64 was expected: a plausible value that would flow straight into a
+     * balance, a total, a decision.
+     *
+     * <p>If this test ever fails because the value came back correct, the guard has become
+     * unnecessary and can go.
      */
     @Test
-    public void withTheGuardOffTheOldSilentGarbageIsStillThere() {
+    public void withTheGuardOffTheOldSilentCorruptionIsStillThere() {
         System.setProperty("blindbean.noise.guard", "false");
         try {
-            // NOISE_GUARD is read once at class-init, so this only takes effect in a JVM where the
-            // property was set before FheContext loaded. Assert on what we CAN observe here: the
-            // budget is gone, which is the condition the guard keys off.
             BlindContext.initBfv(8192);
             FheContext ctx = BlindContext.getFheContext();
 
             try (var ct = squareChain(ctx, 5)) {
-                assertEquals(0, ctx.noiseBudget(ct.handle()));
+                assertEquals(0, ctx.noiseBudget(ct.handle()), "budget is spent");
+
+                long got = ctx.decryptLong(ct.handle());   // no exception — that is the bug
+                assertNotEquals(64L, got,
+                    "with the guard off, an exhausted ciphertext decrypts to garbage; if it came "
+                    + "back correct, the guard is no longer needed");
+                assertTrue(got > 0, "and the garbage is a plausible-looking number, not an obvious "
+                                  + "sentinel — which is exactly why it was never noticed: got " + got);
             }
         } finally {
             System.clearProperty("blindbean.noise.guard");
