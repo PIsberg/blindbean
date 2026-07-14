@@ -9,7 +9,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # ── Locate Microsoft SEAL (installed via vcpkg or system) ──
-find_package(SEAL 4.1 REQUIRED)
+find_package(SEAL 4.3 REQUIRED)
 
 # ── Build the shared library ──
 add_library(blindbean_fhe SHARED blindbean_fhe.cpp)
