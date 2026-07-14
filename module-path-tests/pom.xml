@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Proves BlindBean works when a consumer puts it on the MODULE PATH.
+
+      Every other test in this repository runs on the classpath, where JPMS is not enforced at all:
+      encapsulation is off, everything is exported, and services resolve through META-INF/services.
+      None of that tells you whether the library survives being a real named module — and that is
+      precisely what the modularisation refactor changes. So this exists BEFORE the refactor, passing
+      against the current single-artifact layout, as the definition of "works like before".
+
+      It is standalone (not in the core reactor). Install the library first:
+          cd .. and run: mvnw install -DskipTests -Dblindbean.native.path=build-native/Release
+    -->
+    <groupId>se.deversity</groupId>
+    <artifactId>blindbean-module-path-tests</artifactId>
+    <version>0.1.0</version>
+
+    <properties>
+        <maven.compiler.source>26</maven.compiler.source>
+        <maven.compiler.target>26</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <blindbean.version>0.1.0</blindbean.version>
+        <blindbean.native.path>../build-native/Release</blindbean.native.path>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>se.deversity</groupId>
+            <artifactId>blindbean</artifactId>
+            <version>${blindbean.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>6.1.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              Lay every dependency out as a flat directory the test can hand to the module path.
+              The test needs real jars on disk; it cannot synthesise a module path from the
+              classloader.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>collect-module-path</id>
+                        <phase>process-test-resources</phase>
+                        <goals><goal>copy-dependencies</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                        <arg>--add-modules</arg>
+                        <arg>jdk.incubator.vector</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.6</version>
+                <configuration>
+                    <argLine>
+                        --enable-preview
+                        --add-modules jdk.incubator.vector
+                        --enable-native-access=ALL-UNNAMED
+                    </argLine>
+                    <systemPropertyVariables>
+                        <blindbean.native.path>${blindbean.native.path}</blindbean.native.path>
+                        <modules.dir>${project.build.directory}/modules</modules.dir>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
