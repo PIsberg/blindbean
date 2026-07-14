@@ -106,6 +106,28 @@ Fine for signals and ML features. **Never** for money — `BigDecimal` on Pailli
 
 If keygen is on your request path, that's the bug — export the key bundle and reload it.
 
+### Per-operation costs — two counter-intuitive results
+
+Paillier-2048, µs/op ([`results/0.1.0/jmh-paillier.txt`](results/0.1.0/jmh-paillier.txt)):
+
+| Operation | Cost |
+|---|---|
+| `add` | **24 µs** |
+| `subtract` | **558 µs** |
+| `encrypt` | **8,107 µs** |
+| `decrypt` | **8,051 µs** |
+
+**Subtraction costs 23× an addition.** Addition is a modular multiply; subtraction is a multiply by
+the modular *inverse*. They are not symmetric, and a loop that subtracts is not a loop that adds.
+
+**Encryption dominates everything** — ~330× an add. So every *plaintext* overload (`addX(5)`,
+`subX(5)`) silently pays a full encryption. In a loop, encrypt once and pass the `Ciphertext`
+overload instead.
+
+A hypothesis this disproved: `subX(plain)` could skip the inverse by encrypting the negation and
+adding. It buys ~2%, inside the error bars — the inverse was never the bottleneck. The benchmark is
+kept so nobody re-proposes it.
+
 ### Concurrency
 
 32 virtual threads × 500 ops: **zero** key bleed, **zero** foreign ciphertexts silently decrypted

@@ -88,6 +88,53 @@ public class CryptoHotPathBenchmark {
         return paillier.add(pA, pB);
     }
 
+    /**
+     * Subtraction is NOT symmetric with addition in Paillier — it is a multiply by the modular
+     * <em>inverse</em> (an extended-Euclid over n²), where addition is a plain modular multiply.
+     * Worth measuring rather than assuming: a loop that subtracts is not the same cost as one that
+     * adds, and nothing in this repo priced it.
+     */
+    @Benchmark
+    public Ciphertext paillierSubtract() {
+        return paillier.subtract(pA, pB);
+    }
+
+    /**
+     * A HYPOTHESIS THAT WAS TESTED AND REJECTED. Kept so nobody re-proposes it.
+     *
+     * <p>Since {@code subX(plain)} holds the plaintext, it could skip the modular inverse entirely
+     * by encrypting the <em>negation</em> and adding. Given subtract costs 23× an add, that looked
+     * like an easy win.
+     *
+     * <p>It is not. Measured at 2048-bit (µs/op):
+     *
+     * <pre>
+     *   add                        24
+     *   subtract                  558     ← 23x an add, as expected
+     *   subX(plain) via inverse  8,795
+     *   subX(plain) via negate   8,636    ← only ~2% better, inside the error bars
+     *   encrypt                  8,107    ← ...because THIS is the cost
+     * </pre>
+     *
+     * <p>The inverse is not the bottleneck; the encryption the overload has to do first is. Both
+     * routes pay ~8.1 ms for it, which swamps the 534 µs the inverse costs. The optimisation is
+     * real and worth nothing.
+     *
+     * <p>The finding that <em>does</em> matter is the one this exposed: <b>every plaintext overload
+     * costs a full encryption</b>. {@code addX(5)} is ~330× more expensive than adding a
+     * {@code Ciphertext} you already hold. In a loop, encrypt once and pass the ciphertext.
+     */
+    @Benchmark
+    public Ciphertext paillierSubtractPlainViaNegate() {
+        return paillier.add(pA, paillier.encrypt(BigInteger.valueOf(5678L).negate()));
+    }
+
+    /** What the generated {@code subX(plain)} does today: encrypt, then invert. See above. */
+    @Benchmark
+    public Ciphertext paillierSubtractPlainViaInverse() {
+        return paillier.subtract(pA, paillier.encrypt(BigInteger.valueOf(5678L)));
+    }
+
     // ── BFV ──────────────────────────────────────────────────────────────────
 
     @Benchmark
@@ -105,6 +152,16 @@ public class CryptoHotPathBenchmark {
              var b = new FheCiphertextNative(bfv.encryptLong(2L), bfv);
              var s = new FheCiphertextNative(bfv.add(a.handle(), b.handle()), bfv)) {
             return bfv.decryptLong(s.handle());
+        }
+    }
+
+    @Benchmark
+    public long bfvSubtract() {
+        if (!nativeUp) return 0;
+        try (var a = new FheCiphertextNative(bfv.encryptLong(9L), bfv);
+             var b = new FheCiphertextNative(bfv.encryptLong(4L), bfv);
+             var d = new FheCiphertextNative(bfv.subtract(a.handle(), b.handle()), bfv)) {
+            return bfv.decryptLong(d.handle());
         }
     }
 

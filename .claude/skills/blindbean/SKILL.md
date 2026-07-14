@@ -35,7 +35,7 @@ tells you what it looked for and where.
 The scheme is not a preference; it is decided by the field's type and by what you need to compute.
 The processor enforces the pairing and fails the build if you get it wrong.
 
-| Field holds | Scheme | Can add | Can multiply | Notes |
+| Field holds | Scheme | Add / sub | Can multiply | Notes |
 |---|---|---|---|---|
 | `long`, `int`, `short`, `byte`, `BigInteger` | `PAILLIER` | ✅ | ❌ | Pure Java, no native lib. The default. |
 | `BigDecimal` | `PAILLIER` | ✅ | ❌ | **Exact** decimals at a fixed `scale`. Use this for money. |
@@ -285,6 +285,10 @@ Nested classes inherit the enclosing annotation.
   an `FheException` naming the slot. It used to be encrypted anyway: 1,000,000 decrypted to -32,193,
   and one out-of-range entry corrupted *every other slot in the vector*. Check
   `FheContext.maxSlotValue()` and scale your values, or raise the plaintext modulus.
+- **Every plaintext overload costs a full encryption.** `addX(5)` is ~330× more expensive than
+  `addX(ciphertext)` on a value you already hold (8.1 ms vs 24 µs at Paillier-2048). In a loop,
+  encrypt once and pass the `Ciphertext`. Note also that **subtraction costs ~23× an addition** —
+  it is a modular inverse, not a modular multiply, so the two are not symmetric.
 - **CKKS is approximate.** `encrypt(3.14159)` then `decrypt` does not return exactly `3.14159`.
   Always assert with a tolerance. Never use CKKS for money or anything requiring an exact value —
   use `BigDecimal` on Paillier for that.

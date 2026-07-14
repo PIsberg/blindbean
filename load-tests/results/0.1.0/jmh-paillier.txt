@@ -1,0 +1,28 @@
+BlindBean — JMH hot-path costs (Paillier-2048, avgt, us/op)
+====================================================================================================
+JDK 26, Windows x64. 3 warmup + 5 measurement iterations, 1 fork.
+
+Benchmark                                        Score       Error   Units
+-------------------------------------------------------------------------
+paillierAdd                                       24.4  ±     1.1   us/op
+paillierSubtract                                 558.0  ±    69.8   us/op
+paillierEncrypt                                8107.1  ±   438.6   us/op
+paillierDecrypt                                8050.8  ±   258.4   us/op
+paillierSubtractPlainViaInverse                8794.7  ±   720.1   us/op
+paillierSubtractPlainViaNegate                 8635.7  ±  1060.2   us/op
+
+   → Two things worth knowing, both counter-intuitive:
+
+     1. SUBTRACT COSTS 23x AN ADD. Addition is a modular multiply; subtraction is a
+        multiply by the modular INVERSE (extended Euclid over n^2). They are not
+        symmetric, and a loop that subtracts is not a loop that adds.
+
+     2. ENCRYPTION DOMINATES EVERYTHING. At 8.1 ms it is ~330x an add and ~15x a
+        subtract. So every PLAINTEXT overload -- addX(5), subX(5) -- silently pays a
+        full encryption. If you are doing this in a loop, encrypt once and pass the
+        Ciphertext overload instead.
+
+     A hypothesis this disproved: subX(plain) could skip the inverse by encrypting the
+     negation and adding. It buys ~2% (8636 vs 8795), inside the error bars, because the
+     inverse was never the bottleneck. Rejected -- the benchmark is kept so nobody
+     re-proposes it.
