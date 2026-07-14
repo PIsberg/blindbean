@@ -48,7 +48,7 @@ The processor enforces the pairing and fails the build if you get it wrong.
 | `float[]`, `double[]` | `CKKS` | ✅ | ✅ | Vectors, slot-wise. This is what CKKS is *for*. Needs native. |
 | `long[]`, `int[]`, `short[]` | `BFV` | ✅ | ✅ | SIMD batching, thousands of slots at once. **Mind the slot range** — see §7. Needs native. |
 
-Boxed types (`Long`, `Double`, `Boolean`, …) work wherever their primitive does, and **null round-trips**: encrypting null writes null, decrypting a null column returns null.
+**Null.** The reference types (`BigDecimal`, `byte[]`, `String`, `java.time`, the arrays) accept null on both sides: `encryptX(null)` writes null, and a null column decrypts to null. Boxed scalars (`Long`, `Double`, …) take the *primitive* on the way in, so they are nullable **outbound only** — a null column decrypts to null; to store a null, set the entity's field to null yourself.
 
 **Money goes in `BigDecimal` on Paillier, never CKKS.** CKKS is approximate; `19.99 + 0.01` may not be exactly `20.00`. Paillier stores the unscaled integer at a fixed `scale`, so it is exact:
 
