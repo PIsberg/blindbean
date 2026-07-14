@@ -1,0 +1,291 @@
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #78766f;
+    --grid:           #e6e5e1;
+    --series-1:       #2a78d6;  /* Paillier  */
+    --series-2:       #1baf7a;  /* BFV       */
+    --series-3:       #eda100;  /* CKKS      */
+    --critical:       #d03b3b;  /* status: the failure point */
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: var(--surface-1);
+    color: var(--text-primary);
+  }
+  .chart {
+    background: var(--surface-1);
+    padding: 22px 26px 18px;
+    width: 860px;
+    box-sizing: border-box;
+  }
+  .title  { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 3px; }
+  .sub    { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 16px; line-height: 1.45; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); margin: 0 0 12px; }
+  .swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+  text    { font-family: inherit; }
+  .lbl    { font-size: 12px; fill: var(--text-secondary); }
+  .val    { font-size: 12px; font-weight: 600; fill: var(--text-primary); }
+  .tick   { font-size: 11px; fill: var(--text-muted); }
+  .axis   { stroke: var(--grid); stroke-width: 1; }
+  .note   { font-size: 11.5px; color: var(--text-muted); margin: 10px 0 0; line-height: 1.5; }
+</style>
+
+<div class="viz-root">
+
+<!-- ── 1. Ciphertext expansion — log dot plot ─────────────────────────────── -->
+<div class="chart" id="c1">
+  <p class="title">Ciphertext expansion — bytes stored per byte of plaintext</p>
+  <p class="sub">A BFV ciphertext is sized by the <em>parameters</em>, not the payload: one <code>long</code> costs the same
+    ~432&nbsp;KB as a full 8,192-slot vector. Batching is not an optimisation — it is how you stop paying for empty slots.</p>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--series-1)"></i>Paillier</span>
+    <span><i class="swatch" style="background:var(--series-2)"></i>BFV</span>
+    <span><i class="swatch" style="background:var(--series-3)"></i>CKKS</span>
+  </div>
+  <svg width="808" height="250" id="s1"></svg>
+  <p class="note">Log scale — a bar would imply length from zero, which is meaningless here, so each value is a dot.</p>
+</div>
+
+<!-- ── 2. Noise budget → multiplicative depth ─────────────────────────────── -->
+<div class="chart" id="c2">
+  <p class="title">Noise budget: you get four multiplies</p>
+  <p class="sub">Every operation spends budget. At zero the ciphertext stops decrypting to anything meaningful —
+    <strong>with no exception and no warning</strong>. Additions are nearly free; multiplies spend it.</p>
+  <svg width="808" height="272" id="s2"></svg>
+  <p class="note">BFV, poly modulus degree 8192. An application chaining multiplies must watch
+    <code>FheContext.noiseBudget()</code> — nothing else will tell it the answer has gone wrong.</p>
+</div>
+
+<!-- ── 3. Batching amortisation — log dot plot ────────────────────────────── -->
+<div class="chart" id="c3">
+  <p class="title">Batching is a 3,400× speedup</p>
+  <p class="sub">One homomorphic operation applies to every slot. Encrypting values one at a time under BFV or CKKS
+    costs three to four orders of magnitude more than it needs to.</p>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--series-1)"></i>Scalar — one value per ciphertext</span>
+    <span><i class="swatch" style="background:var(--series-2)"></i>Batched — n values per ciphertext</span>
+  </div>
+  <svg width="808" height="170" id="s3"></svg>
+  <p class="note">Time per value, log scale. The CKKS batched path did not exist before the <code>double[]</code> bridge —
+    every CKKS ciphertext used to waste all but one of its 4,096 slots.</p>
+</div>
+
+<!-- ── 4. CKKS precision decay ────────────────────────────────────────────── -->
+<div class="chart" id="c4">
+  <p class="title">CKKS precision decay over chained additions</p>
+  <p class="sub">CKKS is approximate. “Approximate” is not a number — this is: absolute error after N chained adds.</p>
+  <svg width="808" height="230" id="s4"></svg>
+  <p class="note">Still 8–9 correct significant digits after 1,000 additions. Fine for signals and ML features;
+    never for money — <code>BigDecimal</code> on Paillier is exact.</p>
+</div>
+
+<!-- ── 5. Keygen cost ─────────────────────────────────────────────────────── -->
+<div class="chart" id="c5">
+  <p class="title">Paillier key generation by modulus size</p>
+  <p class="sub">The security upgrade from 1024-bit (~80-bit security, disallowed since 2013) to the current
+    2048-bit default costs about 37&nbsp;ms — once, per application.</p>
+  <svg width="808" height="190" id="s5"></svg>
+  <p class="note">A zero baseline is meaningful here, so these are bars. Keygen is a per-application cost:
+    export the key bundle and reload it. If it is on your request path, that is the bug.</p>
+</div>
+
+</div>
+
+<script type="module">
+const NS = 'http://www.w3.org/2000/svg';
+const el = (n, a = {}) => { const e = document.createElementNS(NS, n);
+  for (const [k, v] of Object.entries(a)) e.setAttribute(k, v); return e; };
+const S1 = 'var(--series-1)', S2 = 'var(--series-2)', S3 = 'var(--series-3)', CRIT = 'var(--critical)';
+
+// ── 1. Ciphertext expansion (log dot plot) ────────────────────────────────
+{
+  const svg = document.getElementById('s1');
+  const data = [
+    { label: 'BFV — one long (1 of 8,192 slots)',  v: 54062, c: S2 },
+    { label: 'CKKS — one double (1 of 4,096 slots)', v: 41457, c: S3 },
+    { label: 'Paillier-3072 — one long',            v: 99,    c: S1 },
+    { label: 'Paillier-2048 — one long',            v: 67,    c: S1 },
+    { label: 'Paillier-1024 — one long',            v: 35,    c: S1 },
+    { label: 'CKKS — double[4096] (all slots)',     v: 10,    c: S3 },
+    { label: 'BFV — long[8192] (all slots)',        v: 7,     c: S2 },
+  ];
+  const L = 300, R = 760, T = 14, rowH = 31;
+  const lo = Math.log10(5), hi = Math.log10(100000);
+  const x = v => L + (Math.log10(v) - lo) / (hi - lo) * (R - L);
+
+  for (const p of [10, 100, 1000, 10000, 100000]) {
+    const gx = x(p);
+    svg.append(el('line', { x1: gx, x2: gx, y1: T, y2: T + rowH * data.length, class: 'axis' }));
+    const t = el('text', { x: gx, y: T + rowH * data.length + 15, 'text-anchor': 'middle', class: 'tick' });
+    t.textContent = p >= 1000 ? (p / 1000) + 'k×' : p + '×';
+    svg.append(t);
+  }
+  data.forEach((d, i) => {
+    const y = T + rowH * i + rowH / 2;
+    const lt = el('text', { x: L - 14, y: y + 4, 'text-anchor': 'end', class: 'lbl' });
+    lt.textContent = d.label; svg.append(lt);
+    svg.append(el('line', { x1: x(5), x2: x(d.v), y1: y, y2: y, stroke: d.c, 'stroke-width': 2, opacity: 0.25 }));
+    svg.append(el('circle', { cx: x(d.v), cy: y, r: 6, fill: d.c, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+    const vt = el('text', { x: x(d.v) + 13, y: y + 4, class: 'val' });
+    vt.textContent = d.v.toLocaleString('en-US') + '×'; svg.append(vt);
+  });
+}
+
+// ── 2. Noise budget → depth (line + failure marker) ───────────────────────
+{
+  const svg = document.getElementById('s2');
+  const data = [
+    { d: 0, b: 146, ok: true }, { d: 1, b: 114, ok: true }, { d: 2, b: 83, ok: true },
+    { d: 3, b: 51, ok: true },  { d: 4, b: 19, ok: true },  { d: 5, b: 0, ok: false },
+  ];
+  const L = 66, R = 690, T = 48, B = 214;   // T pushed down: the annotation lives above the plot
+  const x = d => L + d / 5 * (R - L);
+  const y = b => B - b / 170 * (B - T);
+
+  for (const g of [0, 50, 100, 150]) {
+    svg.append(el('line', { x1: L, x2: R, y1: y(g), y2: y(g), class: 'axis' }));
+    const t = el('text', { x: L - 10, y: y(g) + 4, 'text-anchor': 'end', class: 'tick' });
+    t.textContent = g; svg.append(t);
+  }
+  const yl = el('text', { x: L - 10, y: y(150) - 14, 'text-anchor': 'end', class: 'tick' });
+  yl.textContent = 'bits'; svg.append(yl);
+
+  const path = data.map((p, i) => (i ? 'L' : 'M') + x(p.d) + ' ' + y(p.b)).join(' ');
+  svg.append(el('path', { d: path, fill: 'none', stroke: S2, 'stroke-width': 2,
+                          'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+
+  data.forEach(p => {
+    const col = p.ok ? S2 : CRIT;
+    svg.append(el('circle', { cx: x(p.d), cy: y(p.b), r: p.ok ? 5.5 : 8,
+                              fill: col, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+    // The first point sits at the top of the plot; its label goes beside it, not above,
+    // where it would collide with the axis tick.
+    const first = p.d === 0;
+    const v = el('text', {
+      x: first ? x(p.d) + 13 : x(p.d),
+      y: first ? y(p.b) + 4 : y(p.b) - 14,
+      'text-anchor': first ? 'start' : 'middle',
+      class: 'val',
+    });
+    v.textContent = p.b; svg.append(v);
+    const t = el('text', { x: x(p.d), y: B + 20, 'text-anchor': 'middle', class: 'tick' });
+    t.textContent = p.d === 0 ? 'encrypt' : '×' + p.d; svg.append(t);
+  });
+  const xl = el('text', { x: (L + R) / 2, y: B + 42, 'text-anchor': 'middle', class: 'lbl' });
+  xl.textContent = 'chained multiplications'; svg.append(xl);
+
+  // The failure is the point of the chart, so it is stated in words — never colour alone.
+  // The block sits ABOVE the plot and the leader runs up the right-hand gutter, so it can
+  // never cross its own text (which is exactly what the first render did).
+  const bx = 700;
+  const a = el('text', { x: bx, y: 16, 'text-anchor': 'end', class: 'val', fill: CRIT });
+  a.textContent = '5th multiply: budget 0 → returned 49,663, expected 64.'; svg.append(a);
+  const b = el('text', { x: bx, y: 33, 'text-anchor': 'end', class: 'lbl', fill: CRIT });
+  b.textContent = 'No exception. No warning. The data is simply wrong.'; svg.append(b);
+  svg.append(el('line', { x1: x(5), x2: x(5), y1: y(0) - 12, y2: 40,
+                          stroke: CRIT, 'stroke-width': 1.5, 'stroke-dasharray': '3 3' }));
+}
+
+// ── 3. Batching amortisation (log dot plot with connector) ────────────────
+{
+  const svg = document.getElementById('s3');
+  const rows = [
+    { label: 'BFV',  scalar: 7334.0, batched: 2.2 },
+    { label: 'CKKS', scalar: 6019.8, batched: 6.0 },
+  ];
+  const L = 96, R = 700, T = 22, rowH = 52;
+  const lo = Math.log10(1), hi = Math.log10(10000);
+  const x = v => L + (Math.log10(v) - lo) / (hi - lo) * (R - L);
+
+  for (const p of [1, 10, 100, 1000, 10000]) {
+    const gx = x(p);
+    svg.append(el('line', { x1: gx, x2: gx, y1: T, y2: T + rowH * rows.length, class: 'axis' }));
+    const t = el('text', { x: gx, y: T + rowH * rows.length + 16, 'text-anchor': 'middle', class: 'tick' });
+    t.textContent = p >= 1000 ? (p / 1000) + 'k µs' : p + ' µs'; svg.append(t);
+  }
+  rows.forEach((r, i) => {
+    const y = T + rowH * i + rowH / 2;
+    const lt = el('text', { x: L - 16, y: y + 4, 'text-anchor': 'end', class: 'lbl' });
+    lt.textContent = r.label; svg.append(lt);
+    svg.append(el('line', { x1: x(r.batched), x2: x(r.scalar), y1: y, y2: y,
+                            stroke: 'var(--grid)', 'stroke-width': 3 }));
+    svg.append(el('circle', { cx: x(r.scalar), cy: y, r: 6, fill: S1,
+                              stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+    svg.append(el('circle', { cx: x(r.batched), cy: y, r: 6, fill: S2,
+                              stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+    const sv = el('text', { x: x(r.scalar) + 13, y: y + 4, class: 'val' });
+    sv.textContent = r.scalar.toLocaleString('en-US') + ' µs'; svg.append(sv);
+    const bv = el('text', { x: x(r.batched), y: y - 14, 'text-anchor': 'middle', class: 'val' });
+    bv.textContent = r.batched + ' µs'; svg.append(bv);
+    const sp = el('text', { x: (x(r.batched) + x(r.scalar)) / 2, y: y + 19, 'text-anchor': 'middle', class: 'tick' });
+    sp.textContent = Math.round(r.scalar / r.batched).toLocaleString('en-US') + '× faster per value'; svg.append(sp);
+  });
+}
+
+// ── 4. CKKS precision decay (log-log line) ────────────────────────────────
+{
+  const svg = document.getElementById('s4');
+  const data = [
+    { ops: 1, err: 9.576e-10 }, { ops: 10, err: 2.883e-9 },
+    { ops: 100, err: 5.260e-9 }, { ops: 1000, err: 4.963e-8 },
+  ];
+  const L = 78, R = 700, T = 24, B = 168;
+  const xlo = 0, xhi = 3;                       // log10(ops)
+  const ylo = -10, yhi = -7;                    // log10(error)
+  const x = o => L + (Math.log10(o) - xlo) / (xhi - xlo) * (R - L);
+  const y = e => B - (Math.log10(e) - ylo) / (yhi - ylo) * (B - T);
+
+  for (const g of [-10, -9, -8, -7]) {
+    svg.append(el('line', { x1: L, x2: R, y1: y(10 ** g), y2: y(10 ** g), class: 'axis' }));
+    const t = el('text', { x: L - 10, y: y(10 ** g) + 4, 'text-anchor': 'end', class: 'tick' });
+    t.textContent = '1e' + g; svg.append(t);
+  }
+  const yl = el('text', { x: L - 10, y: T - 8, 'text-anchor': 'end', class: 'tick' });
+  yl.textContent = 'abs error'; svg.append(yl);
+
+  const path = data.map((p, i) => (i ? 'L' : 'M') + x(p.ops) + ' ' + y(p.err)).join(' ');
+  svg.append(el('path', { d: path, fill: 'none', stroke: S3, 'stroke-width': 2,
+                          'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+  data.forEach(p => {
+    svg.append(el('circle', { cx: x(p.ops), cy: y(p.err), r: 5.5, fill: S3,
+                              stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+    const v = el('text', { x: x(p.ops), y: y(p.err) - 13, 'text-anchor': 'middle', class: 'val' });
+    v.textContent = p.err.toExponential(1); svg.append(v);
+    const t = el('text', { x: x(p.ops), y: B + 20, 'text-anchor': 'middle', class: 'tick' });
+    t.textContent = p.ops.toLocaleString('en-US'); svg.append(t);
+  });
+  const xl = el('text', { x: (L + R) / 2, y: B + 42, 'text-anchor': 'middle', class: 'lbl' });
+  xl.textContent = 'chained additions'; svg.append(xl);
+}
+
+// ── 5. Keygen (bars — zero baseline is real) ──────────────────────────────
+{
+  const svg = document.getElementById('s5');
+  const data = [
+    { label: '1024-bit', sub: '~80-bit security', ms: 9.9,   dim: true },
+    { label: '2048-bit', sub: 'current default',  ms: 46.8,  dim: false },
+    { label: '3072-bit', sub: '~128-bit security', ms: 121.6, dim: false },
+  ];
+  const L = 150, R = 660, T = 18, barH = 26, gap = 22;
+  const x = ms => L + ms / 140 * (R - L);
+
+  for (const g of [0, 50, 100]) {
+    svg.append(el('line', { x1: x(g), x2: x(g), y1: T - 6, y2: T + data.length * (barH + gap), class: 'axis' }));
+    const t = el('text', { x: x(g), y: T + data.length * (barH + gap) + 15, 'text-anchor': 'middle', class: 'tick' });
+    t.textContent = g + ' ms'; svg.append(t);
+  }
+  data.forEach((d, i) => {
+    const y = T + i * (barH + gap);
+    const lt = el('text', { x: L - 16, y: y + 13, 'text-anchor': 'end', class: 'lbl' });
+    lt.textContent = d.label; svg.append(lt);
+    const st = el('text', { x: L - 16, y: y + 27, 'text-anchor': 'end', class: 'tick' });
+    st.textContent = d.sub; svg.append(st);
+    svg.append(el('rect', { x: L, y, width: Math.max(2, x(d.ms) - L), height: barH,
+                            rx: 4, fill: S1, opacity: d.dim ? 0.4 : 1 }));
+    const v = el('text', { x: x(d.ms) + 12, y: y + 18, class: 'val' });
+    v.textContent = d.ms + ' ms'; svg.append(v);
+  });
+}
+</script>

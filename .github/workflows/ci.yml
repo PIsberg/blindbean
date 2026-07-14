@@ -179,6 +179,27 @@ jobs:
         shell: pwsh
         working-directory: blindbean-example
 
+      # A small-load regression gate, not a benchmark. The assertions are the point: BFV must keep
+      # its multiplicative depth (>= 4), batched expansion must stay in single digits, and no thread
+      # may read back a value it did not write. Numbers on a shared runner are noise — the gates are
+      # deliberately loose so they catch a broken batch path, not a busy CI box.
+      #
+      # -Dstress.max.ops caps the two loops that dominate the runtime; the full sweep (the figures
+      # in load-tests/results/) is a local/release run. ~10s here vs ~2min at full load.
+      - name: Load-test regression gate (small load)
+        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release" "-Dstress.max.ops=50"
+        shell: pwsh
+        working-directory: load-tests
+
+      - name: Upload load-test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: load-test-reports
+          path: load-tests/target/*.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v7
         with:

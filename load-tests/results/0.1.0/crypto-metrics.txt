@@ -1,0 +1,80 @@
+BlindBean — crypto-metrics
+====================================================================================================
+
+## Paillier keygen cost by modulus size
+   Keygen is the slowest thing in the library and grows sharply. The default moved 1024 → 2048
+   because 1024 is ~80-bit security; this prices that decision.
+
+Modulus bits  Security                         Keygen (ms, median of 3)
+-------------------------------------------------------------------------
+1024          ~80-bit (disallowed since 2013)  8.4
+2048          ~112-bit (current default)       68.0
+3072          ~128-bit                         234.3
+
+   → Keygen is a per-application cost, not per-request — export the bundle and reload it. If it
+     is on your hot path, that is the bug.
+
+## CKKS precision decay
+   CKKS is approximate. 'Approximate' is not a number — this is: how many correct decimal digits
+   survive N chained additions.
+
+Ops   Expected    Got         Abs error  Correct digits
+---------------------------------------------------------
+1     0.200000    0.200000    1.232e-09  8
+10    1.100000    1.100000    2.376e-09  8
+100   10.100000   10.100000   1.219e-08  8
+1000  100.100000  100.100000  2.931e-08  9
+
+   → Additions are cheap in noise; the drift above is the encoding approximation, not noise
+     exhaustion. Never use CKKS for money — BigDecimal on Paillier is exact.
+
+## Noise budget → multiplicative depth (BFV)
+   Every operation spends noise budget. At zero the ciphertext stops decrypting to anything
+   meaningful — with NO error. The useful number is not the speed of a multiply but how many you
+   can chain before the data is silently wrong.
+
+Depth  Op            Noise budget (bits)  Decrypts correctly?
+---------------------------------------------------------------
+0      encrypt(2)    146                  true
+1      × encrypt(2)  114                  yes
+2      × encrypt(2)  83                   yes
+3      × encrypt(2)  51                   yes
+4      × encrypt(2)  19                   yes
+5      × encrypt(2)  0                    NO (got -78527)
+
+   → Usable multiplicative depth at these parameters: 4. Beyond it the value is wrong and nothing
+     throws — which is why an application chaining multiplies must watch noiseBudget(), not just
+     results.
+
+## Ciphertext expansion — bytes of ciphertext per byte of plaintext
+   The storage cost of HE. A `long` is 8 bytes in the clear; measure what it becomes.
+
+Scheme         Plaintext                 PT bytes  CT bytes  Expansion
+------------------------------------------------------------------------
+PAILLIER-1024  long 42                   8         279       35x
+PAILLIER-2048  long 42                   8         534       67x
+PAILLIER-3072  long 42                   8         790       99x
+BFV-8192       long 42 (1 slot used)     8         432493    54062x
+BFV-8192       long[8192] (all slots)    65536     432532    7x
+CKKS-8192      double 3.14 (1 slot)      8         331071    41384x
+CKKS-8192      double[4096] (all slots)  32768     331192    10x
+
+   → Ciphertext size is fixed by the parameters, not the payload: one value costs the same bytes
+     as a full slot vector. Batching is not an optimisation here, it is how you stop paying for
+     empty slots.
+
+## Batching amortisation — cost per value
+   One homomorphic op applies to every slot. This prices the SIMD win: the whole reason to reach
+   for BFV/CKKS over a scalar scheme.
+
+Scheme  Mode                   Values  Total (ms)  Per value (us)
+-------------------------------------------------------------------
+BFV     scalar (1 value/ct)    4096    30040.1     7334.0
+BFV     batched (n values/ct)  4096    8.8         2.2
+CKKS    scalar (1 value/ct)    2048    12328.5     6019.8
+CKKS    batched (n values/ct)  2048    8.3         4.1
+
+   → Batching speedup — BFV 3401x, CKKS 1486x. The CKKS path did not exist before the double[]
+     bridge: every CKKS ciphertext used to waste all but one of its 4,096 slots. If you are
+     encrypting values one at a time under BFV or CKKS, you are paying three to four orders of
+     magnitude more than you need to.

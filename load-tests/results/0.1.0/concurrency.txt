@@ -1,0 +1,30 @@
+BlindBean — concurrency
+====================================================================================================
+
+## Native handle lifecycle under sustained load
+   Every FheCiphertextNative owns native memory freed on close. A leak here is invisible to a
+   unit test — it only shows as heap that never returns after thousands of ops.
+
+Ops   Wall (ms)  Ops/sec  Heap before (MB)  Heap after (MB)  Growth (MB)
+--------------------------------------------------------------------------
+2000  16387      122      5.5               5.1              -0.4
+
+   → Growth is Java heap, not native heap — the native side is freed by close(). A steadily
+     climbing figure across versions is the signal to investigate.
+
+## Foreign-key rejection under concurrency
+   Before ciphertexts were stamped, decrypting under the wrong key returned a plausible wrong
+   number rather than failing. Under load that is data corruption at scale.
+
+Attempts  Refused  Silently decrypted
+---------------------------------------
+800       800      0
+
+## Thread-local key isolation under load
+   A thread with no context does not fail — getPaillier() mints a FRESH key. A leak across
+   threads therefore produces ciphertexts nobody can read, silently. The only assertion that
+   catches it is: every worker reads back exactly what it wrote.
+
+Threads  Ops/thread  Total ops  Wall (ms)  Ops/sec  Mismatches
+----------------------------------------------------------------
+32       500         16000      6102       2622     0
