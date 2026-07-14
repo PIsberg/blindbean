@@ -12,7 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -55,10 +55,10 @@ public class KeyRotationTest {
 
         // A "table" of accounts, encrypted under the keys the app is running on today.
         List<UserAccount> accounts = List.of(new UserAccount(null), new UserAccount(null), new UserAccount(null));
-        long[] balances = {1_000L, 25_000L, 7L};
+        String[] balances = {"1000.00", "25000.50", "7.25"};
         for (int i = 0; i < accounts.size(); i++) {
             new UserAccountBlindWrapper(accounts.get(i))
-                .encryptBalance(BigInteger.valueOf(balances[i]));
+                .encryptBalance(new BigDecimal(balances[i]));
         }
         String beforeRotation = accounts.get(0).getBalance();
 
@@ -79,7 +79,7 @@ public class KeyRotationTest {
         assertNotEquals(beforeRotation, accounts.get(0).getBalance(),
             "the stored ciphertext must have been re-encrypted");
         for (int i = 0; i < accounts.size(); i++) {
-            assertEquals(BigInteger.valueOf(balances[i]),
+            assertEquals(new BigDecimal(balances[i]),
                 new UserAccountBlindWrapper(accounts.get(i)).decryptBalance(),
                 "balances must be unchanged after rotation");
         }
@@ -87,7 +87,7 @@ public class KeyRotationTest {
         // And the new bundle is what a restarted app would load.
         BlindContext.clear();
         BlindContext.loadKeys(KEY_FILE);
-        assertEquals(BigInteger.valueOf(25_000L),
+        assertEquals(new BigDecimal("25000.50"),
             new UserAccountBlindWrapper(accounts.get(1)).decryptBalance(),
             "the exported bundle must decrypt the rotated data after a restart");
     }
@@ -133,7 +133,7 @@ public class KeyRotationTest {
         BlindContext.init();
 
         UserAccount account = new UserAccount(null);
-        new UserAccountBlindWrapper(account).encryptBalance(BigInteger.valueOf(42L));
+        new UserAccountBlindWrapper(account).encryptBalance(new BigDecimal("42.00"));
 
         assertThrows(IllegalStateException.class, () -> {
             try (BlindRotation rotation = BlindRotation.fromCurrent(new PaillierKeyPair(2048))) {
@@ -145,8 +145,8 @@ public class KeyRotationTest {
 
         // The app never swapped keys, so the untouched rows still decrypt.
         UserAccount untouched = new UserAccount(null);
-        new UserAccountBlindWrapper(untouched).encryptBalance(BigInteger.valueOf(99L));
-        assertEquals(BigInteger.valueOf(99L),
+        new UserAccountBlindWrapper(untouched).encryptBalance(new BigDecimal("99.00"));
+        assertEquals(new BigDecimal("99.00"),
             new UserAccountBlindWrapper(untouched).decryptBalance(),
             "an abandoned rotation must not strand the app without a working key set");
     }

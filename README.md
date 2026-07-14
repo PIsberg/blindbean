@@ -98,11 +98,11 @@ UserAccount user = repository.findById(1); // User whose balance is entirely enc
 // 3. Transparently Wrap using the Auto-Generated Helper
 UserAccountBlindWrapper wrapper = new UserAccountBlindWrapper(user);
 
-// 4. Add 500 — the wrapper encrypts the plaintext for you
-wrapper.addBalance(BigInteger.valueOf(500)); // Math happens right there, without decryption!
+// 4. Credit 500.50 — the wrapper encrypts the plaintext for you
+wrapper.addBalance(new BigDecimal("500.50")); // Math happens right there, without decryption!
 ```
 
-Every generated wrapper also accepts pre-encrypted values (`wrapper.addBalance(ciphertext)`), and BFV/CKKS fields get matching `long`/`double`/`long[]` plaintext overloads.
+Every generated wrapper also accepts pre-encrypted values (`wrapper.addBalance(ciphertext)`), alongside the plaintext overload shown above.
 
 ### Testing your entities
 
@@ -116,27 +116,77 @@ class WalletTest { ... }
 class PortfolioTest { ... }
 ```
 
-### Storing Arbitrary Types
-You can securely store standard Java types like `String`, `boolean` or any numeric type (`byte`, `short`, `int`, `long`, `float`, `double`) natively:
+### Supported types
+
+The scheme is not a preference — it is decided by the field's type, and the processor fails the build on a wrong pairing. `type()` names the *plaintext* type; the field itself is always a `String` holding hex.
+
+| Field holds | Scheme | Add | Multiply |
+|:---|:---|:---:|:---:|
+| `byte`, `short`, `int`, `long`, `BigInteger` (+ boxed) | `PAILLIER` | ✅ | ❌ |
+| `BigDecimal` — **exact** decimals at a fixed `scale` | `PAILLIER` | ✅ | ❌ |
+| `String` | `PAILLIER` | ❌ | ❌ |
+| `byte[]` — an opaque blob | `PAILLIER` | ❌ | ❌ |
+| `boolean` | `PAILLIER` | ❌ | ❌ |
+| `Instant`, `LocalDate` — *points* in time | `PAILLIER` | ❌ | ❌ |
+| `Duration` — a *quantity* | `PAILLIER` | ✅ | ❌ |
+| `float`, `double` (+ boxed) | `CKKS` | ✅ | ✅ |
+| `float[]`, `double[]` — real vectors | `CKKS` | ✅ | ✅ |
+| `long[]`, `int[]`, `short[]` — integer vectors | `BFV` | ✅ | ✅ |
+
 ```java
-@Homomorphic(scheme = Scheme.PAILLIER, type = int.class)
-private String age; 
+@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+private String price;            // 19.99 stored as the integer 1999
 
-@Homomorphic(scheme = Scheme.BFV, type = long.class)
-private String balance; 
+@Homomorphic(scheme = Scheme.CKKS, type = double[].class)
+private String signal;           // a whole vector in one ciphertext
 
-@Homomorphic(scheme = Scheme.CKKS, type = double.class)
-private String precisionValue;
+@Homomorphic(scheme = Scheme.BFV, type = int[].class)
+private String counters;
 ```
-*Note: Homomorphic math functions (add/multiply) are structurally omitted for textual and logical structures (String/boolean) to prevent mathematical data corruption.*
 
-### Vector Batching (SIMD Arrays)
-When using the BFV scheme, you can natively batch complete arrays of thousands of variables homogeneously using the `long[].class` parameter. 
+Arithmetic is generated **only where it means something**. Adding two encoded strings or two blobs corrupts them, and "Tuesday plus Thursday" is not a date — so `String`, `byte[]`, `boolean`, `Instant` and `LocalDate` get no `add`/`mul` at all. A `Duration` is a quantity, so it does.
+
+**Money goes in `BigDecimal` on Paillier, never CKKS.** CKKS is approximate; `19.99 + 0.01` may not be exactly `20.00`. Paillier stores the unscaled integer at a fixed scale, so it is exact. A value with more decimals than the scale is **rejected, not rounded** — silently losing a cent is worse than failing.
+
+**Null:** the reference types (`BigDecimal`, `byte[]`, `String`, `java.time`, the arrays) accept null on both sides. Boxed scalars (`Long`, `Double`, …) take the primitive going in, so they are nullable outbound only.
+
+### Vector batching (SIMD arrays)
+
+BFV and CKKS pack a whole vector into a single ciphertext, and one operation applies to every slot at once:
+
 ```java
 @Homomorphic(scheme = Scheme.BFV, type = long[].class)
-private String batchedMetrics; 
+private String batchedMetrics;
+
+wrapper.addBatchedMetrics(deltas);   // every slot, one homomorphic op
 ```
-Math operations (such as `wrapper.addBatchedMetrics(...)`) automatically propagate efficiently to all coordinates concurrently at the underlying C++ layer simultaneously without adding a single millisecond of overhead. Note: Maximum batch capacity is natively bound to the Scheme's polynomial degree size limit (`8,192`).
+
+Two limits worth knowing before you rely on this:
+
+- **Slot count.** BFV gives `polyModulusDegree` slots (8,192 at the default). CKKS gives **half** that — complex-conjugate symmetry — so 4,096.
+- **A BFV slot is not a `long`.** The plaintext modulus is ~20 bits, so a slot carries roughly **±516,000**: a `long[]` is really a 20-bit int array. Anything larger is rejected with an `FheException` naming the slot. It used to be encrypted anyway — 1,000,000 decrypted as -32,193, and one out-of-range entry corrupted *every other slot in the vector*. Call `FheContext.maxSlotValue()` for the exact limit and scale your values into range.
+
+### Nested entities
+
+An entity that owns another entity reaches through it with `@BlindNested`:
+
+```java
+@BlindEntity
+public class Order {
+    @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+    private String total;
+
+    @BlindNested
+    private UserAccount customer;     // itself a @BlindEntity
+}
+
+var order = new OrderBlindWrapper(o);
+order.customer().subBalance(new BigDecimal("19.99"));   // straight through, still encrypted
+```
+
+The accessor hands back the nested entity's own wrapper, so its whole API — encrypt, decrypt, arithmetic, rotation — is reachable, and each entity keeps its own scheme. A null nested entity yields a null wrapper.
+
+**Records are not supported.** The wrapper stores each ciphertext by calling `setX(...)` on the entity, and a record's components are final. Use a class with a getter and setter per field.
 
 ### Using BFV (Fully Homomorphic — Integers)
 

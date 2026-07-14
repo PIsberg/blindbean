@@ -72,6 +72,25 @@ public class PaillierMath {
         return l.multiply(keyPair.getMu()).mod(keyPair.getN());
     }
 
+    /**
+     * Decrypts to a <em>signed</em> value.
+     *
+     * <p>Paillier's plaintext space is Z_n, so {@link #decrypt} returns a residue in [0, n) —
+     * meaning a negative number comes back as {@code n - |m|}, a several-hundred-digit positive
+     * integer. Every numeric type has to undo that, or -5 decrypts as nonsense: the balanced
+     * representation treats residues above n/2 as negative, which is the convention the additive
+     * homomorphism is consistent with (encrypt(-5) then add 7 still gives 2).
+     *
+     * <p>Only meaningful for values that are genuinely numbers. Strings and byte blobs are encoded
+     * as unsigned magnitudes and must use {@link #decrypt}, or a blob whose leading bit is set would
+     * be read as a negative number.
+     */
+    public BigInteger decryptSigned(Ciphertext c) {
+        BigInteger m = decrypt(c);
+        BigInteger n = keyPair.getN();
+        return m.compareTo(n.shiftRight(1)) > 0 ? m.subtract(n) : m;
+    }
+
     public Ciphertext add(Ciphertext a, Ciphertext b) {
         if (a.scheme() != Scheme.PAILLIER || b.scheme() != Scheme.PAILLIER) {
             throw new IllegalArgumentException(

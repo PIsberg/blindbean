@@ -141,6 +141,41 @@ Ciphertexts written before stamping existed carry no header. They are read as
 unreadable — so a dataset heals as it is rewritten, but an un-rewritten legacy
 row does not yet have this protection.
 
+### The BFV plaintext modulus bounds every slot
+
+BFV slots are values mod `t`, the plaintext modulus. The default parameters ask
+`PlainModulus::Batching(degree, 20)` for a **20-bit** `t` (1,032,193), so a slot
+carries roughly **±516,000** — a `long[]` field is really a 20-bit int array.
+
+This used to fail silently and destructively. SEAL's `BatchEncoder` reduces an
+out-of-range value mod `t` without complaint, so 1,000,000 decrypted as -32,193,
+and a *single* out-of-range entry corrupted **every other slot in the vector**.
+`FheContext.encryptLongArray` now rejects such values with an `FheException`
+naming the offending slot; `maxSlotValue()` reports the limit. If you need wider
+values, raise the plaintext modulus (at the cost of noise budget) or decompose
+across ciphertexts.
+
+### Paillier is signed only through `decryptSigned`
+
+Paillier's plaintext space is Z_n. A raw `decrypt` therefore returns a residue in
+[0, n): `encrypt(-5)` comes back as `n - 5`, a several-hundred-digit positive
+integer. The generated wrappers decode every *numeric* field through
+`PaillierMath.decryptSigned`, which applies the balanced representation (residues
+above n/2 are negative) — the convention the additive homomorphism already obeys,
+so `encrypt(-5) + 7` still decrypts as 2.
+
+Strings and `byte[]` are encoded as **unsigned magnitudes** and must keep using
+plain `decrypt`; reading them signed would turn any blob whose leading bit is set
+into a negative number.
+
+### Exact decimals
+
+CKKS is approximate and must never hold money. Use `BigDecimal` on Paillier: it is
+stored as the unscaled integer at a fixed `scale`, so `19.99 + 0.01` is exactly
+`20.00`. The scale is part of the storage format — changing it makes every value
+already written decode at the wrong magnitude — and a value with more decimals
+than the scale is rejected rather than rounded.
+
 ### Paillier key size
 
 `PaillierKeyPair(bits)` sizes the **modulus** `n`, splitting `bits` across the

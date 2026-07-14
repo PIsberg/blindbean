@@ -49,6 +49,10 @@ public class FheNativeBridge {
     private static final MethodHandle MH_DECRYPT_LONG_ARRAY;
     private static final MethodHandle MH_ENCRYPT_DOUBLE;
     private static final MethodHandle MH_DECRYPT_DOUBLE;
+    private static final MethodHandle MH_ENCRYPT_DOUBLE_ARRAY;
+    private static final MethodHandle MH_DECRYPT_DOUBLE_ARRAY;
+    private static final MethodHandle MH_PLAIN_MODULUS;
+    private static final MethodHandle MH_SLOT_COUNT;
     private static final MethodHandle MH_ADD;
     private static final MethodHandle MH_SUBTRACT;
     private static final MethodHandle MH_MULTIPLY;
@@ -88,6 +92,18 @@ public class FheNativeBridge {
 
             MH_DECRYPT_LONG_ARRAY = downcall("fhe_decrypt_long_array",
                     FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
+
+            MH_ENCRYPT_DOUBLE_ARRAY = downcall("fhe_encrypt_double_array",
+                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
+
+            MH_DECRYPT_DOUBLE_ARRAY = downcall("fhe_decrypt_double_array",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
+
+            MH_PLAIN_MODULUS = downcall("fhe_plain_modulus",
+                    FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.ADDRESS));
+
+            MH_SLOT_COUNT = downcall("fhe_slot_count",
+                    FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.ADDRESS));
 
             MH_ENCRYPT_DOUBLE = downcall("fhe_encrypt_double",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_DOUBLE));
@@ -194,6 +210,40 @@ public class FheNativeBridge {
             return (int) MH_DECRYPT_LONG_ARRAY.invokeExact(ctx, ct, outBuffer, maxCount);
         } catch (Throwable e) {
             throw new FheException("Failed to call fhe_decrypt_long_array", e);
+        }
+    }
+
+    public static MemorySegment fhe_encrypt_double_array(MemorySegment ctx, MemorySegment valuesArray, long count) {
+        try {
+            return (MemorySegment) MH_ENCRYPT_DOUBLE_ARRAY.invokeExact(ctx, valuesArray, count);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_encrypt_double_array", e);
+        }
+    }
+
+    public static int fhe_decrypt_double_array(MemorySegment ctx, MemorySegment ct, MemorySegment outBuffer, long maxCount) {
+        try {
+            return (int) MH_DECRYPT_DOUBLE_ARRAY.invokeExact(ctx, ct, outBuffer, maxCount);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_decrypt_double_array", e);
+        }
+    }
+
+    /** BFV plaintext modulus t. 0 for CKKS, which has none. */
+    public static long fhe_plain_modulus(MemorySegment ctx) {
+        try {
+            return (long) MH_PLAIN_MODULUS.invokeExact(ctx);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_plain_modulus", e);
+        }
+    }
+
+    /** Batching slots: poly_modulus_degree for BFV, half that for CKKS. */
+    public static long fhe_slot_count(MemorySegment ctx) {
+        try {
+            return (long) MH_SLOT_COUNT.invokeExact(ctx);
+        } catch (Throwable e) {
+            throw new FheException("Failed to call fhe_slot_count", e);
         }
     }
 

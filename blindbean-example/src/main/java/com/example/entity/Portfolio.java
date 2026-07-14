@@ -4,11 +4,17 @@ import se.deversity.blindbean.annotations.BlindEntity;
 import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
+import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+
 /**
  * Example entity with {@code async = true} demonstrating parallel fan-out encryption
  * of multiple financial fields via Java 26 virtual threads.
  */
 @BlindEntity(async = true)
+@AIPrivacy(reason = "Holds a cash balance and holdings as ciphertext — never log decrypted"
+                  + "values, and never put a real portfolio in a fixture")
+@AISchemaSafe
 public class Portfolio {
 
     @Homomorphic(scheme = Scheme.PAILLIER)

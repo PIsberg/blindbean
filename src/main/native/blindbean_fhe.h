@@ -135,6 +135,25 @@ BLINDBEAN_API FheCiphertext fhe_deserialize_ciphertext(FheContext ctx,
 /** Frees a ciphertext handle. */
 BLINDBEAN_API void fhe_free_ciphertext(FheCiphertext ct);
 
+/* ---- CKKS batching --------------------------------------------------------
+ * CKKS is a vector scheme; encrypting one double at a time wastes every slot but
+ * the first, and forces a rotation to move a batch through the scalar path. These
+ * encode the whole slot vector. CKKS holds poly_modulus_degree/2 slots (complex
+ * conjugate symmetry), not poly_modulus_degree — see fhe_slot_count. */
+BLINDBEAN_API FheCiphertext fhe_encrypt_double_array(FheContext ctx, const double* values, size_t count);
+BLINDBEAN_API int32_t fhe_decrypt_double_array(FheContext ctx, FheCiphertext ct, double* out_values, size_t max_count);
+
+/* ---- Parameter introspection ----------------------------------------------
+ * The BFV plaintext modulus t bounds every slot: a value outside
+ * [-(t-1)/2, (t-1)/2] is silently reduced mod t by SEAL's encoder, so a long[]
+ * carrying real longs comes back as plausible nonsense. Java needs t in order to
+ * reject those inputs instead of encrypting them. Returns 0 for CKKS, which has
+ * no plaintext modulus. */
+BLINDBEAN_API uint64_t fhe_plain_modulus(FheContext ctx);
+
+/* Number of batching slots: poly_modulus_degree for BFV, half that for CKKS. */
+BLINDBEAN_API uint64_t fhe_slot_count(FheContext ctx);
+
 #ifdef __cplusplus
 }
 #endif

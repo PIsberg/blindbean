@@ -5,7 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -30,18 +30,19 @@ public class UserAccountTest {
         UserAccountBlindWrapper wrapper = new UserAccountBlindWrapper(user);
 
         // 3. Encrypt an initial balance natively
-        wrapper.encryptBalance(BigInteger.valueOf(100));
+        wrapper.encryptBalance(new BigDecimal("100.00"));
 
         // 4. Add more to the balance directly via plaintext wrapper!
-        wrapper.addBalance(BigInteger.valueOf(500));
+        wrapper.addBalance(new BigDecimal("500.50"));
         
         // 5. Subtract some from the balance directly!
-        wrapper.subBalance(BigInteger.valueOf(100));
+        wrapper.subBalance(new BigDecimal("100.25"));
 
         // 6. Decrypt and verify
-        BigInteger result = wrapper.decryptBalance();
+        BigDecimal result = wrapper.decryptBalance();
 
-        // 100 + 500 - 100 = 500
-        assertEquals(BigInteger.valueOf(500), result);
+        // 100.00 + 500.50 - 100.25 = 500.25, to the cent. This is why money is a
+        // BigDecimal on Paillier and not a double on CKKS.
+        assertEquals(new BigDecimal("500.25"), result);
     }
 }

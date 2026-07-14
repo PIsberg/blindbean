@@ -38,10 +38,26 @@ The processor enforces the pairing and fails the build if you get it wrong.
 | Field holds | Scheme | Can add | Can multiply | Notes |
 |---|---|---|---|---|
 | `long`, `int`, `short`, `byte`, `BigInteger` | `PAILLIER` | ✅ | ❌ | Pure Java, no native lib. The default. |
+| `BigDecimal` | `PAILLIER` | ✅ | ❌ | **Exact** decimals at a fixed `scale`. Use this for money. |
 | `String` | `PAILLIER` | ❌ | ❌ | Encoded, not arithmetic. **Must** be Paillier. |
+| `byte[]` | `PAILLIER` | ❌ | ❌ | Opaque blob. No arithmetic on bytes. |
 | `boolean` | `PAILLIER` | ❌ | ❌ | Maths is meaningless, so none is generated. |
+| `Instant`, `LocalDate` | `PAILLIER` | ❌ | ❌ | *Points* in time — "Tuesday + Thursday" is nonsense. |
+| `Duration` | `PAILLIER` | ✅ | ❌ | A *quantity*, so it adds. |
 | `float`, `double` | `CKKS` | ✅ | ✅ | **Approximate** — see §7. Needs native. |
-| `long[]` | `BFV` | ✅ | ✅ | SIMD batching, thousands of slots at once. Needs native. |
+| `float[]`, `double[]` | `CKKS` | ✅ | ✅ | Vectors, slot-wise. This is what CKKS is *for*. Needs native. |
+| `long[]`, `int[]`, `short[]` | `BFV` | ✅ | ✅ | SIMD batching, thousands of slots at once. **Mind the slot range** — see §7. Needs native. |
+
+**Null.** The reference types (`BigDecimal`, `byte[]`, `String`, `java.time`, the arrays) accept null on both sides: `encryptX(null)` writes null, and a null column decrypts to null. Boxed scalars (`Long`, `Double`, …) take the *primitive* on the way in, so they are nullable **outbound only** — a null column decrypts to null; to store a null, set the entity's field to null yourself.
+
+**Money goes in `BigDecimal` on Paillier, never CKKS.** CKKS is approximate; `19.99 + 0.01` may not be exactly `20.00`. Paillier stores the unscaled integer at a fixed `scale`, so it is exact:
+
+```java
+@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+private String price;      // 19.99 is stored as the integer 1999
+```
+
+`scale` is part of the storage format — change it and everything already written decodes at the wrong magnitude. A value with more decimals than the scale is **rejected**, not rounded: silently losing a cent is worse than failing.
 
 **Paillier cannot multiply.** It is additively homomorphic; `BlindMath.multiply` on a Paillier
 ciphertext throws `UnsupportedOperationException`. If you need products, the field must be BFV or
@@ -140,6 +156,38 @@ not going through an entity.
 
 ---
 
+## 3b. Nested entities
+
+An entity that owns another entity reaches into it with `@BlindNested`:
+
+```java
+@BlindEntity
+public class Order {
+    @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+    private String total;
+
+    @BlindNested
+    private UserAccount customer;      // itself a @BlindEntity
+    // ... getter + setter
+}
+
+var order = new OrderBlindWrapper(o);
+order.customer().subBalance(new BigDecimal("19.99"));   // straight through, still encrypted
+```
+
+The generated `customer()` hands back the nested entity's **own wrapper**, so everything it supports
+— encrypt, decrypt, arithmetic, rotation — is reachable, and each entity keeps its own scheme. It
+writes through to the same object, not a copy. A null nested entity yields a **null wrapper** rather
+than an NPE several frames deep.
+
+It's deliberately explicit: the processor does not go hunting for `@BlindEntity`-typed fields on its
+own. A field cannot be both `@Homomorphic` and `@BlindNested` — it is either an encrypted value or a
+nested entity.
+
+**Records are not supported**, and won't be without a redesign: the wrapper stores each ciphertext by
+calling `setX(...)` on the entity, and a record's components are final. Use a class with a getter and
+setter per field. The processor says so rather than failing obscurely.
+
 ## 4. Keys are the whole game
 
 Encrypted data is worthless without the key and unrecoverable if you lose it. `BlindContext.init()`
@@ -232,9 +280,19 @@ Nested classes inherit the enclosing annotation.
 
 ## 7. Things that will bite you
 
+- **A BFV slot is not a `long`.** The plaintext modulus is ~20 bits, so a slot carries roughly
+  **±516,000** — a `long[]` field is really a 20-bit int array. Anything larger is now rejected with
+  an `FheException` naming the slot. It used to be encrypted anyway: 1,000,000 decrypted to -32,193,
+  and one out-of-range entry corrupted *every other slot in the vector*. Check
+  `FheContext.maxSlotValue()` and scale your values, or raise the plaintext modulus.
 - **CKKS is approximate.** `encrypt(3.14159)` then `decrypt` does not return exactly `3.14159`.
   Always assert with a tolerance. Never use CKKS for money or anything requiring an exact value —
-  use Paillier (`long`) for that.
+  use `BigDecimal` on Paillier for that.
+- **Negative numbers need `decryptSigned`.** Paillier's plaintext space is Z_n, so a raw `decrypt`
+  returns a residue: `encrypt(-5)` comes back as `n - 5`, a 600-digit positive integer. The generated
+  wrappers already use `decryptSigned` for every numeric type, but if you call `PaillierMath`
+  directly, use `decryptSigned` for numbers and `decrypt` only for strings and blobs (which are
+  unsigned magnitudes and would misread as negative).
 - **Noise budget.** Every homomorphic operation adds noise; exceed the budget and the ciphertext
   stops decrypting to anything meaningful. Multiplications are far more expensive than additions.
   Check `FheContext.noiseBudget(...)` on long operation chains.

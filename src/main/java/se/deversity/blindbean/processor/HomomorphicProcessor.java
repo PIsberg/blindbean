@@ -1,6 +1,7 @@
 package se.deversity.blindbean.processor;
 
 import se.deversity.blindbean.annotations.BlindEntity;
+import se.deversity.blindbean.annotations.BlindNested;
 import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 import com.google.auto.service.AutoService;
@@ -47,7 +48,81 @@ import se.deversity.vibetags.annotations.AIStrictClasspath;
 public class HomomorphicProcessor extends AbstractProcessor {
 
     /** Immutable model for one @Homomorphic field. */
-    private record FieldModel(String name, String capName, Scheme scheme, String typeName) {}
+    private record FieldModel(String name, String capName, Scheme scheme, String typeName, int scale) {}
+
+    // ── Type groups ──────────────────────────────────────────────────────────
+    // Every supported type is encoded to something a scheme can actually hold: an integer for
+    // Paillier, a slot vector for BFV/CKKS. These say which bucket a declared type falls in.
+
+    /** Exact decimals — stored as an unscaled integer at a fixed scale. Paillier only. */
+    private boolean isBigDecimal(String t) { return t.equals("java.math.BigDecimal"); }
+
+    /** Opaque bytes. Paillier only; no arithmetic is meaningful on a blob. */
+    private boolean isByteArray(String t) { return t.equals("byte[]"); }
+
+    /**
+     * java.time values that reduce to a single number. Instant and LocalDate are *points*: adding
+     * two of them is meaningless, so they get no arithmetic. A Duration is a *quantity*, so it does.
+     */
+    private boolean isTemporalPoint(String t) {
+        return t.equals("java.time.Instant") || t.equals("java.time.LocalDate");
+    }
+    private boolean isDuration(String t) { return t.equals("java.time.Duration"); }
+    private boolean isTemporal(String t) { return isTemporalPoint(t) || isDuration(t); }
+
+    /** Integer vectors — BFV slots. Note byte[] is deliberately NOT here; it is a Paillier blob. */
+    private boolean isBfvArray(String t) {
+        return t.equals("long[]") || t.equals("int[]") || t.equals("short[]");
+    }
+
+    /** Real vectors — CKKS slots, the scheme's actual purpose. */
+    private boolean isCkksArray(String t) {
+        return t.equals("double[]") || t.equals("float[]");
+    }
+
+    private boolean isArray(String t) { return isBfvArray(t) || isCkksArray(t); }
+
+    /** Element type of an array type, e.g. "int[]" -> "int". */
+    private String elementType(String t) { return t.substring(0, t.length() - 2); }
+
+    /**
+     * Reference types can be null; primitives cannot. Decides whether a null guard is emitted.
+     *
+     * <p>Enumerated deliberately rather than matched on a {@code java.lang.} prefix: the default
+     * {@code type()} is {@code java.lang.Void}, which shares that prefix but is emitted as a
+     * primitive {@code long}/{@code double} — a null guard there does not compile.
+     */
+    private boolean isNullable(String t) {
+        return t.equals("java.lang.String") || t.equals("java.math.BigInteger")
+            || isBigDecimal(t) || isByteArray(t) || isTemporal(t) || isArray(t)
+            || isBoxedScalar(t);
+    }
+
+    /** Long / Integer / Double / Boolean etc. — a nullable scalar. */
+    private boolean isBoxedScalar(String t) {
+        return t.startsWith("java.lang.")
+            && !t.equals("java.lang.String")
+            && (isIntegral(t) || isFloatingPoint(t) || t.equals("java.lang.Boolean"));
+    }
+
+    /**
+     * The parameter type of {@code encryptX} for a scalar.
+     *
+     * <p>Boxed scalars deliberately take the <em>primitive</em> — an established choice in this
+     * processor, and one its tests assert. So a boxed field is nullable on the way OUT (a null
+     * column decrypts to null) but not on the way in; to store a null, set the entity's field to
+     * null directly. The reference types below (BigDecimal, byte[], java.time, arrays, String)
+     * take a reference and therefore accept null on both sides.
+     */
+    private String scalarParamType(String t) {
+        return getPrimitiveType(t);
+    }
+
+    /** Does encryptX take a reference (and so accept null), as opposed to a primitive? */
+    private boolean encryptTakesReference(String t) {
+        return t.equals("java.lang.String") || t.equals("java.math.BigInteger")
+            || isBigDecimal(t) || isByteArray(t) || isTemporal(t) || isArray(t);
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -64,6 +139,18 @@ public class HomomorphicProcessor extends AbstractProcessor {
         }
 
         for (Element element : roundEnv.getElementsAnnotatedWith(BlindEntity.class)) {
+            if (element.getKind() == ElementKind.RECORD) {
+                // Not an oversight. The wrapper writes back in place — entity.setX(hex) — and a
+                // record's components are final, so there is nothing to write to. Supporting
+                // records means a different generated API that returns a new record rather than
+                // mutating one, which is a design, not a patch.
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@BlindEntity does not support records: the generated wrapper stores each "
+                    + "ciphertext by calling setX(...) on the entity, and a record's components are "
+                    + "final. Use a class with a getter and setter per @Homomorphic field.",
+                    element);
+                continue;
+            }
             if (element.getKind() != ElementKind.CLASS) {
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR, "@BlindEntity only applies to classes", element);
@@ -81,12 +168,83 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 continue;
             }
 
+            List<NestedModel> nested = collectNested(typeElement);
+            if (nested == null) {
+                continue;
+            }
+
             String className   = typeElement.getSimpleName().toString();
             String packageName = processingEnv.getElementUtils()
                     .getPackageOf(typeElement).getQualifiedName().toString();
-            generateBlindWrapper(packageName, className, typeElement, fields);
+            generateBlindWrapper(packageName, className, typeElement, fields, nested);
         }
         return true;
+    }
+
+    /** A @BlindNested field: the accessor reaches into another entity's wrapper. */
+    private record NestedModel(String name, String capName, String wrapperType) {}
+
+    /**
+     * Collects @BlindNested fields. The field's type must itself be a @BlindEntity — otherwise the
+     * wrapper it names would not exist, and the failure would surface as a bewildering
+     * "cannot find symbol XBlindWrapper" in generated code the author never wrote.
+     */
+    private List<NestedModel> collectNested(TypeElement typeElement) {
+        List<NestedModel> result = new ArrayList<>();
+        boolean hadError = false;
+
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+            processingEnv.getElementUtils().getAllMembers(typeElement));
+
+        for (VariableElement field : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+            if (field.getAnnotation(BlindNested.class) == null) {
+                continue;
+            }
+            String fieldName = field.getSimpleName().toString();
+            String capName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+
+            if (field.getAnnotation(Homomorphic.class) != null) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "Field '" + fieldName + "' is both @Homomorphic and @BlindNested. A field is "
+                    + "either an encrypted value or a nested entity, not both.", field);
+                hadError = true;
+                continue;
+            }
+
+            Element fieldType = processingEnv.getTypeUtils().asElement(field.asType());
+            if (fieldType == null || fieldType.getAnnotation(BlindEntity.class) == null) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@BlindNested field '" + fieldName + "' has type " + field.asType()
+                    + ", which is not a @BlindEntity — so it has no generated wrapper to reach into. "
+                    + "Annotate that type with @BlindEntity, or drop @BlindNested from this field.",
+                    field);
+                hadError = true;
+                continue;
+            }
+
+            String getterName = "get" + capName;
+            boolean hasGetter = methods.stream().anyMatch(m ->
+                m.getSimpleName().contentEquals(getterName)
+                && m.getParameters().isEmpty()
+                && m.getModifiers().contains(Modifier.PUBLIC));
+            if (!hasGetter) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@BlindNested field '" + fieldName + "' needs a public " + getterName + "().",
+                    field);
+                hadError = true;
+                continue;
+            }
+
+            // Fully qualified, so the nested entity can live in any package.
+            TypeElement nestedType = (TypeElement) fieldType;
+            String pkg = processingEnv.getElementUtils()
+                    .getPackageOf(nestedType).getQualifiedName().toString();
+            String wrapper = (pkg.isEmpty() ? "" : pkg + ".")
+                           + nestedType.getSimpleName() + "BlindWrapper";
+
+            result.add(new NestedModel(fieldName, capName, wrapper));
+        }
+        return hadError ? null : result;
     }
 
     // ── Validation ────────────────────────────────────────────────────────
@@ -213,17 +371,55 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 hadError = true;
                 continue;
             }
-            if (typeName.equals("long[]") && !isBfv) {
+            if (isBfvArray(typeName) && !isBfv) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                    "@Homomorphic field '" + fieldName + "': long[] fields require Scheme.BFV for SIMD batching; "
+                    "@Homomorphic field '" + fieldName + "': " + typeName + " fields require Scheme.BFV for SIMD batching; "
                     + "found Scheme." + scheme + ". "
-                    + "Change to @Homomorphic(scheme = Scheme.BFV, type = long[].class).",
+                    + "Change to @Homomorphic(scheme = Scheme.BFV, type = " + typeName + ".class).",
+                    field);
+                hadError = true;
+                continue;
+            }
+            if (isCkksArray(typeName) && !isCkks) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': " + typeName + " fields require Scheme.CKKS — "
+                    + "it is the only scheme here that encodes real numbers. Found Scheme." + scheme + ". "
+                    + "Change to @Homomorphic(scheme = Scheme.CKKS, type = " + typeName + ".class).",
+                    field);
+                hadError = true;
+                continue;
+            }
+            if ((isBigDecimal(typeName) || isByteArray(typeName) || isTemporal(typeName))
+                    && scheme != Scheme.PAILLIER) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': " + typeName + " is encoded as an exact integer, "
+                    + "which requires Scheme.PAILLIER; found Scheme." + scheme + ". "
+                    + (isBigDecimal(typeName)
+                        ? "CKKS could hold it, but only approximately — never use it for money."
+                        : "")
+                    + " Change to @Homomorphic(scheme = Scheme.PAILLIER, type = " + typeName + ".class).",
                     field);
                 hadError = true;
                 continue;
             }
 
-            result.add(new FieldModel(fieldName, capName, scheme, typeName));
+            int scale = ann.scale();
+            if (scale != 0 && !isBigDecimal(typeName)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': scale() only applies to BigDecimal fields; "
+                    + typeName + " has no decimal places to fix.",
+                    field);
+                hadError = true;
+                continue;
+            }
+            if (scale < 0) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "@Homomorphic field '" + fieldName + "': scale() must not be negative.", field);
+                hadError = true;
+                continue;
+            }
+
+            result.add(new FieldModel(fieldName, capName, scheme, typeName, scale));
         }
 
         return hadError ? null : result;
@@ -233,7 +429,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     @AIFeatureFlag(flag = "blindbean.apt.async", defaultValue = false)
     private void generateBlindWrapper(String packageName, String className,
-                                      TypeElement typeElement, List<FieldModel> fields) {
+                                      TypeElement typeElement, List<FieldModel> fields,
+                                      List<NestedModel> nested) {
         String wrapperName = className + "BlindWrapper";
         try {
             JavaFileObject builderFile = processingEnv.getFiler()
@@ -280,9 +477,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
                 // Per-field methods
                 for (FieldModel f : fields) {
-                    boolean mathSupported = !f.typeName().equals("java.lang.String") &&
-                                            !f.typeName().equals("boolean") &&
-                                            !f.typeName().equals("java.lang.Boolean");
+                    // Arithmetic is generated only where it MEANS something. Adding two encoded
+                    // strings or two blobs corrupts them; adding two Instants ("Tuesday plus
+                    // Thursday") is nonsense. A Duration is a quantity, so it adds fine.
+                    boolean mathSupported = !f.typeName().equals("java.lang.String")
+                                         && !f.typeName().equals("boolean")
+                                         && !f.typeName().equals("java.lang.Boolean")
+                                         && !isByteArray(f.typeName())
+                                         && !isTemporalPoint(f.typeName());
 
                     out.println();
                     emitGetCiphertext(out, f);
@@ -324,6 +526,17 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     }
                 }
 
+                // Nested entities: hand back the inner entity's own wrapper, so everything it
+                // supports is reachable without wrapping it by hand at every call site.
+                for (NestedModel n : nested) {
+                    out.println();
+                    out.println("    /** The nested entity's wrapper, or null if the entity is null. */");
+                    out.println("    public " + n.wrapperType() + " " + n.name() + "() {");
+                    out.println("        var inner = entity.get" + n.capName() + "();");
+                    out.println("        return inner == null ? null : new " + n.wrapperType() + "(inner);");
+                    out.println("    }");
+                }
+
                 out.println("}");
             }
         } catch (IOException e) {
@@ -339,8 +552,79 @@ public class HomomorphicProcessor extends AbstractProcessor {
         out.println("    }");
     }
 
+    /**
+     * A reference-typed field can be null, and null must survive a round trip — encrypting null
+     * writes null, and decrypting a null column returns null rather than throwing on a
+     * zero-length hex string.
+     */
+    private void emitNullGuardOnEncrypt(PrintWriter out, FieldModel f) {
+        // Only where the parameter is a reference. A boxed scalar takes the primitive here, so a
+        // null check would not compile.
+        if (!encryptTakesReference(f.typeName())) return;
+        out.println("        if (plain == null) { entity.set" + f.capName() + "(null); return; }");
+    }
+
+    private void emitNullGuardOnDecrypt(PrintWriter out, FieldModel f) {
+        if (!isNullable(f.typeName())) return;
+        out.println("        if (entity.get" + f.capName() + "() == null) return null;");
+    }
+
     private void emitEncrypt(PrintWriter out, FieldModel f) {
         String typeName = f.typeName();
+
+        // ── Types added on top of the original scalar/long[] set ──────────────
+        if (isBigDecimal(typeName)) {
+            out.println("    public void encrypt" + f.capName() + "(java.math.BigDecimal plain) {");
+            emitNullGuardOnEncrypt(out, f);
+            out.println("        // Fixed scale: the unscaled integer IS the plaintext. Rounding here would");
+            out.println("        // silently lose a cent, so a value with more decimals is rejected instead.");
+            out.println("        java.math.BigDecimal fixed = plain.setScale(" + f.scale()
+                        + ", java.math.RoundingMode.UNNECESSARY);");
+            out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(fixed.unscaledValue());");
+            out.println("        entity.set" + f.capName() + "(ct.hexData());");
+            out.println("    }");
+            return;
+        }
+        if (isByteArray(typeName)) {
+            out.println("    public void encrypt" + f.capName() + "(byte[] plain) {");
+            emitNullGuardOnEncrypt(out, f);
+            out.println("        // A BigInteger drops leading zero bytes, so a 0x01 marker is prepended and");
+            out.println("        // stripped on the way out — otherwise {0x00, 0x7f} would decrypt as {0x7f}.");
+            out.println("        byte[] marked = new byte[plain.length + 1];");
+            out.println("        marked[0] = 1;");
+            out.println("        System.arraycopy(plain, 0, marked, 1, plain.length);");
+            out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(new java.math.BigInteger(1, marked));");
+            out.println("        entity.set" + f.capName() + "(ct.hexData());");
+            out.println("    }");
+            return;
+        }
+        if (isTemporal(typeName)) {
+            String encode = switch (typeName) {
+                case "java.time.Instant"   -> "plain.toEpochMilli()";
+                case "java.time.LocalDate" -> "plain.toEpochDay()";
+                default                    -> "plain.toMillis()";   // Duration
+            };
+            out.println("    public void encrypt" + f.capName() + "(" + typeName + " plain) {");
+            emitNullGuardOnEncrypt(out, f);
+            out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(java.math.BigInteger.valueOf(" + encode + "));");
+            out.println("        entity.set" + f.capName() + "(ct.hexData());");
+            out.println("    }");
+            return;
+        }
+        if (isArray(typeName)) {
+            boolean bfv = isBfvArray(typeName);
+            out.println("    public void encrypt" + f.capName() + "(" + typeName + " plain) {");
+            emitNullGuardOnEncrypt(out, f);
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            String arg = emitSlotConversion(out, typeName);
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx."
+                        + (bfv ? "encryptLongArray" : "encryptDoubleArray") + "(" + arg + "), ctx)) {");
+            out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
+
         if (typeName.equals("java.lang.String")) {
             out.println("    public void encrypt" + f.capName() + "(String plain) {");
             if (f.scheme() == Scheme.PAILLIER) {
@@ -352,7 +636,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
             }
             out.println("    }");
         } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
-            out.println("    public void encrypt" + f.capName() + "(boolean plain) {");
+            out.println("    public void encrypt" + f.capName() + "(" + scalarParamType(typeName) + " plain) {");
+            emitNullGuardOnEncrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain ? java.math.BigInteger.ONE : java.math.BigInteger.ZERO);");
                 out.println("        entity.set" + f.capName() + "(ct.hexData());");
@@ -369,16 +654,18 @@ public class HomomorphicProcessor extends AbstractProcessor {
             }
             out.println("    }");
         } else if (isIntegral(typeName)) {
-            String pType = getPrimitiveType(typeName);
+            String pType = scalarParamType(typeName);
             switch (f.scheme()) {
                 case PAILLIER -> {
                     out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
+                    emitNullGuardOnEncrypt(out, f);
                     out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(java.math.BigInteger.valueOf(plain));");
                     out.println("        entity.set" + f.capName() + "(ct.hexData());");
                     out.println("    }");
                 }
                 case BFV -> {
                     out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
+                    emitNullGuardOnEncrypt(out, f);
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLong((long)plain), ctx)) {");
                     out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
@@ -387,6 +674,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 }
                 case CKKS -> {
                     out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
+                    emitNullGuardOnEncrypt(out, f);
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble((double)plain), ctx)) {");
                     out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
@@ -395,9 +683,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 }
             }
         } else if (isFloatingPoint(typeName)) {
-            String pType = getPrimitiveType(typeName);
+            String pType = scalarParamType(typeName);
             if (f.scheme() == Scheme.CKKS) {
                 out.println("    public void encrypt" + f.capName() + "(" + pType + " plain) {");
+                emitNullGuardOnEncrypt(out, f);
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptDouble((double)plain), ctx)) {");
                 out.println("            entity.set" + f.capName() + "(ct.toBlindCiphertext().hexData());");
@@ -452,8 +741,79 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     private void emitDecrypt(PrintWriter out, FieldModel f) {
         String typeName = f.typeName();
+
+        if (isBigDecimal(typeName)) {
+            out.println("    public java.math.BigDecimal decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
+            out.println("        java.math.BigInteger unscaled = BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "());");
+            out.println("        return new java.math.BigDecimal(unscaled, " + f.scale() + ");");
+            out.println("    }");
+            return;
+        }
+        if (isByteArray(typeName)) {
+            out.println("    public byte[] decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
+            out.println("        java.math.BigInteger encoded = BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
+            out.println("        byte[] raw = encoded.toByteArray();");
+            out.println("        // Drop BigInteger's sign byte if it added one, then the 0x01 length marker.");
+            out.println("        int off = (raw[0] == 0) ? 1 : 0;");
+            out.println("        return java.util.Arrays.copyOfRange(raw, off + 1, raw.length);");
+            out.println("    }");
+            return;
+        }
+        if (isTemporal(typeName)) {
+            String decode = switch (typeName) {
+                case "java.time.Instant"   -> "java.time.Instant.ofEpochMilli(n)";
+                case "java.time.LocalDate" -> "java.time.LocalDate.ofEpochDay(n)";
+                default                    -> "java.time.Duration.ofMillis(n)";
+            };
+            out.println("    public " + typeName + " decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
+            out.println("        long n = BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "()).longValue();");
+            out.println("        return " + decode + ";");
+            out.println("    }");
+            return;
+        }
+        if (isBfvArray(typeName)) {
+            String elem = elementType(typeName);
+            out.println("    public " + typeName + " decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+            out.println("            long[] slots = ctx.decryptLongArray(ct.handle());");
+            if (typeName.equals("long[]")) {
+                out.println("            return slots;");
+            } else {
+                out.println("            " + typeName + " result = new " + elem + "[slots.length];");
+                out.println("            for (int i = 0; i < slots.length; i++) result[i] = (" + elem + ") slots[i];");
+                out.println("            return result;");
+            }
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
+        if (isCkksArray(typeName)) {
+            String elem = elementType(typeName);
+            out.println("    public " + typeName + " decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
+            out.println("        FheContext ctx = BlindContext.getFheContext();");
+            out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
+            out.println("            double[] slots = ctx.decryptDoubleArray(ct.handle());");
+            if (typeName.equals("double[]")) {
+                out.println("            return slots;");
+            } else {
+                out.println("            " + typeName + " result = new " + elem + "[slots.length];");
+                out.println("            for (int i = 0; i < slots.length; i++) result[i] = (" + elem + ") slots[i];");
+                out.println("            return result;");
+            }
+            out.println("        }");
+            out.println("    }");
+            return;
+        }
+
         if (typeName.equals("java.lang.String")) {
             out.println("    public String decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        java.math.BigInteger encoded = BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
                 out.println("        if (encoded.signum() == 0) return \"\";");
@@ -468,6 +828,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
             out.println("    }");
         } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
             out.println("    public boolean decrypt" + f.capName() + "() {");
+            emitNullGuardOnDecrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        return java.math.BigInteger.ZERO.compareTo(BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "())) != 0;");
             } else if (f.scheme() == Scheme.BFV) {
@@ -488,12 +849,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 case PAILLIER -> {
                     String rType = boxedDecryptReturnType(f);
                     out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
-                    out.println("        return (" + rType + ")(" + pType + ")BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "()).longValue();");
+                    emitNullGuardOnDecrypt(out, f);
+                    out.println("        return (" + rType + ")(" + pType + ")BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "()).longValue();");
                     out.println("    }");
                 }
                 case BFV -> {
                     String rType = boxedDecryptReturnType(f);
                     out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                    emitNullGuardOnDecrypt(out, f);
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
                     out.println("            return (" + rType + ")(" + pType + ")ctx.decryptLong(ct.handle());");
@@ -503,6 +866,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 case CKKS -> {
                     String rType = boxedDecryptReturnType(f);
                     out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                    emitNullGuardOnDecrypt(out, f);
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
                     out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
@@ -515,6 +879,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
             if (f.scheme() == Scheme.CKKS) {
                 String rType = boxedDecryptReturnType(f);
                 out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                emitNullGuardOnDecrypt(out, f);
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
                 out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
@@ -523,12 +888,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
             } else {
                 String rType = boxedDecryptReturnType(f);
                 out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
+                emitNullGuardOnDecrypt(out, f);
                 out.println("        throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\");");
                 out.println("    }");
             }
         } else if (typeName.equals("long[]")) {
             if (f.scheme() == Scheme.BFV) {
                 out.println("    public long[] decrypt" + f.capName() + "() {");
+                emitNullGuardOnDecrypt(out, f);
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
                 out.println("            return ctx.decryptLongArray(ct.handle());");
@@ -536,6 +903,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("    }");
             } else {
                 out.println("    public long[] decrypt" + f.capName() + "() {");
+                emitNullGuardOnDecrypt(out, f);
                 out.println("        throw new UnsupportedOperationException(\"long[] array batching is exclusively supported by Scheme.BFV\");");
                 out.println("    }");
             }
@@ -544,11 +912,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
             switch (f.scheme()) {
                 case PAILLIER -> {
                     out.println("    public java.math.BigInteger decrypt" + f.capName() + "() {");
-                    out.println("        return BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "());");
+                    emitNullGuardOnDecrypt(out, f);
+                    out.println("        return BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "());");
                     out.println("    }");
                 }
                 case BFV -> {
                     out.println("    public long decrypt" + f.capName() + "() {");
+                    emitNullGuardOnDecrypt(out, f);
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
                     out.println("            return ctx.decryptLong(ct.handle());");
@@ -557,6 +927,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 }
                 case CKKS -> {
                     out.println("    public double decrypt" + f.capName() + "() {");
+                    emitNullGuardOnDecrypt(out, f);
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
                     out.println("            return ctx.decryptDouble(ct.handle());");
@@ -597,17 +968,68 @@ public class HomomorphicProcessor extends AbstractProcessor {
         out.println("    }");
     }
 
-    private void emitAddPlain(PrintWriter out, FieldModel f) {
-        String typeName = f.typeName();
-        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
-            out.println("    public void add" + f.capName() + "(long[] plain) {");
+    /**
+     * The plaintext overload of a homomorphic op ({@code addX(42)} rather than
+     * {@code addX(someCiphertext)}) for the types added beyond the original scalar set. Each one
+     * encrypts the operand under the field's own scheme and delegates to the ciphertext overload,
+     * so the encoding stays in exactly one place — the same one {@code encryptX} uses.
+     *
+     * @return true if it handled the type, leaving the caller nothing to do
+     */
+    private boolean emitPlainOverloadForNewTypes(PrintWriter out, FieldModel f, String op) {
+        String t = f.typeName();
+        String m = op + f.capName();
+
+        if (isBigDecimal(t)) {
+            out.println("    public void " + m + "(java.math.BigDecimal plain) {");
+            out.println("        java.math.BigDecimal fixed = plain.setScale(" + f.scale()
+                        + ", java.math.RoundingMode.UNNECESSARY);");
+            out.println("        " + m + "(BlindContext.getPaillier().encrypt(fixed.unscaledValue()));");
+            out.println("    }");
+            return true;
+        }
+        if (isDuration(t)) {
+            out.println("    public void " + m + "(java.time.Duration plain) {");
+            out.println("        " + m + "(BlindContext.getPaillier().encrypt("
+                        + "java.math.BigInteger.valueOf(plain.toMillis())));");
+            out.println("    }");
+            return true;
+        }
+        if (isArray(t)) {
+            boolean bfv = isBfvArray(t);
+            out.println("    public void " + m + "(" + t + " plain) {");
             out.println("        FheContext ctx = BlindContext.getFheContext();");
-            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
-            out.println("            add" + f.capName() + "(ct.toBlindCiphertext());");
+            String arg = emitSlotConversion(out, t);
+            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx."
+                        + (bfv ? "encryptLongArray" : "encryptDoubleArray") + "(" + arg + "), ctx)) {");
+            out.println("            " + m + "(ct.toBlindCiphertext());");
             out.println("        }");
             out.println("    }");
-            return;
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Widens {@code plain} to the slot type the bridge takes — {@code long[]} for BFV,
+     * {@code double[]} for CKKS — and returns the expression to pass. When the field is already the
+     * slot type there is nothing to widen, so {@code plain} is passed straight through rather than
+     * aliased through a pointless local.
+     */
+    private String emitSlotConversion(PrintWriter out, String typeName) {
+        boolean bfv = isBfvArray(typeName);
+        String slotType = bfv ? "long" : "double";
+        if (typeName.equals(slotType + "[]")) {
+            return "plain";
+        }
+        out.println("        " + slotType + "[] slots = new " + slotType + "[plain.length];");
+        out.println("        for (int i = 0; i < plain.length; i++) slots[i] = plain[i];");
+        return "slots";
+    }
+
+    private void emitAddPlain(PrintWriter out, FieldModel f) {
+        String typeName = f.typeName();
+        if (emitPlainOverloadForNewTypes(out, f, "add")) return;
         switch (f.scheme()) {
             case PAILLIER -> {
                 out.println("    public void add" + f.capName() + "(BigInteger plain) {");
@@ -637,15 +1059,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     private void emitSubPlain(PrintWriter out, FieldModel f) {
         String typeName = f.typeName();
-        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
-            out.println("    public void sub" + f.capName() + "(long[] plain) {");
-            out.println("        FheContext ctx = BlindContext.getFheContext();");
-            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
-            out.println("            sub" + f.capName() + "(ct.toBlindCiphertext());");
-            out.println("        }");
-            out.println("    }");
-            return;
-        }
+        if (emitPlainOverloadForNewTypes(out, f, "sub")) return;
         switch (f.scheme()) {
             case PAILLIER -> {
                 out.println("    public void sub" + f.capName() + "(BigInteger plain) {");
@@ -682,15 +1096,9 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     private void emitMulPlain(PrintWriter out, FieldModel f) {
         String typeName = f.typeName();
-        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) {
-            out.println("    public void mul" + f.capName() + "(long[] plain) {");
-            out.println("        FheContext ctx = BlindContext.getFheContext();");
-            out.println("        try (FheCiphertextNative ct = new FheCiphertextNative(ctx.encryptLongArray(plain), ctx)) {");
-            out.println("            mul" + f.capName() + "(ct.toBlindCiphertext());");
-            out.println("        }");
-            out.println("    }");
-            return;
-        }
+        // mul is only reached for BFV/CKKS (Paillier cannot multiply), so BigDecimal/Duration —
+        // both Paillier-only — never land here.
+        if (emitPlainOverloadForNewTypes(out, f, "mul")) return;
         switch (f.scheme()) {
             case BFV -> {
                 out.println("    public void mul" + f.capName() + "(long plain) {");
@@ -770,10 +1178,12 @@ public class HomomorphicProcessor extends AbstractProcessor {
     private String encryptParamType(FieldModel f) {
         String typeName = f.typeName();
         if (typeName.equals("java.lang.String"))                          return "String";
-        if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return "boolean";
-        if (isIntegral(typeName))                                         return getPrimitiveType(typeName);
-        if (isFloatingPoint(typeName))                                    return getPrimitiveType(typeName);
-        if (typeName.equals("long[]"))                                    return "long[]";
+        if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return scalarParamType(typeName);
+        // These are taken and returned as themselves.
+        if (isBigDecimal(typeName) || isByteArray(typeName) || isTemporal(typeName)
+                || isArray(typeName))                                     return typeName;
+        if (isIntegral(typeName))                                         return scalarParamType(typeName);
+        if (isFloatingPoint(typeName))                                    return scalarParamType(typeName);
         return switch (f.scheme()) {
             case PAILLIER -> "java.math.BigInteger";
             case BFV      -> "long";
@@ -790,9 +1200,11 @@ public class HomomorphicProcessor extends AbstractProcessor {
         String typeName = f.typeName();
         if (typeName.equals("java.lang.String"))                          return "String";
         if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) return "Boolean";
+        // Already reference types — usable as a CompletableFuture parameter as they stand.
+        if (isBigDecimal(typeName) || isByteArray(typeName) || isTemporal(typeName)
+                || isArray(typeName))                                     return typeName;
         if (isIntegral(typeName))                                         return getBoxedType(typeName);
         if (isFloatingPoint(typeName))                                    return getBoxedType(typeName);
-        if (typeName.equals("long[]"))                                    return "long[]";
         return switch (f.scheme()) {
             case PAILLIER -> "java.math.BigInteger";
             case BFV      -> "Long";
