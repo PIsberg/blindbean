@@ -444,3 +444,89 @@ extern "C" int32_t fhe_import_keys(FheContext handle, const uint8_t* buf, size_t
         return -1;
     }
 }
+
+// ── CKKS batching ────────────────────────────────────────────────────────────
+// CKKS is a vector scheme. Encrypting one double at a time leaves every slot but
+// the first empty, which is why a CKKS rotation had to go through the scalar path
+// and could only carry slot 0.
+
+extern "C" FheCiphertext fhe_encrypt_double_array(FheContext handle, const double* values, size_t count) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        if (!ctx || !ctx->isCkks || !values || count == 0) return nullptr;
+
+        seal::CKKSEncoder encoder(*ctx->sealCtx);
+        size_t slot_count = encoder.slot_count();   // degree/2 for CKKS
+        if (count > slot_count) {
+            fprintf(stderr, "[SEAL] batch exceeds max slot count (%zu > %zu)\n", count, slot_count);
+            return nullptr;
+        }
+
+        std::vector<double> pod(values, values + count);
+        pod.resize(slot_count, 0.0);
+
+        seal::Plaintext plain;
+        encoder.encode(pod, ctx->scale, plain);
+
+        auto* ct = new seal::Ciphertext();
+        ctx->encryptor->encrypt(plain, *ct);
+        return static_cast<FheCiphertext>(ct);
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_encrypt_double_array error: %s\n", e.what());
+        return nullptr;
+    }
+}
+
+extern "C" int32_t fhe_decrypt_double_array(FheContext handle, FheCiphertext ctHandle,
+                                            double* out_values, size_t max_count) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        auto* ct  = static_cast<seal::Ciphertext*>(ctHandle);
+        if (!ctx || !ct || !ctx->isCkks || !out_values) return 0;
+
+        seal::Plaintext plain;
+        ctx->decryptor->decrypt(*ct, plain);
+
+        seal::CKKSEncoder encoder(*ctx->sealCtx);
+        std::vector<double> result;
+        encoder.decode(plain, result);
+
+        size_t copy_count = std::min(result.size(), max_count);
+        std::memcpy(out_values, result.data(), copy_count * sizeof(double));
+        return static_cast<int32_t>(copy_count);
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_decrypt_double_array error: %s\n", e.what());
+        return 0;
+    }
+}
+
+// ── Parameter introspection ──────────────────────────────────────────────────
+// t bounds every BFV slot. SEAL's BatchEncoder reduces an out-of-range value mod t
+// without complaint, so Java must know t to refuse the input instead.
+
+extern "C" uint64_t fhe_plain_modulus(FheContext handle) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        if (!ctx || ctx->isCkks) return 0;   // CKKS has no plaintext modulus
+        return ctx->sealCtx->first_context_data()->parms().plain_modulus().value();
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_plain_modulus error: %s\n", e.what());
+        return 0;
+    }
+}
+
+extern "C" uint64_t fhe_slot_count(FheContext handle) {
+    try {
+        auto* ctx = static_cast<BlindBeanContext*>(handle);
+        if (!ctx) return 0;
+        if (ctx->isCkks) {
+            seal::CKKSEncoder encoder(*ctx->sealCtx);
+            return static_cast<uint64_t>(encoder.slot_count());
+        }
+        seal::BatchEncoder encoder(*ctx->sealCtx);
+        return static_cast<uint64_t>(encoder.slot_count());
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[SEAL] fhe_slot_count error: %s\n", e.what());
+        return 0;
+    }
+}

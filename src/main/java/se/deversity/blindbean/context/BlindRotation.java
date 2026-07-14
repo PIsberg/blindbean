@@ -305,11 +305,11 @@ public final class BlindRotation implements AutoCloseable {
     /**
      * BFV/CKKS rotation: decrypt through the source context, re-encrypt through the target.
      *
-     * <p>BFV goes through the batch path in both directions. A BFV ciphertext carries every slot
-     * whether the caller encrypted one value or a whole array, so decrypting and re-encrypting
-     * the full slot vector rotates single values and batches identically — {@code decryptLong}
-     * still reads slot 0 of the result. CKKS has no batch entry point in the bridge and rotates
-     * through the scalar path.
+     * <p>Both schemes go through the batch path in both directions. A ciphertext carries every slot
+     * whether the caller encrypted one value or a whole array, so decrypting and re-encrypting the
+     * full slot vector rotates single values and batches identically — {@code decryptLong} /
+     * {@code decryptDouble} still read slot 0 of the result. CKKS used to rotate through the scalar
+     * path, which discarded every slot but the first.
      */
     private static final class FheEngine implements Engine {
 
@@ -335,7 +335,10 @@ public final class BlindRotation implements AutoCloseable {
             try (FheCiphertextNative in = FheCiphertextNative.fromBlindCiphertext(source, ciphertext)) {
                 MemorySegment fresh = switch (source.scheme()) {
                     case BFV  -> target.encryptLongArray(source.decryptLongArray(in.handle()));
-                    case CKKS -> target.encryptDouble(source.decryptDouble(in.handle()));
+                    // CKKS goes through the batch path in both directions now that the bridge has
+                    // one. It previously rotated via encryptDouble/decryptDouble, which reads slot
+                    // 0 — so rotating a CKKS vector silently discarded every other slot.
+                    case CKKS -> target.encryptDoubleArray(source.decryptDoubleArray(in.handle()));
                     case PAILLIER -> throw new IllegalStateException("unreachable: FheEngine on PAILLIER");
                 };
                 try (FheCiphertextNative out = new FheCiphertextNative(fresh, target)) {

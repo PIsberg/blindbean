@@ -56,6 +56,9 @@ public class FheContext implements AutoCloseable {
      */
     private volatile byte[] keyTag;
 
+    /** BFV plaintext modulus, fetched once. -1 = not yet asked. */
+    private volatile long plainModulus = -1;
+
     private FheContext(MemorySegment handle, Scheme scheme, Arena arena, int polyModulusDegree, double scale) {
         if (handle.equals(MemorySegment.NULL)) {
             throw new FheException("Failed to initialize FHE context — native call returned NULL");
@@ -184,6 +187,63 @@ public class FheContext implements AutoCloseable {
         }
     }
 
+    /**
+     * BFV plaintext modulus {@code t}. Every slot is a value mod {@code t}; 0 for CKKS, which has
+     * no plaintext modulus. Cached — it is fixed for the life of the context.
+     */
+    public long plainModulus() {
+        long t = plainModulus;
+        if (t == -1) {
+            synchronized (nativeLock) {
+                ensureOpen();
+                t = FheNativeBridge.fhe_plain_modulus(handle);
+                plainModulus = t;
+            }
+        }
+        return t;
+    }
+
+    /** Batching slots available: {@code polyModulusDegree} for BFV, half that for CKKS. */
+    public long slotCount() {
+        synchronized (nativeLock) {
+            ensureOpen();
+            return FheNativeBridge.fhe_slot_count(handle);
+        }
+    }
+
+    /**
+     * Largest magnitude a BFV slot can carry, i.e. {@code (t-1)/2}. Values outside
+     * {@code [-maxSlotValue, +maxSlotValue]} cannot be represented.
+     */
+    public long maxSlotValue() {
+        return (plainModulus() - 1) / 2;
+    }
+
+    /**
+     * Rejects values a BFV slot cannot hold.
+     *
+     * <p>This exists because SEAL does not. {@code BatchEncoder::encode} reduces an out-of-range
+     * value mod {@code t} without complaint, so a {@code long[]} carrying real longs came back as
+     * plausible nonsense — 1,000,000 decrypted to -32,193 — with no exception and no noise-budget
+     * warning. Worse, a single out-of-range entry corrupted <em>every other slot in the vector</em>,
+     * not just its own. The default parameters give a 20-bit {@code t}, so the usable range is only
+     * about ±516,000: a "long" array is really a 20-bit int array, and silently lying about it is
+     * the worst of the available options.
+     */
+    private void requireEncodable(long[] values) {
+        long max = maxSlotValue();
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] > max || values[i] < -max) {
+                throw new FheException(
+                    "BFV slot " + i + " holds " + values[i] + ", which this context cannot represent: "
+                    + "the plaintext modulus is " + plainModulus() + ", so a slot carries only "
+                    + "[-" + max + ", " + max + "]. SEAL would have reduced it mod t and returned a "
+                    + "plausible wrong number instead of failing — and corrupted the other slots with "
+                    + "it. Scale the value down, or raise the plaintext modulus.");
+            }
+        }
+    }
+
     /** Encrypts a long[] block directly into a single SIMD BFV Batch Ciphertext. */
     @AIPerformance
     public MemorySegment encryptLongArray(long[] values) {
@@ -192,6 +252,7 @@ public class FheContext implements AutoCloseable {
             if (scheme != Scheme.BFV) {
                 throw new FheException("encryptLongArray requires BFV context, got " + scheme);
             }
+            requireEncodable(values);
             try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
                 java.lang.foreign.MemorySegment arrayBuffer = arena.allocateFrom(java.lang.foreign.ValueLayout.JAVA_LONG, values);
                 MemorySegment ct = FheNativeBridge.fhe_encrypt_long_array(handle, arrayBuffer, values.length);
@@ -199,6 +260,56 @@ public class FheContext implements AutoCloseable {
                     throw new FheException("fhe_encrypt_long_array returned NULL. Matrix may be too large.");
                 }
                 return ct;
+            }
+        }
+    }
+
+    /**
+     * Encrypts a double[] into a single CKKS ciphertext, one value per slot.
+     *
+     * <p>CKKS is a vector scheme, but the bridge only ever exposed the scalar path — so every
+     * ciphertext wasted all but one of its {@code degree/2} slots, and a CKKS key rotation could
+     * only carry slot 0.
+     */
+    public MemorySegment encryptDoubleArray(double[] values) {
+        synchronized (nativeLock) {
+            ensureOpen();
+            if (scheme != Scheme.CKKS) {
+                throw new FheException("encryptDoubleArray requires CKKS context, got " + scheme);
+            }
+            try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
+                java.lang.foreign.MemorySegment buf =
+                        arena.allocateFrom(java.lang.foreign.ValueLayout.JAVA_DOUBLE, values);
+                MemorySegment ct = FheNativeBridge.fhe_encrypt_double_array(handle, buf, values.length);
+                if (ct.equals(MemorySegment.NULL)) {
+                    throw new FheException(
+                        "fhe_encrypt_double_array returned NULL — " + values.length
+                        + " values against " + slotCount() + " slots.");
+                }
+                return ct;
+            }
+        }
+    }
+
+    /** Decrypts a CKKS ciphertext into its full slot vector. Approximate, as CKKS always is. */
+    public double[] decryptDoubleArray(MemorySegment ct) {
+        synchronized (nativeLock) {
+            ensureOpen();
+            if (scheme != Scheme.CKKS) {
+                throw new FheException("decryptDoubleArray requires CKKS context, got " + scheme);
+            }
+            try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
+                long slots = slotCount();
+                java.lang.foreign.MemorySegment out =
+                        arena.allocate(java.lang.foreign.ValueLayout.JAVA_DOUBLE, slots);
+                int n = FheNativeBridge.fhe_decrypt_double_array(handle, ct, out, slots);
+                if (n <= 0) {
+                    throw new FheException("fhe_decrypt_double_array returned no slots");
+                }
+                double[] result = new double[n];
+                java.lang.foreign.MemorySegment.copy(
+                        out, java.lang.foreign.ValueLayout.JAVA_DOUBLE, 0, result, 0, n);
+                return result;
             }
         }
     }

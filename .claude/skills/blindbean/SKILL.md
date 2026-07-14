@@ -38,10 +38,26 @@ The processor enforces the pairing and fails the build if you get it wrong.
 | Field holds | Scheme | Can add | Can multiply | Notes |
 |---|---|---|---|---|
 | `long`, `int`, `short`, `byte`, `BigInteger` | `PAILLIER` | ✅ | ❌ | Pure Java, no native lib. The default. |
+| `BigDecimal` | `PAILLIER` | ✅ | ❌ | **Exact** decimals at a fixed `scale`. Use this for money. |
 | `String` | `PAILLIER` | ❌ | ❌ | Encoded, not arithmetic. **Must** be Paillier. |
+| `byte[]` | `PAILLIER` | ❌ | ❌ | Opaque blob. No arithmetic on bytes. |
 | `boolean` | `PAILLIER` | ❌ | ❌ | Maths is meaningless, so none is generated. |
+| `Instant`, `LocalDate` | `PAILLIER` | ❌ | ❌ | *Points* in time — "Tuesday + Thursday" is nonsense. |
+| `Duration` | `PAILLIER` | ✅ | ❌ | A *quantity*, so it adds. |
 | `float`, `double` | `CKKS` | ✅ | ✅ | **Approximate** — see §7. Needs native. |
-| `long[]` | `BFV` | ✅ | ✅ | SIMD batching, thousands of slots at once. Needs native. |
+| `float[]`, `double[]` | `CKKS` | ✅ | ✅ | Vectors, slot-wise. This is what CKKS is *for*. Needs native. |
+| `long[]`, `int[]`, `short[]` | `BFV` | ✅ | ✅ | SIMD batching, thousands of slots at once. **Mind the slot range** — see §7. Needs native. |
+
+Boxed types (`Long`, `Double`, `Boolean`, …) work wherever their primitive does, and **null round-trips**: encrypting null writes null, decrypting a null column returns null.
+
+**Money goes in `BigDecimal` on Paillier, never CKKS.** CKKS is approximate; `19.99 + 0.01` may not be exactly `20.00`. Paillier stores the unscaled integer at a fixed `scale`, so it is exact:
+
+```java
+@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+private String price;      // 19.99 is stored as the integer 1999
+```
+
+`scale` is part of the storage format — change it and everything already written decodes at the wrong magnitude. A value with more decimals than the scale is **rejected**, not rounded: silently losing a cent is worse than failing.
 
 **Paillier cannot multiply.** It is additively homomorphic; `BlindMath.multiply` on a Paillier
 ciphertext throws `UnsupportedOperationException`. If you need products, the field must be BFV or
@@ -232,9 +248,19 @@ Nested classes inherit the enclosing annotation.
 
 ## 7. Things that will bite you
 
+- **A BFV slot is not a `long`.** The plaintext modulus is ~20 bits, so a slot carries roughly
+  **±516,000** — a `long[]` field is really a 20-bit int array. Anything larger is now rejected with
+  an `FheException` naming the slot. It used to be encrypted anyway: 1,000,000 decrypted to -32,193,
+  and one out-of-range entry corrupted *every other slot in the vector*. Check
+  `FheContext.maxSlotValue()` and scale your values, or raise the plaintext modulus.
 - **CKKS is approximate.** `encrypt(3.14159)` then `decrypt` does not return exactly `3.14159`.
   Always assert with a tolerance. Never use CKKS for money or anything requiring an exact value —
-  use Paillier (`long`) for that.
+  use `BigDecimal` on Paillier for that.
+- **Negative numbers need `decryptSigned`.** Paillier's plaintext space is Z_n, so a raw `decrypt`
+  returns a residue: `encrypt(-5)` comes back as `n - 5`, a 600-digit positive integer. The generated
+  wrappers already use `decryptSigned` for every numeric type, but if you call `PaillierMath`
+  directly, use `decryptSigned` for numbers and `decrypt` only for strings and blobs (which are
+  unsigned magnitudes and would misread as negative).
 - **Noise budget.** Every homomorphic operation adds noise; exceed the budget and the ciphertext
   stops decrypting to anything meaningful. Multiplications are far more expensive than additions.
   Check `FheContext.noiseBudget(...)` on long operation chains.
