@@ -2,6 +2,7 @@ package com.blindbean.fhe;
 
 import com.blindbean.annotations.Scheme;
 import com.blindbean.core.Ciphertext;
+import com.blindbean.core.KeyTag;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.Arena;
@@ -152,14 +153,23 @@ public class FheCiphertextNative implements AutoCloseable {
      */
     public Ciphertext toBlindCiphertext() {
         byte[] serialized = serialize();
-        return Ciphertext.fromBytes(serialized, context.scheme());
+        return Ciphertext.fromBytes(KeyTag.wrap(context.keyTag(), serialized), context.scheme());
     }
 
     /**
      * Reconstructs a native ciphertext from a BlindBean {@link Ciphertext} record.
+     *
+     * <p>Refuses a ciphertext belonging to a different key generation. SEAL would not have caught
+     * it: two contexts built from the same parameters share a {@code parms_id}, so a foreign
+     * ciphertext deserializes cleanly and then decrypts to noise rather than failing. That is the
+     * shape of the key-rotation corruption this check exists to stop — see {@link KeyTag}.
+     *
+     * @throws com.blindbean.core.WrongKeyException if it was encrypted under other keys
      */
     public static FheCiphertextNative fromBlindCiphertext(FheContext context, Ciphertext ct) {
-        return deserialize(context, ct.getBytes());
+        byte[] payload = KeyTag.verifyAndUnwrap(
+            ct.getBytes(), context.keyTag(), "use this " + context.scheme() + " ciphertext");
+        return deserialize(context, payload);
     }
 
     private void ensureValid() {

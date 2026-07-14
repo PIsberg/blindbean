@@ -101,8 +101,12 @@ public class PaillierVectorizedTest {
         PaillierVectorized.batchAdd(c1, c2, sums, n2);
 
         for (int i = 0; i < length; i++) {
+            // batchAdd is a raw SIMD primitive over ciphertext *numbers*, so the result has to be
+            // re-stamped with the key generation before PaillierMath will accept it back.
             Ciphertext encryptedSum = Ciphertext.fromBytes(
-                BigInteger.valueOf(sums[i]).toByteArray(), com.blindbean.annotations.Scheme.PAILLIER);
+                com.blindbean.core.KeyTag.wrap(paillier.keyTag(),
+                    BigInteger.valueOf(sums[i]).toByteArray()),
+                com.blindbean.annotations.Scheme.PAILLIER);
             assertEquals(BigInteger.valueOf(m1[i] + m2[i]), paillier.decrypt(encryptedSum),
                 "decrypt(batchAdd(Enc(a), Enc(b))) must equal a + b at index " + i);
         }
@@ -137,7 +141,9 @@ public class PaillierVectorizedTest {
         for (int attempt = 0; attempt < 10; attempt++) {
             Ciphertext c = paillier.encrypt(m);
             if (paillier.decrypt(c).equals(m)) {
-                return new BigInteger(1, c.getBytes()).longValueExact();
+                // Strip the key-generation header — the SIMD path wants the ciphertext number.
+                return new BigInteger(1, com.blindbean.core.KeyTag.payloadOf(c.getBytes()))
+                    .longValueExact();
             }
         }
         throw new AssertionError("could not produce a decryptable tiny-key ciphertext for " + message);

@@ -34,8 +34,24 @@ public class BlindContext {
 
     // ── Paillier (unchanged from original API) ────────────────
 
+    /**
+     * Default Paillier modulus size, in bits.
+     *
+     * <p>Paillier's hardness is factoring {@code n = p*q}, so the modulus is sized like an RSA
+     * one. The previous default of 1024 was a 1024-bit modulus — roughly 80-bit security, which
+     * NIST disallowed after 2013 — and it was the value every example told users to adopt,
+     * including when generating the <em>new</em> key during a rotation, which is very often done
+     * precisely because the old one is no longer trusted. 2048 is the minimum that still
+     * qualifies; raise it to 3072 if you want to claim the 128-bit equivalence the BFV/CKKS
+     * parameters carry.
+     *
+     * <p>{@code PaillierKeyPair} splits this across the two primes, so this is the size of
+     * {@code n}, not of {@code p}.
+     */
+    public static final int DEFAULT_PAILLIER_BITS = 2048;
+
     public static void init() {
-        PaillierKeyPair kp = new PaillierKeyPair(1024); // smaller key size for prototype performance
+        PaillierKeyPair kp = new PaillierKeyPair(DEFAULT_PAILLIER_BITS);
         paillierInstance.set(new PaillierMath(kp));
     }
 

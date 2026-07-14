@@ -2,6 +2,7 @@ package com.blindbean.context;
 
 import com.blindbean.annotations.Scheme;
 import com.blindbean.core.Ciphertext;
+import com.blindbean.core.WrongKeyException;
 import com.blindbean.math.PaillierKeyPair;
 import com.blindbean.math.PaillierMath;
 
@@ -46,9 +47,13 @@ public class BlindRotationTest {
         assertNotEquals(underOld.hexData(), underNew.hexData(),
             "rotation must actually re-encrypt, not pass the ciphertext through");
 
-        // The old keys must no longer recover the message from the rotated ciphertext.
-        assertNotEquals(message, new PaillierMath(oldKeys).decrypt(underNew),
-            "the retired keys must not decrypt a rotated ciphertext");
+        // The retired keys must REFUSE the rotated ciphertext, not merely fail to recover it.
+        // This assertion used to read `assertNotEquals(message, oldKeys.decrypt(underNew))` — it
+        // passed because decryption under the wrong key returned a plausible wrong number, which
+        // is exactly the behaviour that let a re-run rotation destroy data unnoticed. A wrong
+        // answer is not a safe answer; it must be an error.
+        assertThrows(WrongKeyException.class, () -> new PaillierMath(oldKeys).decrypt(underNew),
+            "the retired keys must refuse a rotated ciphertext, not decrypt it to garbage");
     }
 
     @Test

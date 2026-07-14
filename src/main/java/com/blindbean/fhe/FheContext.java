@@ -43,6 +43,19 @@ public class FheContext implements AutoCloseable {
     private volatile boolean closed = false;
     private final Object nativeLock = new Object();
 
+    /**
+     * Fingerprint of the SEAL keys currently held, stamped into every ciphertext this context
+     * serializes and checked on every one it reads back ({@link com.blindbean.core.KeyTag}).
+     *
+     * <p>Derived from the serialized key blob rather than randomly assigned, because it has to
+     * survive an {@code exportState()} / {@code importState()} round trip: a random id would be
+     * regenerated on restart and the context would then reject its own ciphertexts. Computed
+     * lazily — the derivation serializes every key, which is far too expensive to do in the
+     * constructor of a context that may never serialize a ciphertext — and cleared by
+     * {@link #importState(byte[])}, which replaces the keys underneath it.
+     */
+    private volatile byte[] keyTag;
+
     private FheContext(MemorySegment handle, Scheme scheme, Arena arena, int polyModulusDegree, double scale) {
         if (handle.equals(MemorySegment.NULL)) {
             throw new FheException("Failed to initialize FHE context — native call returned NULL");
@@ -275,8 +288,30 @@ public class FheContext implements AutoCloseable {
                 if (rc != 0) {
                     throw new FheException("Key import failed", rc);
                 }
+                // The keys just changed underneath the fingerprint; recompute it on next use, or
+                // this context would keep stamping ciphertexts with the retired generation's tag.
+                keyTag = null;
             }
         }
+    }
+
+    /**
+     * Fingerprint of this context's key generation — a one-way digest of the serialized keys, not
+     * key material. Stable across an export/import round trip, so a context that reloads a key
+     * file still recognises the ciphertexts it wrote before the restart.
+     */
+    public byte[] keyTag() {
+        byte[] tag = keyTag;
+        if (tag == null) {
+            synchronized (nativeLock) {
+                tag = keyTag;
+                if (tag == null) {
+                    tag = com.blindbean.core.KeyTag.derive(exportState());
+                    keyTag = tag;
+                }
+            }
+        }
+        return tag.clone();
     }
 
     /** Homomorphic addition of two ciphertexts. */

@@ -29,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class RotationAsyncConcurrencyTest {
 
-    private static final PaillierKeyPair SOURCE_KEYS = new PaillierKeyPair(1024);
-    private static final PaillierKeyPair TARGET_KEYS = new PaillierKeyPair(1024);
+    private static final PaillierKeyPair SOURCE_KEYS = new PaillierKeyPair(1024);  // test-only key size: keygen speed, NOT a production size (see BlindContext.DEFAULT_PAILLIER_BITS)
+    private static final PaillierKeyPair TARGET_KEYS = new PaillierKeyPair(1024);  // test-only key size: keygen speed, NOT a production size (see BlindContext.DEFAULT_PAILLIER_BITS)
     private static final PaillierMath SOURCE_MATH = new PaillierMath(SOURCE_KEYS);
     private static final PaillierMath TARGET_MATH = new PaillierMath(TARGET_KEYS);
 

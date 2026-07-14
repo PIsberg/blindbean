@@ -175,7 +175,7 @@ Ciphertexts are bound to the keys that produced them, so rotation means re-encry
 `rotate()`, and your thread keeps running on the old keys until you `commit()`:
 
 ```java
-PaillierKeyPair next = new PaillierKeyPair(1024);
+PaillierKeyPair next = new PaillierKeyPair(2048);
 
 try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
     for (Wallet w : repository.findAll()) {
