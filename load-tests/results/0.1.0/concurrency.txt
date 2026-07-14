@@ -7,7 +7,7 @@ BlindBean — concurrency
 
 Ops   Wall (ms)  Ops/sec  Heap before (MB)  Heap after (MB)  Growth (MB)
 --------------------------------------------------------------------------
-2000  16387      122      5.5               5.1              -0.4
+2000  18653      107      5.2               5.0              -0.2
 
    → Growth is Java heap, not native heap — the native side is freed by close(). A steadily
      climbing figure across versions is the signal to investigate.
@@ -27,4 +27,4 @@ Attempts  Refused  Silently decrypted
 
 Threads  Ops/thread  Total ops  Wall (ms)  Ops/sec  Mismatches
 ----------------------------------------------------------------
-32       500         16000      6102       2622     0
+32       500         16000      6116       2616     0

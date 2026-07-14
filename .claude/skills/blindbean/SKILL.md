@@ -297,9 +297,11 @@ Nested classes inherit the enclosing annotation.
   wrappers already use `decryptSigned` for every numeric type, but if you call `PaillierMath`
   directly, use `decryptSigned` for numbers and `decrypt` only for strings and blobs (which are
   unsigned magnitudes and would misread as negative).
-- **Noise budget.** Every homomorphic operation adds noise; exceed the budget and the ciphertext
-  stops decrypting to anything meaningful. Multiplications are far more expensive than additions.
-  Check `FheContext.noiseBudget(...)` on long operation chains.
+- **Noise budget — you get about four multiplies.** Every operation spends budget; multiplies spend
+  most of it (additions are nearly free). At zero, SEAL would return a plausible *wrong number*, so
+  BlindBean **refuses to decrypt** and throws instead. Watch `FheContext.noiseBudget()` as you chain
+  operations — the guard tells you that you ran out, not that you are about to. Raise the polynomial
+  modulus degree to buy depth. CKKS has no budget; it decays in precision instead.
 - **Ciphertexts are malleable.** Anyone holding one can add to it. Homomorphic encryption gives you
   *confidentiality*, not integrity or authenticity — if that matters, sign or MAC the value
   separately.

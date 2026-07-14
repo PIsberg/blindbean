@@ -51,11 +51,12 @@
 <!-- ── 2. Noise budget → multiplicative depth ─────────────────────────────── -->
 <div class="chart" id="c2">
   <p class="title">Noise budget: you get four multiplies</p>
-  <p class="sub">Every operation spends budget. At zero the ciphertext stops decrypting to anything meaningful —
-    <strong>with no exception and no warning</strong>. Additions are nearly free; multiplies spend it.</p>
+  <p class="sub">Every operation spends budget. At zero the ciphertext is garbage — SEAL returns a plausible wrong
+    number rather than failing, so BlindBean now <strong>refuses to decrypt it</strong>. Additions are nearly free;
+    multiplies spend the budget.</p>
   <svg width="808" height="272" id="s2"></svg>
-  <p class="note">BFV, poly modulus degree 8192. An application chaining multiplies must watch
-    <code>FheContext.noiseBudget()</code> — nothing else will tell it the answer has gone wrong.</p>
+  <p class="note">BFV, poly modulus degree 8192. Watch <code>FheContext.noiseBudget()</code> as you chain operations —
+    the guard tells you that you ran out, not that you are about to.</p>
 </div>
 
 <!-- ── 3. Batching amortisation — log dot plot ────────────────────────────── -->
@@ -181,9 +182,9 @@ const S1 = 'var(--series-1)', S2 = 'var(--series-2)', S3 = 'var(--series-3)', CR
   // never cross its own text (which is exactly what the first render did).
   const bx = 700;
   const a = el('text', { x: bx, y: 16, 'text-anchor': 'end', class: 'val', fill: CRIT });
-  a.textContent = '5th multiply: budget 0 → returned 49,663, expected 64.'; svg.append(a);
+  a.textContent = '5th multiply: budget 0 → decryption REFUSED.'; svg.append(a);
   const b = el('text', { x: bx, y: 33, 'text-anchor': 'end', class: 'lbl', fill: CRIT });
-  b.textContent = 'No exception. No warning. The data is simply wrong.'; svg.append(b);
+  b.textContent = 'Before the guard it returned 49,663 where 64 was expected — silently.'; svg.append(b);
   svg.append(el('line', { x1: x(5), x2: x(5), y1: y(0) - 12, y2: 40,
                           stroke: CRIT, 'stroke-width': 1.5, 'stroke-dasharray': '3 3' }));
 }

@@ -178,8 +178,15 @@ than the scale is rejected rather than rounded.
 
 ### Noise budget: you get four multiplies
 
-Every homomorphic operation spends noise budget. At zero, the ciphertext stops
-decrypting to anything meaningful — **with no exception and no warning**.
+Every homomorphic operation spends noise budget. At zero the ciphertext is
+garbage: SEAL returns a plausible **wrong number** rather than failing. BlindBean
+therefore **refuses to decrypt it** (`FheException`) instead of handing the answer
+back — the same stance it takes on a foreign ciphertext and an out-of-range BFV
+slot. Escape hatch, for studying the corruption only:
+`-Dblindbean.noise.guard=false`.
+
+CKKS has no noise budget (the native call returns -1) — its failure mode is
+precision decay, not a cliff, and it cannot be detected this way.
 
 Measured at the default BFV parameters (`load-tests`, see `results/0.1.0/`):
 
@@ -187,12 +194,13 @@ Measured at the default BFV parameters (`load-tests`, see `results/0.1.0/`):
 |:------|:-------------|:---------|
 | 0 (encrypt) | 146 bits | yes |
 | 4 multiplies | 19 bits | yes |
-| **5 multiplies** | **0 bits** | **NO — returns a plausible wrong number** |
+| **5 multiplies** | **0 bits** | **REFUSED** (before the guard: returned 49,663, expected 64) |
 
 So BFV survives **four chained multiplications** at these parameters. Additions
-are nearly free; multiplies are what spend the budget. An application that chains
-multiplies must watch `FheContext.noiseBudget()` — nothing else will tell it the
-answer has gone wrong.
+are nearly free; multiplies are what spend the budget. Watch
+`FheContext.noiseBudget()` as you chain operations: the guard tells you that you
+*ran out*, not that you are *about to*. To buy more depth, raise the polynomial
+modulus degree, or restructure to use fewer multiplies.
 
 CKKS holds roughly 8-9 correct decimal digits over 1,000 chained additions. Fine
 for signals and ML features; never acceptable for money.

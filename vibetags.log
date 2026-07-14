@@ -2123,3 +2123,147 @@
 2026-07-14 20:56:57.649 INFO  .claudeignore — no changes
 2026-07-14 20:56:57.650 INFO  CLAUDE.md — updated
 2026-07-14 20:56:57.650 INFO  GEMINI.md — updated
+2026-07-14 23:02:58.866 INFO  VibeTags v1.0.0-RC2 | https://github.com/PIsberg/vibetags
+2026-07-14 23:02:58.868 INFO  Root: C:\dev\private\blindbean
+2026-07-14 23:02:58.941 INFO  Active services (4): aiexclude, claude, claude_ignore, gemini_md
+2026-07-14 23:02:58.941 INFO  @AILocked: 3 — serialVersionUID, FheNativeBridge, serialVersionUID
+2026-07-14 23:02:58.941 INFO  @AIContext: 2 — initNative, HomomorphicProcessor
+2026-07-14 23:02:58.942 INFO  @AIIgnore: 5 — INIT_LOCK, isIntegral, isFloatingPoint, getPrimitiveType, getBoxedType
+2026-07-14 23:02:58.942 INFO  @AIAudit: 3 — BlindAsync, BlindContext, FheCiphertextNative
+2026-07-14 23:02:58.942 INFO  @AIPrivacy: 3 — BlindRotation, KeyBundle, PaillierKeyPair
+2026-07-14 23:02:58.942 INFO  @AICore: 3 — BlindContext, FheContext, FheNativeBridge
+2026-07-14 23:02:58.942 INFO  @AIPerformance: 5 — encryptLongArray, multiply, PaillierMath, PaillierVectorized, batchAddBigInteger
+2026-07-14 23:02:58.942 INFO  @AIContract: 3 — FheCiphertextNative, FheContext, beforeEach
+2026-07-14 23:02:58.942 INFO  @AITestDriven: 4 — BlindContext, BlindRotation, FheContext, BlindBeanExtension
+2026-07-14 23:02:58.942 INFO  @AIThreadSafe: 5 — BlindAsync, BlindContext, BlindRotation, FheContext, PaillierVectorized
+2026-07-14 23:02:58.942 INFO  @AIImmutable: 2 — Ciphertext, PaillierKeyPair
+2026-07-14 23:02:58.942 INFO  @AIObservability: 1 — noiseBudget
+2026-07-14 23:02:58.942 INFO  @AIParallelTests: 1 — BlindAsync
+2026-07-14 23:02:58.942 INFO  @AIArchitecture: 1 — BlindMath
+2026-07-14 23:02:58.942 INFO  @AIPublicAPI: 6 — BlindContext, BlindRotation, Ciphertext, BlindBeanExtension, BlindBeanTest, BlindMath
+2026-07-14 23:02:58.942 INFO  @AIStrictExceptions: 3 — FheCiphertextNative, initNative, PaillierMath
+2026-07-14 23:02:58.942 INFO  @AIStrictTypes: 1 — BlindMath
+2026-07-14 23:02:58.942 INFO  @AIInternationalized: 1 — HomomorphicProcessor
+2026-07-14 23:02:58.942 INFO  @AIStrictClasspath: 1 — HomomorphicProcessor
+2026-07-14 23:02:58.942 INFO  @AISchemaSafe: 3 — KeyBundle, Ciphertext, PaillierKeyPair
+2026-07-14 23:02:58.942 INFO  @AIIdempotent: 6 — clear, commit, close, close, close, afterEach
+2026-07-14 23:02:58.942 INFO  @AIFeatureFlag: 2 — BlindAsync, generateBlindWrapper
+2026-07-14 23:02:58.942 INFO  @AISecure: 7 — BlindContext, exportKeys, loadKeys, BlindRotation, FheContext, PaillierKeyPair, PaillierMath
+2026-07-14 23:02:58.942 INFO  @AICallersOnly: 1 — KeyBundle
+2026-07-14 23:02:58.942 INFO  @AIMemoryBudget: 1 — batchAdd
+2026-07-14 23:02:58.942 INFO  @AIPure: 1 — batchAddBigInteger
+2026-07-14 23:02:58.942 INFO  @AIDomainModel: 1 — Ciphertext
+2026-07-14 23:02:58.943 INFO  @AIInputSanitized: 2 — filePath, filePath
+2026-07-14 23:02:58.943 INFO  @AISecureLogging: 4 — paillierKeyPair, nativeFhePayload, lambda, mu
+2026-07-14 23:02:58.943 INFO  @AIExplain: 2 — PaillierMath, batchAdd
+2026-07-14 23:02:58.994 INFO  .claudeignore — no changes
+2026-07-14 23:02:58.994 INFO  GEMINI.md — no changes
+2026-07-14 23:02:58.994 INFO  CLAUDE.md — updated
+2026-07-14 23:03:25.460 INFO  VibeTags v1.0.0-RC2 | https://github.com/PIsberg/vibetags
+2026-07-14 23:03:25.462 INFO  Root: C:\dev\private\blindbean
+2026-07-14 23:03:25.545 INFO  Active services (4): aiexclude, claude, claude_ignore, gemini_md
+2026-07-14 23:03:25.546 INFO  @AILocked: 3 — serialVersionUID, FheNativeBridge, serialVersionUID
+2026-07-14 23:03:25.546 INFO  @AIContext: 2 — initNative, HomomorphicProcessor
+2026-07-14 23:03:25.546 INFO  @AIIgnore: 5 — INIT_LOCK, isIntegral, isFloatingPoint, getPrimitiveType, getBoxedType
+2026-07-14 23:03:25.546 INFO  @AIAudit: 3 — BlindAsync, BlindContext, FheCiphertextNative
+2026-07-14 23:03:25.546 INFO  @AIPrivacy: 3 — BlindRotation, KeyBundle, PaillierKeyPair
+2026-07-14 23:03:25.546 INFO  @AICore: 3 — BlindContext, FheContext, FheNativeBridge
+2026-07-14 23:03:25.546 INFO  @AIPerformance: 5 — encryptLongArray, multiply, PaillierMath, PaillierVectorized, batchAddBigInteger
+2026-07-14 23:03:25.546 INFO  @AIContract: 3 — FheCiphertextNative, FheContext, beforeEach
+2026-07-14 23:03:25.546 INFO  @AITestDriven: 4 — BlindContext, BlindRotation, FheContext, BlindBeanExtension
+2026-07-14 23:03:25.546 INFO  @AIThreadSafe: 5 — BlindAsync, BlindContext, BlindRotation, FheContext, PaillierVectorized
+2026-07-14 23:03:25.546 INFO  @AIImmutable: 2 — Ciphertext, PaillierKeyPair
+2026-07-14 23:03:25.546 INFO  @AIObservability: 1 — noiseBudget
+2026-07-14 23:03:25.547 INFO  @AIParallelTests: 1 — BlindAsync
+2026-07-14 23:03:25.547 INFO  @AIArchitecture: 1 — BlindMath
+2026-07-14 23:03:25.547 INFO  @AIPublicAPI: 6 — BlindContext, BlindRotation, Ciphertext, BlindBeanExtension, BlindBeanTest, BlindMath
+2026-07-14 23:03:25.547 INFO  @AIStrictExceptions: 3 — FheCiphertextNative, initNative, PaillierMath
+2026-07-14 23:03:25.547 INFO  @AIStrictTypes: 1 — BlindMath
+2026-07-14 23:03:25.547 INFO  @AIInternationalized: 1 — HomomorphicProcessor
+2026-07-14 23:03:25.547 INFO  @AIStrictClasspath: 1 — HomomorphicProcessor
+2026-07-14 23:03:25.547 INFO  @AISchemaSafe: 3 — KeyBundle, Ciphertext, PaillierKeyPair
+2026-07-14 23:03:25.547 INFO  @AIIdempotent: 6 — clear, commit, close, close, close, afterEach
+2026-07-14 23:03:25.547 INFO  @AIFeatureFlag: 2 — BlindAsync, generateBlindWrapper
+2026-07-14 23:03:25.547 INFO  @AISecure: 7 — BlindContext, exportKeys, loadKeys, BlindRotation, FheContext, PaillierKeyPair, PaillierMath
+2026-07-14 23:03:25.547 INFO  @AICallersOnly: 1 — KeyBundle
+2026-07-14 23:03:25.547 INFO  @AIMemoryBudget: 1 — batchAdd
+2026-07-14 23:03:25.547 INFO  @AIPure: 1 — batchAddBigInteger
+2026-07-14 23:03:25.547 INFO  @AIDomainModel: 1 — Ciphertext
+2026-07-14 23:03:25.547 INFO  @AIInputSanitized: 2 — filePath, filePath
+2026-07-14 23:03:25.548 INFO  @AISecureLogging: 4 — paillierKeyPair, nativeFhePayload, lambda, mu
+2026-07-14 23:03:25.548 INFO  @AIExplain: 2 — PaillierMath, batchAdd
+2026-07-14 23:03:25.580 INFO  CLAUDE.md — no changes
+2026-07-14 23:03:25.580 INFO  .claudeignore — no changes
+2026-07-14 23:03:25.580 INFO  GEMINI.md — no changes
+2026-07-14 23:09:16.731 INFO  VibeTags v1.0.0-RC2 | https://github.com/PIsberg/vibetags
+2026-07-14 23:09:16.732 INFO  Root: C:\dev\private\blindbean
+2026-07-14 23:09:16.806 INFO  Active services (4): aiexclude, claude, claude_ignore, gemini_md
+2026-07-14 23:09:16.807 INFO  @AILocked: 3 — serialVersionUID, FheNativeBridge, serialVersionUID
+2026-07-14 23:09:16.807 INFO  @AIContext: 2 — initNative, HomomorphicProcessor
+2026-07-14 23:09:16.807 INFO  @AIIgnore: 5 — INIT_LOCK, isIntegral, isFloatingPoint, getPrimitiveType, getBoxedType
+2026-07-14 23:09:16.807 INFO  @AIAudit: 3 — BlindAsync, BlindContext, FheCiphertextNative
+2026-07-14 23:09:16.807 INFO  @AIPrivacy: 3 — BlindRotation, KeyBundle, PaillierKeyPair
+2026-07-14 23:09:16.807 INFO  @AICore: 3 — BlindContext, FheContext, FheNativeBridge
+2026-07-14 23:09:16.807 INFO  @AIPerformance: 5 — encryptLongArray, multiply, PaillierMath, PaillierVectorized, batchAddBigInteger
+2026-07-14 23:09:16.807 INFO  @AIContract: 3 — FheCiphertextNative, FheContext, beforeEach
+2026-07-14 23:09:16.807 INFO  @AITestDriven: 4 — BlindContext, BlindRotation, FheContext, BlindBeanExtension
+2026-07-14 23:09:16.807 INFO  @AIThreadSafe: 5 — BlindAsync, BlindContext, BlindRotation, FheContext, PaillierVectorized
+2026-07-14 23:09:16.807 INFO  @AIImmutable: 2 — Ciphertext, PaillierKeyPair
+2026-07-14 23:09:16.807 INFO  @AIObservability: 1 — noiseBudget
+2026-07-14 23:09:16.808 INFO  @AIParallelTests: 1 — BlindAsync
+2026-07-14 23:09:16.808 INFO  @AIArchitecture: 1 — BlindMath
+2026-07-14 23:09:16.808 INFO  @AIPublicAPI: 6 — BlindContext, BlindRotation, Ciphertext, BlindBeanExtension, BlindBeanTest, BlindMath
+2026-07-14 23:09:16.808 INFO  @AIStrictExceptions: 3 — FheCiphertextNative, initNative, PaillierMath
+2026-07-14 23:09:16.808 INFO  @AIStrictTypes: 1 — BlindMath
+2026-07-14 23:09:16.808 INFO  @AIInternationalized: 1 — HomomorphicProcessor
+2026-07-14 23:09:16.808 INFO  @AIStrictClasspath: 1 — HomomorphicProcessor
+2026-07-14 23:09:16.808 INFO  @AISchemaSafe: 3 — KeyBundle, Ciphertext, PaillierKeyPair
+2026-07-14 23:09:16.808 INFO  @AIIdempotent: 6 — clear, commit, close, close, close, afterEach
+2026-07-14 23:09:16.808 INFO  @AIFeatureFlag: 2 — BlindAsync, generateBlindWrapper
+2026-07-14 23:09:16.808 INFO  @AISecure: 7 — BlindContext, exportKeys, loadKeys, BlindRotation, FheContext, PaillierKeyPair, PaillierMath
+2026-07-14 23:09:16.808 INFO  @AICallersOnly: 1 — KeyBundle
+2026-07-14 23:09:16.808 INFO  @AIMemoryBudget: 1 — batchAdd
+2026-07-14 23:09:16.808 INFO  @AIPure: 1 — batchAddBigInteger
+2026-07-14 23:09:16.808 INFO  @AIDomainModel: 1 — Ciphertext
+2026-07-14 23:09:16.808 INFO  @AIInputSanitized: 2 — filePath, filePath
+2026-07-14 23:09:16.808 INFO  @AISecureLogging: 4 — paillierKeyPair, nativeFhePayload, lambda, mu
+2026-07-14 23:09:16.808 INFO  @AIExplain: 2 — PaillierMath, batchAdd
+2026-07-14 23:09:16.836 INFO  CLAUDE.md — no changes
+2026-07-14 23:09:16.837 INFO  .claudeignore — no changes
+2026-07-14 23:09:16.837 INFO  GEMINI.md — no changes
+2026-07-14 23:10:24.842 INFO  VibeTags v1.0.0-RC2 | https://github.com/PIsberg/vibetags
+2026-07-14 23:10:24.844 INFO  Root: C:\dev\private\blindbean
+2026-07-14 23:10:24.915 INFO  Active services (4): aiexclude, claude, claude_ignore, gemini_md
+2026-07-14 23:10:24.916 INFO  @AILocked: 3 — serialVersionUID, FheNativeBridge, serialVersionUID
+2026-07-14 23:10:24.916 INFO  @AIContext: 2 — initNative, HomomorphicProcessor
+2026-07-14 23:10:24.916 INFO  @AIIgnore: 5 — INIT_LOCK, isIntegral, isFloatingPoint, getPrimitiveType, getBoxedType
+2026-07-14 23:10:24.916 INFO  @AIAudit: 3 — BlindAsync, BlindContext, FheCiphertextNative
+2026-07-14 23:10:24.916 INFO  @AIPrivacy: 3 — BlindRotation, KeyBundle, PaillierKeyPair
+2026-07-14 23:10:24.916 INFO  @AICore: 3 — BlindContext, FheContext, FheNativeBridge
+2026-07-14 23:10:24.916 INFO  @AIPerformance: 5 — encryptLongArray, multiply, PaillierMath, PaillierVectorized, batchAddBigInteger
+2026-07-14 23:10:24.916 INFO  @AIContract: 3 — FheCiphertextNative, FheContext, beforeEach
+2026-07-14 23:10:24.916 INFO  @AITestDriven: 4 — BlindContext, BlindRotation, FheContext, BlindBeanExtension
+2026-07-14 23:10:24.916 INFO  @AIThreadSafe: 5 — BlindAsync, BlindContext, BlindRotation, FheContext, PaillierVectorized
+2026-07-14 23:10:24.916 INFO  @AIImmutable: 2 — Ciphertext, PaillierKeyPair
+2026-07-14 23:10:24.916 INFO  @AIObservability: 1 — noiseBudget
+2026-07-14 23:10:24.916 INFO  @AIParallelTests: 1 — BlindAsync
+2026-07-14 23:10:24.916 INFO  @AIArchitecture: 1 — BlindMath
+2026-07-14 23:10:24.917 INFO  @AIPublicAPI: 6 — BlindContext, BlindRotation, Ciphertext, BlindBeanExtension, BlindBeanTest, BlindMath
+2026-07-14 23:10:24.917 INFO  @AIStrictExceptions: 3 — FheCiphertextNative, initNative, PaillierMath
+2026-07-14 23:10:24.917 INFO  @AIStrictTypes: 1 — BlindMath
+2026-07-14 23:10:24.917 INFO  @AIInternationalized: 1 — HomomorphicProcessor
+2026-07-14 23:10:24.917 INFO  @AIStrictClasspath: 1 — HomomorphicProcessor
+2026-07-14 23:10:24.917 INFO  @AISchemaSafe: 3 — KeyBundle, Ciphertext, PaillierKeyPair
+2026-07-14 23:10:24.917 INFO  @AIIdempotent: 6 — clear, commit, close, close, close, afterEach
+2026-07-14 23:10:24.917 INFO  @AIFeatureFlag: 2 — BlindAsync, generateBlindWrapper
+2026-07-14 23:10:24.917 INFO  @AISecure: 7 — BlindContext, exportKeys, loadKeys, BlindRotation, FheContext, PaillierKeyPair, PaillierMath
+2026-07-14 23:10:24.917 INFO  @AICallersOnly: 1 — KeyBundle
+2026-07-14 23:10:24.917 INFO  @AIMemoryBudget: 1 — batchAdd
+2026-07-14 23:10:24.917 INFO  @AIPure: 1 — batchAddBigInteger
+2026-07-14 23:10:24.917 INFO  @AIDomainModel: 1 — Ciphertext
+2026-07-14 23:10:24.917 INFO  @AIInputSanitized: 2 — filePath, filePath
+2026-07-14 23:10:24.917 INFO  @AISecureLogging: 4 — paillierKeyPair, nativeFhePayload, lambda, mu
+2026-07-14 23:10:24.918 INFO  @AIExplain: 2 — PaillierMath, batchAdd
+2026-07-14 23:10:24.946 INFO  CLAUDE.md — no changes
+2026-07-14 23:10:24.947 INFO  .claudeignore — no changes
+2026-07-14 23:10:24.947 INFO  GEMINI.md — no changes
