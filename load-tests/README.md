@@ -46,66 +46,65 @@ java --enable-preview --add-modules jdk.incubator.vector --enable-native-access=
 Reports land in `target/*.txt` and print to stdout. Copy them into `results/<version>/` when a
 release is cut, so a regression is a diff.
 
+## In CI
+
+A **small-load regression gate** runs on every push (Windows job, ~10 s at `-Dstress.max.ops=50`).
+It is a gate, not a benchmark — timings on a shared runner are noise, so it asserts *properties*:
+
+- BFV keeps its **multiplicative depth ≥ 4** — a SEAL upgrade or parameter tweak that quietly costs
+  a multiply would otherwise ship unnoticed, and every user relying on four would start getting
+  silent garbage.
+- **Batched expansion stays in single digits** — catches a batch path that has stopped filling slots.
+- **No thread reads back a value it did not write**, and no foreign ciphertext decrypts.
+- The batching-speedup gate only applies at a realistic batch size: a batched ciphertext costs the
+  same fixed ~432 KB whether it carries 50 values or 4,096, so the per-value win *legitimately*
+  collapses under a small load (40× at n=50). Asserting there would make the gate permanently red
+  for the very reason the chart below explains.
+
+The full sweep — the figures and charts here — is a local or release-time run.
+
 ## What 0.1.0 says — and what you should do about it
 
-Full numbers in [`results/0.1.0/`](results/0.1.0/). Four findings worth acting on:
+Full numbers in [`results/0.1.0/`](results/0.1.0/), charts in
+[`results/0.1.0/charts/`](results/0.1.0/charts/).
 
-### 1. A single BFV value costs 54,000× its plaintext. Batch, or don't use BFV.
+### 1. You get **four** multiplies. Then your data is silently wrong.
 
-| Scheme | Plaintext | CT bytes | Expansion |
-|---|---|---|---|
-| Paillier-2048 | `long` | 534 | **67×** |
-| BFV-8192 | one `long` (1 slot) | 432,493 | **54,062×** |
-| BFV-8192 | `long[8192]` (all slots) | 432,532 | **7×** |
-| CKKS-8192 | `double[4096]` (all slots) | 331,596 | **10×** |
+![Noise budget vs multiplicative depth](results/0.1.0/charts/noise-budget-depth.png)
 
-A BFV ciphertext is sized by the *parameters*, not the payload: one value costs the same 432 KB as
-a full 8,192-slot vector. **Batching is not an optimisation, it is how you stop paying for empty
-slots.** If your entity has a single `long` under BFV, you have chosen the worst possible cell in
-this table — use Paillier (67×) or fill the slots.
+The single most important number in the file. At the default parameters BFV survives **four chained
+multiplications**. On the fifth the budget hits zero and decryption returns a plausible wrong number
+— **no exception, no warning**. Additions are nearly free; multiplies spend the budget.
 
-### 2. Batching is a 3,400× speedup, and CKKS only just got it
+An application that chains multiplies must watch `FheContext.noiseBudget()`. Nothing else will tell
+it the answer has gone wrong.
 
-| Scheme | Mode | Per value |
-|---|---|---|
-| BFV | scalar (1 value/ct) | 7,334 µs |
-| BFV | batched | **2.2 µs** (3,400×) |
-| CKKS | scalar | 6,020 µs |
-| CKKS | batched | **~6 µs** |
+### 2. A single BFV value costs 54,000× its plaintext
 
-Encrypting values one at a time under BFV/CKKS costs three to four orders of magnitude more than
-necessary. The CKKS batched path did not exist before the `double[]` bridge — every CKKS ciphertext
-used to waste all but one of its 4,096 slots.
+![Ciphertext expansion](results/0.1.0/charts/ciphertext-expansion.png)
 
-### 3. You get **four** multiplies. Then your data is silently wrong.
+A BFV ciphertext is sized by the *parameters*, not the payload. If your entity holds a single `long`
+under BFV you have picked the worst cell in that chart — and the annotation API makes it the
+*easiest* thing to write. Use Paillier (67×), or fill the slots.
 
-| Depth | Noise budget (bits) | Decrypts correctly? |
-|---|---|---|
-| 0 (encrypt) | 146 | yes |
-| 1 | 114 | yes |
-| 2 | 83 | yes |
-| 3 | 51 | yes |
-| 4 | 19 | yes |
-| **5** | **0** | **NO — got 49663 instead of 64** |
+### 3. Batching is a 3,400× speedup, and CKKS only just got it
 
-This is the single most important number in the file. At the default parameters BFV survives **four
-chained multiplications**. On the fifth the noise budget hits zero and decryption returns a
-plausible wrong number — **no exception, no warning**. Additions are nearly free; multiplies are
-what spend the budget.
+![Batching amortisation](results/0.1.0/charts/batching-amortisation.png)
 
-An application that chains multiplies must watch `FheContext.noiseBudget()`, not just its results.
-Nothing else will tell it.
+The CKKS batched path did not exist before the `double[]` bridge — every CKKS ciphertext used to
+waste all but one of its 4,096 slots.
 
 ### 4. CKKS holds ~8–9 correct digits over 1,000 additions
 
-Error grows from 9.6e-10 to 5.0e-8 across 1,000 chained adds — fine for signals and ML features,
-and still **never** acceptable for money. Use `BigDecimal` on Paillier, which is exact.
+![CKKS precision decay](results/0.1.0/charts/ckks-precision-decay.png)
+
+Fine for signals and ML features. **Never** for money — `BigDecimal` on Paillier is exact.
 
 ### Keygen (per application, not per request)
 
-Paillier keygen: **10 ms** at 1024 bits, **47 ms** at 2048 (the current default), **122 ms** at 3072.
-The security upgrade from 1024 to 2048 costs ~37 ms once. If keygen is on your hot path, that's the
-bug — export the bundle and reload it.
+![Paillier keygen cost](results/0.1.0/charts/paillier-keygen.png)
+
+If keygen is on your request path, that's the bug — export the key bundle and reload it.
 
 ### Concurrency
 

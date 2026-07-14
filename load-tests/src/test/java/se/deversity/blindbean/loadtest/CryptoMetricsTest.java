@@ -12,6 +12,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +46,13 @@ import java.util.List;
 class CryptoMetricsTest {
 
     private static final Report REPORT = new Report("crypto-metrics");
+
+    /**
+     * Caps the two loops that dominate the runtime (the scalar batching baseline and the CKKS
+     * add chain). CI passes a small value so this doubles as a fast regression gate; a full local
+     * run leaves it at the default and produces the numbers that go in results/.
+     */
+    private static final int MAX_OPS = Integer.getInteger("stress.max.ops", 4096);
 
     @AfterEach
     void teardown() {
@@ -81,9 +90,11 @@ class CryptoMetricsTest {
             REPORT.row("BFV-8192", "long 42 (1 slot used)", 8, n, ratio(n, 8));
         }
         long[] full = new long[8192];
+        double bfvBatchedExpansion;
         try (var vec = new FheCiphertextNative(bfv.encryptLongArray(full), bfv)) {
             int n = vec.toBlindCiphertext().sizeInBytes();
             int pt = 8192 * 8;
+            bfvBatchedExpansion = n / (double) pt;
             REPORT.row("BFV-8192", "long[8192] (all slots)", pt, n, ratio(n, pt));
         }
         BlindContext.clear();
@@ -102,6 +113,11 @@ class CryptoMetricsTest {
         REPORT.note("Ciphertext size is fixed by the parameters, not the payload: one value costs "
                   + "the same bytes as a full slot vector. Batching is not an optimisation here, "
                   + "it is how you stop paying for empty slots.");
+
+        // Regression gate: a filled BFV vector must stay in single digits of expansion. If this
+        // ever blows up, the batch path has silently stopped filling slots.
+        assertTrue(bfvBatchedExpansion < 20,
+            "BFV batched expansion regressed to " + bfvBatchedExpansion + "x (was ~7x)");
     }
 
     // ── 2. Noise budget → multiplicative depth ───────────────────────────────
@@ -149,6 +165,12 @@ class CryptoMetricsTest {
         REPORT.note("Usable multiplicative depth at these parameters: " + lastGoodDepth
                   + ". Beyond it the value is wrong and nothing throws — which is why an "
                   + "application chaining multiplies must watch noiseBudget(), not just results.");
+
+        // Regression gate. Depth is a property of the PARAMETERS, so a SEAL upgrade or a parameter
+        // tweak that quietly costs a multiply would otherwise ship unnoticed — and every user who
+        // relied on four would start getting silent garbage.
+        assertTrue(lastGoodDepth >= 4,
+            "multiplicative depth regressed to " + lastGoodDepth + " (expected >= 4)");
     }
 
     // ── 3. CKKS precision decay ──────────────────────────────────────────────
@@ -170,6 +192,7 @@ class CryptoMetricsTest {
         var acc = new FheCiphertextNative(ctx.encryptDouble(step), ctx);
 
         for (int ops : new int[] { 1, 10, 100, 1000 }) {
+            if (ops > MAX_OPS) break;
             while (countedOps < ops) {
                 try (var s = new FheCiphertextNative(ctx.encryptDouble(step), ctx)) {
                     var next = new FheCiphertextNative(ctx.add(acc.handle(), s.handle()), ctx);
@@ -204,7 +227,7 @@ class CryptoMetricsTest {
 
         BlindContext.initBfv(8192);
         FheContext bfv = BlindContext.getFheContext();
-        int n = 4096;
+        int n = Math.min(4096, MAX_OPS);
 
         long t0 = System.nanoTime();
         for (int i = 0; i < n; i++) {
@@ -231,7 +254,7 @@ class CryptoMetricsTest {
 
         BlindContext.initCkks(8192, Math.pow(2, 40));
         FheContext ckks = BlindContext.getFheContext();
-        int m = 2048;
+        int m = Math.min(2048, MAX_OPS);
 
         t0 = System.nanoTime();
         for (int i = 0; i < m; i++) {
@@ -261,6 +284,23 @@ class CryptoMetricsTest {
                   + "ciphertext used to waste all but one of its 4,096 slots. If you are encrypting "
                   + "values one at a time under BFV or CKKS, you are paying three to four orders of "
                   + "magnitude more than you need to.");
+
+        // Regression gate: losing the batch path is the failure this whole harness exists to catch.
+        // Deliberately loose (100x, not 3,400x) — a shared CI runner is noisy, and a gate that
+        // flaps is a gate people switch off.
+        //
+        // Only meaningful at a realistic batch size. A batched ciphertext costs the same fixed
+        // ~432 KB whether it carries 50 values or 4,096, so under a small -Dstress.max.ops the
+        // per-value advantage legitimately collapses (measured 40x at n=50). Asserting there would
+        // make the gate permanently red for the exact reason the chart above explains.
+        if (n >= 1000) {
+            assertTrue(scalarNs / (double) batchNs > 100,
+                "BFV batching speedup collapsed to " + (scalarNs / batchNs) + "x at n=" + n);
+        }
+        if (m >= 1000) {
+            assertTrue(ckksScalarNs / (double) ckksBatchNs > 100,
+                "CKKS batching speedup collapsed to " + (ckksScalarNs / ckksBatchNs) + "x at n=" + m);
+        }
     }
 
     // ── 5. Keygen cost by modulus size ───────────────────────────────────────
