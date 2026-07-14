@@ -136,18 +136,21 @@ class PortfolioTest { ... }
 
 The scheme is not a preference — it is decided by the field's type, and the processor fails the build on a wrong pairing. `type()` names the *plaintext* type; the field itself is always a `String` holding hex.
 
-| Field holds | Scheme | Add | Multiply |
-|:---|:---|:---:|:---:|
-| `byte`, `short`, `int`, `long`, `BigInteger` (+ boxed) | `PAILLIER` | ✅ | ❌ |
-| `BigDecimal` — **exact** decimals at a fixed `scale` | `PAILLIER` | ✅ | ❌ |
-| `String` | `PAILLIER` | ❌ | ❌ |
-| `byte[]` — an opaque blob | `PAILLIER` | ❌ | ❌ |
-| `boolean` | `PAILLIER` | ❌ | ❌ |
-| `Instant`, `LocalDate` — *points* in time | `PAILLIER` | ❌ | ❌ |
-| `Duration` — a *quantity* | `PAILLIER` | ✅ | ❌ |
-| `float`, `double` (+ boxed) | `CKKS` | ✅ | ✅ |
-| `float[]`, `double[]` — real vectors | `CKKS` | ✅ | ✅ |
-| `long[]`, `int[]`, `short[]` — integer vectors | `BFV` | ✅ | ✅ |
+| Field holds | Scheme | Add | Subtract | Multiply |
+|:---|:---|:---:|:---:|:---:|
+| `byte`, `short`, `int`, `long`, `BigInteger` (+ boxed) | `PAILLIER` | ✅ | ✅ | ❌ |
+| `BigDecimal` — **exact** decimals at a fixed `scale` | `PAILLIER` | ✅ | ✅ | ❌ |
+| `String` | `PAILLIER` | ❌ | ❌ | ❌ |
+| `byte[]` — an opaque blob | `PAILLIER` | ❌ | ❌ | ❌ |
+| `boolean` | `PAILLIER` | ❌ | ❌ | ❌ |
+| `Instant`, `LocalDate` — *points* in time | `PAILLIER` | ❌ | ❌ | ❌ |
+| `Duration` — a *quantity* | `PAILLIER` | ✅ | ✅ | ❌ |
+| `float`, `double` (+ boxed) | `CKKS` | ✅ | ✅ | ✅ |
+| `float[]`, `double[]` — real vectors | `CKKS` | ✅ | ✅ | ✅ |
+| `long[]`, `int[]`, `short[]` — integer vectors | `BFV` | ✅ | ✅ | ✅ |
+
+Subtraction goes wherever addition does. In Paillier it is a multiply by the modular inverse, so
+`3 - 10` really is `-7` — not a several-hundred-digit residue (see `decryptSigned`).
 
 ```java
 @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)

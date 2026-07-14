@@ -53,7 +53,7 @@ At compile time, `HomomorphicProcessor` evaluates classes annotated with `@Blind
   | `float`/`double` (+ boxed), `float[]`, `double[]` | CKKS | scalar / slot vector |
   | `long[]`, `int[]`, `short[]` | BFV | slot vector |
 
-- **Algebraic boundaries are enforced structurally**: arithmetic is *not generated* where it would be meaningless or destructive. Adding two UTF-8 encodings or two blobs corrupts them; adding two `Instant`s ("Tuesday plus Thursday") is not a date. A `Duration` is a quantity, so it adds. Paillier gets no `mul` — it is additively homomorphic only.
+- **Algebraic boundaries are enforced structurally**: `addX`/`subX` are generated together (subtraction is a multiply by the modular inverse in Paillier, and `fhe_subtract` under BFV/CKKS), `mulX` only where the scheme supports it. Arithmetic is *not generated* where it would be meaningless or destructive. Adding two UTF-8 encodings or two blobs corrupts them; adding two `Instant`s ("Tuesday plus Thursday") is not a date. A `Duration` is a quantity, so it adds. Paillier gets no `mul` — it is additively homomorphic only.
 
 - **Signed decoding**: Paillier's plaintext space is Z_n, so a raw `decrypt` returns a residue and `encrypt(-5)` comes back as `n - 5`. Every *numeric* decode the processor emits goes through `PaillierMath.decryptSigned` (balanced representation). `String` and `byte[]` keep the unsigned `decrypt` — they are magnitudes, and a blob with its top bit set would otherwise read as negative.
 

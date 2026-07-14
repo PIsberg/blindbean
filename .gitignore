@@ -7,3 +7,4 @@ vcpkg_installed/
 .vibetags-cache
 .vibetags-mod-_root_
 vibetags.logload-tests/target/
+dependency-reduced-pom.xml
