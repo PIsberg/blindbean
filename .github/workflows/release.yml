@@ -1,0 +1,234 @@
+name: Release
+
+# Cutting a release is tagging it:
+#
+#   mvn versions:set -DnewVersion=0.1.0   # if the pom is not already there
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# The tag must match the <version> in pom.xml — the build refuses to run otherwise, because a
+# GitHub Release labelled v0.1.0 that ships a 0.0.9 jar is worse than no release at all.
+#
+# Requires four repository secrets. Until they exist this workflow builds and attaches the
+# GitHub Release, and SKIPS the Central upload rather than failing — so a tag can never
+# half-publish:
+#
+#   MAVEN_GPG_PRIVATE_KEY  ASCII-armored secret key.  gpg --armor --export-secret-keys <KEY_ID>
+#                          (the whole block, -----BEGIN PGP PRIVATE KEY BLOCK----- included)
+#   MAVEN_GPG_PASSPHRASE   passphrase for that key
+#   CENTRAL_USERNAME       from central.sonatype.com -> Account -> Generate User Token
+#   CENTRAL_PASSWORD       the token's password half (NOT your portal login)
+#
+# The public half of the GPG key must be on a keyserver or Central rejects the signatures:
+#   gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>
+#
+# And the se.deversity namespace must be verified on central.sonatype.com first.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build and sign, but upload nothing anywhere'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify-tag:
+    name: Tag matches pom version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - id: v
+        shell: bash
+        run: |
+          POM_VERSION=$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
+          echo "version=$POM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "pom version: $POM_VERSION"
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF#refs/tags/v}"
+            echo "tag version: $TAG"
+            if [ "$TAG" != "$POM_VERSION" ]; then
+              echo "::error::Tag v$TAG does not match pom.xml version $POM_VERSION."
+              exit 1
+            fi
+          fi
+
+          case "$POM_VERSION" in
+            *SNAPSHOT) echo "::error::Refusing to release a SNAPSHOT version."; exit 1 ;;
+          esac
+
+  native:
+    name: Native build (${{ matrix.label }})
+    needs: verify-tag
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true      # a release missing one platform's library is not a release
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x64
+            vcpkg_triplet: x64-linux
+            library_path: build-native/blindbean_fhe.so
+            artifact_name: blindbean_fhe-linux-x64
+            cmake_generator_args: ""
+          - os: macos-latest
+            label: macos-arm64
+            vcpkg_triplet: arm64-osx
+            library_path: build-native/blindbean_fhe.dylib
+            artifact_name: blindbean_fhe-macos-arm64
+            cmake_generator_args: ""
+          - os: windows-latest
+            label: windows-x64
+            vcpkg_triplet: x64-windows-static
+            library_path: build-native/Release/blindbean_fhe.dll
+            artifact_name: blindbean_fhe-windows-x64
+            cmake_generator_args: "-A x64"
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
+        with:
+          vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          runVcpkgInstall: false
+
+      - name: Configure Native Build (CMake + SEAL)
+        run: |
+          cmake -S src/main/native -B build-native \
+            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
+            ${{ matrix.cmake_generator_args }}
+        shell: bash
+
+      - name: Build Native Library
+        run: cmake --build build-native --config Release
+        shell: bash
+
+      - name: Verify native library exists
+        run: test -f "${{ matrix.library_path }}" && ls -lh "${{ matrix.library_path }}"
+        shell: bash
+
+      - name: Upload native artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.library_path }}
+          if-no-files-found: error
+
+  publish:
+    name: Test, sign, publish
+    needs: [verify-tag, native]
+    runs-on: windows-latest      # the only platform that can run the SEAL-backed suite
+    permissions:
+      contents: write            # to create the GitHub Release
+    env:
+      VERSION: ${{ needs.verify-tag.outputs.version }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Download native libraries
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          path: natives
+
+      - name: Stage the Windows DLL where the tests expect it
+        shell: bash
+        run: |
+          mkdir -p build-native/Release
+          cp natives/blindbean_fhe-windows-x64/blindbean_fhe.dll build-native/Release/
+          ls -lR natives
+
+      # setup-java writes ~/.m2/settings.xml with a <server id="central"> whose credentials come
+      # from these env vars, and imports the GPG key. The server id must match
+      # <publishingServerId> in the release profile.
+      - name: Set up JDK 26 + Maven settings + GPG
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Full test suite against the native bridge
+        run: .\mvnw.cmd -B clean verify "-Dblindbean.native.path=build-native/Release"
+        shell: pwsh
+
+      # Are the Central secrets present? A fork or an unconfigured repo must still get a working
+      # GitHub Release rather than a red X — and must never half-publish.
+      - name: Are Central credentials configured?
+        id: creds
+        shell: bash
+        env:
+          U: ${{ secrets.CENTRAL_USERNAME }}
+          G: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        run: |
+          if [ -n "$U" ] && [ -n "$G" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CENTRAL_USERNAME / MAVEN_GPG_PRIVATE_KEY not set — skipping Maven Central, publishing the GitHub Release only."
+          fi
+
+      - name: Publish to Maven Central
+        if: steps.creds.outputs.ready == 'true' && !inputs.dry_run
+        run: .\mvnw.cmd -B -Prelease deploy -DskipTests "-Dblindbean.native.path=build-native/Release"
+        shell: pwsh
+        env:
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+      - name: Collect release assets
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp target/blindbean-${VERSION}.jar dist/
+          cp natives/blindbean_fhe-linux-x64/blindbean_fhe.so    dist/blindbean_fhe-linux-x64.so
+          cp natives/blindbean_fhe-macos-arm64/blindbean_fhe.dylib dist/blindbean_fhe-macos-arm64.dylib
+          cp natives/blindbean_fhe-windows-x64/blindbean_fhe.dll  dist/blindbean_fhe-windows-x64.dll
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          ls -lh dist
+
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') && !inputs.dry_run
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        with:
+          name: v${{ env.VERSION }}
+          generate_release_notes: true
+          files: dist/*
+          body: |
+            ## BlindBean v${{ env.VERSION }}
+
+            ```xml
+            <dependency>
+              <groupId>se.deversity</groupId>
+              <artifactId>blindbean</artifactId>
+              <version>${{ env.VERSION }}</version>
+            </dependency>
+            ```
+
+            The jar does **not** bundle the native library. BFV/CKKS need `blindbean_fhe` for your
+            platform — download it below and point `-Dblindbean.native.path` at the directory
+            holding it. Paillier is pure Java and needs nothing.
+
+            Requires JDK 26 with `--enable-preview --add-modules jdk.incubator.vector
+            --enable-native-access=ALL-UNNAMED`.

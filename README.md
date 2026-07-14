@@ -28,7 +28,30 @@ If you want to understand the cryptography powering BlindBean, check out these r
 - [Paillier Cryptosystem (Wikipedia)](https://en.wikipedia.org/wiki/Paillier_cryptosystem)
 - [HomomorphicEncryption.org Standard](https://homomorphicencryption.org/standard/)
 
+## Install
+
+```xml
+<dependency>
+    <groupId>se.deversity</groupId>
+    <artifactId>blindbean</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
+The jar does **not** bundle the native library. Paillier is pure Java and works out of the box;
+BFV/CKKS need `blindbean_fhe` for your platform — take it from the
+[release assets](https://github.com/PIsberg/blindbean/releases) and point
+`-Dblindbean.native.path` at the directory holding it.
+
+Every JVM running BlindBean needs:
+
+```
+--enable-preview --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED
+```
+
 ## Prerequisites
+
+Only if you are building from source:
 
 | Requirement | Version |
 |:------------|:--------|
@@ -152,7 +175,7 @@ java -jar target/benchmarks.jar
 
 ## Using BlindBean from your own build
 
-Until published artifacts ship, install locally (`./mvnw clean install`) and depend on `com.blindbean:blindbean:1.0-SNAPSHOT`. Your build and runtime must carry the same JVM flags this library is compiled with:
+Until published artifacts ship, install locally (`./mvnw clean install`) and depend on `se.deversity.blindbean:blindbean:1.0-SNAPSHOT`. Your build and runtime must carry the same JVM flags this library is compiled with:
 
 ```xml
 <!-- maven-compiler-plugin -->

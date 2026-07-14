@@ -1,8 +1,8 @@
 package com.example.entity;
 
-import com.blindbean.annotations.BlindEntity;
-import com.blindbean.annotations.Homomorphic;
-import com.blindbean.annotations.Scheme;
+import se.deversity.blindbean.annotations.BlindEntity;
+import se.deversity.blindbean.annotations.Homomorphic;
+import se.deversity.blindbean.annotations.Scheme;
 
 @BlindEntity
 public class Document {

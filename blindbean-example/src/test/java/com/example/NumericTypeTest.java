@@ -2,9 +2,9 @@ package com.example;
 
 import com.example.entity.NumericEntity;
 import com.example.entity.NumericEntityBlindWrapper;
-import com.blindbean.context.BlindContext;
-import com.blindbean.fhe.FheContext;
-import com.blindbean.annotations.Scheme;
+import se.deversity.blindbean.context.BlindContext;
+import se.deversity.blindbean.fhe.FheContext;
+import se.deversity.blindbean.annotations.Scheme;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

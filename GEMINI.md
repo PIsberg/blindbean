@@ -6,32 +6,32 @@
 ## LOCKED FILES (DO NOT MODIFY)
 Do not suggest modifications to the following files:
 
-- `com.blindbean.context.KeyBundle.serialVersionUID`: Serialization UID — altering this invalidates all persisted key bundles and breaks key import/export across versions
-- `com.blindbean.fhe.FheNativeBridge`: Direct Memory FFM JNI mapping. Avoid breaking SEAL bridge architecture.
-- `com.blindbean.math.PaillierKeyPair.serialVersionUID`: Serialization UID — changing this breaks deserialization of persisted KeyBundle files
+- `se.deversity.blindbean.context.KeyBundle.serialVersionUID`: Serialization UID — altering this invalidates all persisted key bundles and breaks key import/export across versions
+- `se.deversity.blindbean.fhe.FheNativeBridge`: Direct Memory FFM JNI mapping. Avoid breaking SEAL bridge architecture.
+- `se.deversity.blindbean.math.PaillierKeyPair.serialVersionUID`: Serialization UID — changing this breaks deserialization of persisted KeyBundle files
 
 ## CONTEXTUAL RULES
 Apply the following context when assisting with these files:
 
-- `com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`: Focus - Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable. Avoid - Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance
-- `com.blindbean.processor.HomomorphicProcessor`: Focus - Strictly maintain high-performance AST compilation speed. Avoid - Heavy internal object allocations
+- `se.deversity.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`: Focus - Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable. Avoid - Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance
+- `se.deversity.blindbean.processor.HomomorphicProcessor`: Focus - Strictly maintain high-performance AST compilation speed. Avoid - Heavy internal object allocations
 
 ## CONTINUOUS AUDIT REQUIREMENTS
 You are acting as a Senior Staff Engineer. Whenever you write code for the files listed below, you must ensure your completions and chat responses strictly prevent the listed vulnerabilities:
 
-File: `com.blindbean.async.BlindAsync` 
+File: `se.deversity.blindbean.async.BlindAsync` 
 Critical Vulnerabilities to Prevent: 
 - Thread Safety
 - Resource Leaks
 - Shutdown race conditions
 
-File: `com.blindbean.context.BlindContext` 
+File: `se.deversity.blindbean.context.BlindContext` 
 Critical Vulnerabilities to Prevent: 
 - Resource Leaks
 - Thread Safety
 - Context Closure failures
 
-File: `com.blindbean.fhe.FheCiphertextNative` 
+File: `se.deversity.blindbean.fhe.FheCiphertextNative` 
 Critical Vulnerabilities to Prevent: 
 - Resource Leaks
 - Memory Segment lifecycle
@@ -40,177 +40,184 @@ Critical Vulnerabilities to Prevent:
 ## IGNORED ELEMENTS
 The following elements must be completely excluded from AI context and completions:
 
-- `com.blindbean.async.BlindAsync.INIT_LOCK` 
-- `com.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)` 
-- `com.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)` 
-- `com.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)` 
-- `com.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)` 
+- `se.deversity.blindbean.async.BlindAsync.INIT_LOCK` 
+- `se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)` 
+- `se.deversity.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)` 
+- `se.deversity.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)` 
+- `se.deversity.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)` 
 ## PII / PRIVACY GUARDRAILS
 The following elements handle Personally Identifiable Information (PII).
 Never include their runtime values in logs, console output, external API calls,
 test fixtures, mock data, or code suggestions.
 
-- `com.blindbean.context.KeyBundle`: Contains serialized Paillier private key material and SEAL key bytes — never log, transmit in plaintext, or expose field values in suggestions or test fixtures
-- `com.blindbean.math.PaillierKeyPair`: Contains RSA-family private key components (lambda, mu) — never log values, include in test fixtures, or expose in suggestions
+- `se.deversity.blindbean.context.BlindRotation`: Holds two generations of private key material — never log the key pairs, the native key payloads, the decrypted plaintext, or expose them in fixtures
+- `se.deversity.blindbean.context.KeyBundle`: Contains serialized Paillier private key material and SEAL key bytes — never log, transmit in plaintext, or expose field values in suggestions or test fixtures
+- `se.deversity.blindbean.math.PaillierKeyPair`: Contains RSA-family private key components (lambda, mu) — never log values, include in test fixtures, or expose in suggestions
 
 ## CORE FUNCTIONALITY (EXTREME CAUTION)
 The following elements are well-tested core components. Make changes with extreme caution:
 
-- `com.blindbean.context.BlindContext`: Sensitivity: High. Note: Well-tested core functionality. Make changes with extreme caution.
-- `com.blindbean.fhe.FheContext`: Sensitivity: High. Note: Well-tested core functionality. Make changes with extreme caution.
-- `com.blindbean.fhe.FheNativeBridge`: Sensitivity: High. Note: Well-tested core functionality. Make changes with extreme caution.
+- `se.deversity.blindbean.context.BlindContext`: Sensitivity: High. Note: Well-tested core functionality. Make changes with extreme caution.
+- `se.deversity.blindbean.fhe.FheContext`: Sensitivity: High. Note: Well-tested core functionality. Make changes with extreme caution.
+- `se.deversity.blindbean.fhe.FheNativeBridge`: Sensitivity: High. Note: Well-tested core functionality. Make changes with extreme caution.
 
 ## PERFORMANCE CONSTRAINTS (HOT PATH)
 Never introduce O(n²) complexity into these elements. Always reason about complexity before proposing changes:
 
-- `com.blindbean.fhe.FheContext.encryptLongArray(long[])`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
-- `com.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
-- `com.blindbean.math.PaillierMath`: Encryption/decryption are modPow-heavy over large BigIntegers — never introduce extra copies, unnecessary allocations, or redundant modular reductions on the hot path
-- `com.blindbean.math.PaillierVectorized`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
-- `com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `se.deversity.blindbean.fhe.FheContext.encryptLongArray(long[])`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `se.deversity.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `se.deversity.blindbean.math.PaillierMath`: Encryption/decryption are modPow-heavy over large BigIntegers — never introduce extra copies, unnecessary allocations, or redundant modular reductions on the hot path
+- `se.deversity.blindbean.math.PaillierVectorized`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
+- `se.deversity.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)`: Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.
 
 ## CONTRACT-FROZEN SIGNATURES
 Internal implementation may be changed, but MUST NOT alter method names, parameter types, parameter order, return types, or checked exceptions:
 
-- `com.blindbean.fhe.FheCiphertextNative`: Serialization format and handle lifecycle are part of the public FFM contract; do not change method signatures
-- `com.blindbean.fhe.FheContext`: Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump
-- `com.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)`: JUnit 5 BeforeEachCallback contract — signature is fixed by the framework SPI
+- `se.deversity.blindbean.fhe.FheCiphertextNative`: Serialization format and handle lifecycle are part of the public FFM contract; do not change method signatures
+- `se.deversity.blindbean.fhe.FheContext`: Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump
+- `se.deversity.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)`: JUnit 5 BeforeEachCallback contract — signature is fixed by the framework SPI
 
 ## TEST-DRIVEN REQUIREMENTS
 Changes to the following elements MUST be accompanied by matching test code in the same response:
 
-- `com.blindbean.context.BlindContext`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/com/blindbean/context.
-- `com.blindbean.fhe.FheContext`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/com/blindbean/fhe.
-- `com.blindbean.junit.BlindBeanExtension`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/com/blindbean/junit.
+- `se.deversity.blindbean.context.BlindContext`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/se.deversity.blindbean/context.
+- `se.deversity.blindbean.context.BlindRotation`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/se.deversity.blindbean/context.
+- `se.deversity.blindbean.fhe.FheContext`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/se.deversity.blindbean/fhe.
+- `se.deversity.blindbean.junit.BlindBeanExtension`: Coverage goal: 90%. Framework: JUNIT_5. Test file: src/test/java/se.deversity.blindbean/junit.
 
 ## THREAD-SAFE BY DESIGN
 These elements are thread-safe by design — preserve the synchronization invariant on every change:
 
-- `com.blindbean.async.BlindAsync`: Strategy: OTHER. Note: Executor + semaphore held as one immutable State behind a single volatile (DCL lazy init); CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races resolved by re-submitting under the init monitor, which shutdown() must also acquire
-- `com.blindbean.context.BlindContext`: Strategy: THREAD_LOCAL. Note: Paillier and FHE state isolated in ThreadLocal fields; snapshot()/restore() required to propagate across virtual-thread boundaries
-- `com.blindbean.fhe.FheContext`: Strategy: SYNCHRONIZED. Note: All native FFM operations are guarded by nativeLock to prevent concurrent SEAL context access
-- `com.blindbean.math.PaillierVectorized`: Strategy: IMMUTABLE. Note: Stateless utility class — SPECIES is a compile-time constant; no instance state
+- `se.deversity.blindbean.async.BlindAsync`: Strategy: OTHER. Note: Executor + semaphore held as one immutable State behind a single volatile (DCL lazy init); CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races resolved by re-submitting under the init monitor, which shutdown() must also acquire
+- `se.deversity.blindbean.context.BlindContext`: Strategy: THREAD_LOCAL. Note: Paillier and FHE state isolated in ThreadLocal fields; snapshot()/restore() required to propagate across virtual-thread boundaries
+- `se.deversity.blindbean.context.BlindRotation`: Strategy: OTHER. Note: rotate() is concurrency-safe: PaillierMath is effectively immutable with a thread-safe SecureRandom, and each FheContext serializes its own native calls on nativeLock. The counter is an AtomicLong; commit()/close() are guarded by the session monitor and flip volatile flags that rotate() reads.
+- `se.deversity.blindbean.fhe.FheContext`: Strategy: SYNCHRONIZED. Note: All native FFM operations are guarded by nativeLock to prevent concurrent SEAL context access
+- `se.deversity.blindbean.math.PaillierVectorized`: Strategy: IMMUTABLE. Note: Stateless utility class — SPECIES is a compile-time constant; no instance state
 
 ## IMMUTABLE TYPES
 The following types are immutable. Do not introduce non-final fields, setters, or mutating methods:
 
-- `com.blindbean.core.Ciphertext`: Java record — hexData and scheme are final record components; do not convert to a mutable class
-- `com.blindbean.math.PaillierKeyPair`: All key material is computed once in the constructor and stored in final fields; never add setters, non-final fields, or post-construction mutation
+- `se.deversity.blindbean.core.Ciphertext`: Java record — hexData and scheme are final record components; do not convert to a mutable class
+- `se.deversity.blindbean.math.PaillierKeyPair`: All key material is computed once in the constructor and stored in final fields; never add setters, non-final fields, or post-construction mutation
 
 ## OBSERVABILITY INSTRUMENTATION
 The following elements emit metrics, traces, or log statements watched by dashboards. Preserve every instrumentation point:
 
-- `com.blindbean.fhe.FheContext.noiseBudget(java.lang.foreign.MemorySegment)`: Metrics: fhe.noise_budget. Note: Noise budget drives correctness alerts — dashboards fire when budget drops below safe threshold; do not remove or rename this method
+- `se.deversity.blindbean.fhe.FheContext.noiseBudget(java.lang.foreign.MemorySegment)`: Metrics: fhe.noise_budget. Note: Noise budget drives correctness alerts — dashboards fire when budget drops below safe threshold; do not remove or rename this method
 
 ## STRICT TEST ISOLATION
 Tests for these elements must run in complete isolation without sharing mutable state:
 
-- `com.blindbean.async.BlindAsync`: Strict test isolation required. No shared mutable state or external resource conflicts.
+- `se.deversity.blindbean.async.BlindAsync`: Strict test isolation required. No shared mutable state or external resource conflicts.
 
 ## ARCHITECTURAL BOUNDARY CONSTRAINTS
 Respect architectural layering. Boundary crossing references are prohibited:
 
-- `com.blindbean.math.BlindMath`: Belongs to layer: `math-layer`. Prohibited from referencing: [com.blindbean.fhe.FheNativeBridge]
+- `se.deversity.blindbean.math.BlindMath`: Belongs to layer: `math-layer`. Prohibited from referencing: [se.deversity.blindbean.fhe.FheNativeBridge]
 
 ## PUBLIC API SURFACE PROTECTION
 Preserve public signatures, Javadoc, and backwards compatibility:
 
-- `com.blindbean.context.BlindContext`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
-- `com.blindbean.core.Ciphertext`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
-- `com.blindbean.junit.BlindBeanExtension`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability. Reason: Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite
-- `com.blindbean.junit.BlindBeanTest`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability. Reason: Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot
-- `com.blindbean.math.BlindMath`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
+- `se.deversity.blindbean.context.BlindContext`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
+- `se.deversity.blindbean.context.BlindRotation`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
+- `se.deversity.blindbean.core.Ciphertext`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
+- `se.deversity.blindbean.junit.BlindBeanExtension`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability. Reason: Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite
+- `se.deversity.blindbean.junit.BlindBeanTest`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability. Reason: Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot
+- `se.deversity.blindbean.math.BlindMath`: Public API surface. Preserve signature, Javadoc, backwards compatibility, and binary/source stability.
 
 ## STRICT EXCEPTION HANDLING
 Catching/throwing generic Exception is prohibited. Use precise exceptions:
 
-- `com.blindbean.fhe.FheCiphertextNative`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited.
-- `com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited. Reason: Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem
-- `com.blindbean.math.PaillierMath`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited.
+- `se.deversity.blindbean.fhe.FheCiphertextNative`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited.
+- `se.deversity.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited. Reason: Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem
+- `se.deversity.blindbean.math.PaillierMath`: Strict exception handling required. Catching/throwing generic Exception/Throwable is prohibited.
 
 ## STRICT TYPE SAFETY
 Loose typing is prohibited. Strongly-typed models required:
 
-- `com.blindbean.math.BlindMath`: Loose typing (Object, Map<String, Object>, raw types) is prohibited. Enforce type safety.
+- `se.deversity.blindbean.math.BlindMath`: Loose typing (Object, Map<String, Object>, raw types) is prohibited. Enforce type safety.
 
 ## INTERNATIONALIZATION MANDATE
 User-facing strings must not be hardcoded; retrieve from resources:
 
-- `com.blindbean.processor.HomomorphicProcessor`: Internationalization mandated. User-facing strings must not be hardcoded; retrieve from resources.
+- `se.deversity.blindbean.processor.HomomorphicProcessor`: Internationalization mandated. User-facing strings must not be hardcoded; retrieve from resources.
 
 ## STRICT CLASSPATH INTEGRITY
 Dynamic class loading and reflection hacks are strictly prohibited:
 
-- `com.blindbean.processor.HomomorphicProcessor`: Strict compile-time dependency/classpath constraints. Dynamic loading and reflection hacks prohibited.
+- `se.deversity.blindbean.processor.HomomorphicProcessor`: Strict compile-time dependency/classpath constraints. Dynamic loading and reflection hacks prohibited.
 
 ## SCHEMA & SERIALIZATION SAFETY
 Modifying schema or data formats without explicit migration plans is prohibited:
 
-- `com.blindbean.context.KeyBundle`: Schema/serialization safety guaranteed. Prohibit altering data formats or fields without migration plan.
-- `com.blindbean.core.Ciphertext`: Schema/serialization safety guaranteed. Prohibit altering data formats or fields without migration plan.
-- `com.blindbean.math.PaillierKeyPair`: Schema/serialization safety guaranteed. Prohibit altering data formats or fields without migration plan.
+- `se.deversity.blindbean.context.KeyBundle`: Schema/serialization safety guaranteed. Prohibit altering data formats or fields without migration plan.
+- `se.deversity.blindbean.core.Ciphertext`: Schema/serialization safety guaranteed. Prohibit altering data formats or fields without migration plan.
+- `se.deversity.blindbean.math.PaillierKeyPair`: Schema/serialization safety guaranteed. Prohibit altering data formats or fields without migration plan.
 
 ## IDEMPOTENCY GUARANTEES
 These operations must remain idempotent — calling them multiple times must produce the same result:
 
-- `com.blindbean.context.BlindContext.clear()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: ThreadLocal.remove() and FheContext.close() are both safe to call when no state is present
-- `com.blindbean.fhe.FheCiphertextNative.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by freed flag; calling close() on an already-freed handle is a no-op
-- `com.blindbean.fhe.FheContext.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by closed flag; subsequent calls after first close() are no-ops
-- `com.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Cleanup must tolerate a failed/partial beforeEach and repeated invocation — BlindContext.clear() is itself idempotent; never make teardown conditional on setup having succeeded, or a failing test would leak keys and native handles into the next one
+- `se.deversity.blindbean.context.BlindContext.clear()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: ThreadLocal.remove() and FheContext.close() are both safe to call when no state is present
+- `se.deversity.blindbean.context.BlindRotation.commit()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: The second call observes committed == true and returns; installing the same keys twice must not be an error, and the source is retired once
+- `se.deversity.blindbean.context.BlindRotation.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by the closed flag; repeated close() is a no-op and never disturbs the installed context or double-frees a native context
+- `se.deversity.blindbean.fhe.FheCiphertextNative.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by freed flag; calling close() on an already-freed handle is a no-op
+- `se.deversity.blindbean.fhe.FheContext.close()`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Guarded by closed flag; subsequent calls after first close() are no-ops
+- `se.deversity.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)`: Idempotency guaranteed. Multiple invocations must produce the same result as one. Reason: Cleanup must tolerate a failed/partial beforeEach and repeated invocation — BlindContext.clear() is itself idempotent; never make teardown conditional on setup having succeeded, or a failing test would leak keys and native handles into the next one
 
 ## FEATURE FLAG GATED CODE
 These elements are gated behind a feature flag. Never assume the flag is always active:
 
-- `com.blindbean.async.BlindAsync`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
-- `com.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List<com.blindbean.processor.HomomorphicProcessor.FieldModel>)`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
+- `se.deversity.blindbean.async.BlindAsync`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
+- `se.deversity.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List<se.deversity.blindbean.processor.HomomorphicProcessor.FieldModel>)`: Gated by feature flag: 'blindbean.apt.async' (default: false). Preserve the flag check — never assume it is always on.
 
 ## SECURITY-CRITICAL CODE
 Do not weaken security properties of these elements. Flag any change for security review:
 
-- `com.blindbean.context.BlindContext`: Security-critical code [key-management]. Do not weaken security properties. Flag any change for security review.
-- `com.blindbean.context.BlindContext.exportKeys(java.lang.String)`: Security-critical code [key-serialization]. Do not weaken security properties. Flag any change for security review.
-- `com.blindbean.context.BlindContext.loadKeys(java.lang.String)`: Security-critical code [key-deserialization]. Do not weaken security properties. Flag any change for security review.
-- `com.blindbean.fhe.FheContext`: Security-critical code [fhe-encryption]. Do not weaken security properties. Flag any change for security review.
-- `com.blindbean.math.PaillierKeyPair`: Security-critical code [key-generation]. Do not weaken security properties. Flag any change for security review.
-- `com.blindbean.math.PaillierMath`: Security-critical code [paillier-encryption]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.context.BlindContext`: Security-critical code [key-management]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.context.BlindContext.exportKeys(java.lang.String)`: Security-critical code [key-serialization]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.context.BlindContext.loadKeys(java.lang.String)`: Security-critical code [key-deserialization]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.context.BlindRotation`: Security-critical code [key-rotation]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.fhe.FheContext`: Security-critical code [fhe-encryption]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.math.PaillierKeyPair`: Security-critical code [key-generation]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.math.PaillierMath`: Security-critical code [paillier-encryption]. Do not weaken security properties. Flag any change for security review.
 
 ## ACCESS & CALLS LIMITATIONS
 The following elements have strict caller access limits. AI must not invoke them from outside the allowed boundaries:
 
-- `com.blindbean.context.KeyBundle`: Only callable by: [com.blindbean.context.BlindContext]
+- `se.deversity.blindbean.context.KeyBundle`: Only callable by: [se.deversity.blindbean.context.BlindContext]
 
 ## MEMORY ALLOCATION BUDGETS
 The following elements have strict heap allocation, autoboxing, or garbage budgets. Optimize allocations carefully:
 
-- `com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Strict memory budget policy: NO_AUTOBOXING. Minimize or prevent runtime allocations.
+- `se.deversity.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Strict memory budget policy: NO_AUTOBOXING. Minimize or prevent runtime allocations.
 
 ## DETERMINISTIC PURE FUNCTIONS
 The following elements must remain pure functions without side effects or mutations:
 
-- `com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)`: Must remain a pure function. Forbid assignments to enclosing state, fields, or static members.
+- `se.deversity.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)`: Must remain a pure function. Forbid assignments to enclosing state, fields, or static members.
 
 ## FRAMEWORK-FREE DOMAIN ENTITIES
 The following elements are pure Domain Models. Do not import Spring, JPA/Hibernate, Jackson, or other framework packages:
 
-- `com.blindbean.core.Ciphertext`: Pure Domain Model. Banned imports: [Spring, JPA, Hibernate, Jackson, etc.]. Allowed imports: [com.blindbean.annotations.Scheme]
+- `se.deversity.blindbean.core.Ciphertext`: Pure Domain Model. Banned imports: [Spring, JPA, Hibernate, Jackson, etc.]. Allowed imports: [se.deversity.blindbean.annotations.Scheme]
 
 ## MANDATORY INPUT SANITIZATION
 The following parameters/fields must go through strict sanitizers before hitting queries or renderers:
 
-- `com.blindbean.context.BlindContext.exportKeys(java.lang.String)#filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
-- `com.blindbean.context.BlindContext.loadKeys(java.lang.String)#filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
+- `se.deversity.blindbean.context.BlindContext.exportKeys(java.lang.String)#filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
+- `se.deversity.blindbean.context.BlindContext.loadKeys(java.lang.String)#filePath`: Input parameter/field must be strictly sanitized against injection attacks: [PATH_TRAVERSAL]
 
 ## SECURE LOGGING MASKING
 The following sensitive elements must be masked, hashed, or omitted from log/stdout streams:
 
-- `com.blindbean.context.KeyBundle.paillierKeyPair`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
-- `com.blindbean.context.KeyBundle.nativeFhePayload`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
-- `com.blindbean.math.PaillierKeyPair.lambda`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
-- `com.blindbean.math.PaillierKeyPair.mu`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `se.deversity.blindbean.context.KeyBundle.paillierKeyPair`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `se.deversity.blindbean.context.KeyBundle.nativeFhePayload`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `se.deversity.blindbean.math.PaillierKeyPair.lambda`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
+- `se.deversity.blindbean.math.PaillierKeyPair.mu`: Sensitive variable. Forbid direct logging/printing. Enforce masking policy: OMIT
 
 ## REQUIRED CHAIN-OF-THOUGHT EXPLANATIONS
 Any change made to these elements requires a step-by-step mathematical/architectural proof of correctness in the PR/walkthrough:
 
-- `com.blindbean.math.PaillierMath`: Requires step-by-step mathematical or logical explanation (Chain-of-Thought) of all changes. Complexity: HIGH
-- `com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Requires step-by-step mathematical or logical explanation (Chain-of-Thought) of all changes. Complexity: HIGH
+- `se.deversity.blindbean.math.PaillierMath`: Requires step-by-step mathematical or logical explanation (Chain-of-Thought) of all changes. Complexity: HIGH
+- `se.deversity.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)`: Requires step-by-step mathematical or logical explanation (Chain-of-Thought) of all changes. Complexity: HIGH
 <!-- VIBETAGS-END -->

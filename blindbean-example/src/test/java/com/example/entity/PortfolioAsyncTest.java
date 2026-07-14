@@ -1,7 +1,7 @@
 package com.example.entity;
 
-import com.blindbean.async.BlindAsync;
-import com.blindbean.context.BlindContext;
+import se.deversity.blindbean.async.BlindAsync;
+import se.deversity.blindbean.context.BlindContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

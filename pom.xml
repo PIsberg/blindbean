@@ -4,9 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.blindbean</groupId>
+    <groupId>se.deversity</groupId>
     <artifactId>blindbean</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
+    <packaging>jar</packaging>
+
+    <!-- name/description/url/licenses/developers/scm are all MANDATORY for Maven Central;
+         a release fails validation without them. -->
+    <name>BlindBean</name>
+    <description>Homomorphic encryption behind annotations. Mark a field @Homomorphic and operate
+        on the encrypted value through a generated wrapper. Paillier in pure Java (Vector API);
+        BFV/CKKS bridged to Microsoft SEAL over Project Panama FFM.</description>
+    <url>https://github.com/PIsberg/blindbean</url>
 
     <licenses>
         <license>
@@ -15,6 +24,23 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <id>PIsberg</id>
+            <name>Peter Isberg</name>
+            <url>https://github.com/PIsberg</url>
+            <organization>Deversity</organization>
+            <organizationUrl>https://deversity.se</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/PIsberg/blindbean.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/PIsberg/blindbean.git</developerConnection>
+        <url>https://github.com/PIsberg/blindbean</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <maven.compiler.source>26</maven.compiler.source>
@@ -62,7 +88,7 @@
         </dependency>
 
         <!-- JUnit for Unit Testing. Scope is provided (not test) because
-             com.blindbean.junit ships a JUnit 5 extension in the main jar;
+             se.deversity.blindbean.junit ships a JUnit 5 extension in the main jar;
              consumers bring their own JUnit at runtime. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -177,4 +203,97 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+          Release to Maven Central. Kept in a profile so an ordinary `mvn install` never tries to
+          sign anything (GPG would prompt or fail on a machine with no key) and never contacts
+          Sonatype. Activated only by the release workflow: `mvn -Prelease deploy`.
+
+          Central requires, per artifact: a signed jar, a signed -sources jar, a signed -javadoc
+          jar, and the POM metadata above. A missing javadoc jar is the usual cause of a release
+          that uploads and then silently fails validation.
+        -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals><goal>jar-no-fork</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.11.2</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals><goal>jar</goal></goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <release>26</release>
+                            <!-- The codebase uses preview features; javadoc must be told, or it
+                                 refuses to parse the sources it is documenting. -->
+                            <additionalJOptions>
+                                <additionalJOption>--enable-preview</additionalJOption>
+                                <additionalJOption>--add-modules</additionalJOption>
+                                <additionalJOption>jdk.incubator.vector</additionalJOption>
+                            </additionalJOptions>
+                            <!-- Do not fail a release on a missing @param. -->
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals><goal>sign</goal></goals>
+                                <configuration>
+                                    <!-- Non-interactive: the passphrase comes from the
+                                         MAVEN_GPG_PASSPHRASE env var, never a TTY prompt. -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <!-- Matches the <server> id the workflow writes into settings.xml. -->
+                            <publishingServerId>central</publishingServerId>
+                            <!-- Upload and stop. A human presses Publish on central.sonatype.com.
+                                 A Central release is IRREVERSIBLE — a version can never be
+                                 replaced or withdrawn — so the first one should not be automatic.
+                                 Flip to true once you trust the pipeline. -->
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -40,11 +40,11 @@ Tests that touch BFV/CKKS need the native library; pure-Paillier, processor and 
 
 ## Architecture (three layers)
 
-1. **Developer layer — `com.blindbean.annotations` + `com.blindbean.processor.HomomorphicProcessor`.** An annotation processor (registered via AutoService) runs at compile time, reads `@BlindEntity` / `@Homomorphic` classes, resolves the `type()` TypeMirror (e.g. `String.class`, `long[].class`, `boolean.class`), and generates `<Entity>BlindWrapper` source files. Proxies are **source-generated, not reflective** — do not add runtime reflection or bytecode weaving. The processor must also enforce algebraic boundaries: math operations (`add*`/`multiply*`) are omitted for String / boolean fields because they would corrupt the encoded value.
+1. **Developer layer — `se.deversity.blindbean.annotations` + `se.deversity.blindbean.processor.HomomorphicProcessor`.** An annotation processor (registered via AutoService) runs at compile time, reads `@BlindEntity` / `@Homomorphic` classes, resolves the `type()` TypeMirror (e.g. `String.class`, `long[].class`, `boolean.class`), and generates `<Entity>BlindWrapper` source files. Proxies are **source-generated, not reflective** — do not add runtime reflection or bytecode weaving. The processor must also enforce algebraic boundaries: math operations (`add*`/`multiply*`) are omitted for String / boolean fields because they would corrupt the encoded value.
 
-2. **Java FFM layer — `com.blindbean.fhe` + `com.blindbean.math` + `com.blindbean.context`.** `FheContext` owns a native `BlindBeanContext*` as an opaque `MemorySegment` and is `AutoCloseable`; callers must use try-with-resources or leak native heap. Its `bfv()`/`ckks()` factories route the native call through the package-private `initNative(Supplier)` helper, which converts linkage failures (`UnsatisfiedLinkError`, `ExceptionInInitializerError`, `NoClassDefFoundError`) into an `FheException` carrying `nativeLoadGuidance()` — a message stating the detected OS/arch, whether `blindbean.native.path` is set and where it pointed, the exact `-D` flag, the Windows `Release/` subdir gotcha and the cmake build command. Keep new native entry points behind that helper so the first-run failure stays actionable; `FheNativeBridge` itself is locked. `FheNativeBridge` resolves all ~15 native symbols **once at class-load** via `SymbolLookup.loaderLookup()` into `MethodHandle` statics (`MH_ADD`, `MH_MULTIPLY`, etc.) — any new native call must follow the same pattern. `FheCiphertextNative` wraps individual ciphertext handles and provides `toBlindCiphertext()` / `fromBlindCiphertext()` for serialization across the FFM boundary. `BlindMath` is the dispatcher that routes operations to either the pure-Java Paillier (`com.blindbean.math`, Vector API / SIMD) path or the native FHE path via `BlindContext`.
+2. **Java FFM layer — `se.deversity.blindbean.fhe` + `se.deversity.blindbean.math` + `se.deversity.blindbean.context`.** `FheContext` owns a native `BlindBeanContext*` as an opaque `MemorySegment` and is `AutoCloseable`; callers must use try-with-resources or leak native heap. Its `bfv()`/`ckks()` factories route the native call through the package-private `initNative(Supplier)` helper, which converts linkage failures (`UnsatisfiedLinkError`, `ExceptionInInitializerError`, `NoClassDefFoundError`) into an `FheException` carrying `nativeLoadGuidance()` — a message stating the detected OS/arch, whether `blindbean.native.path` is set and where it pointed, the exact `-D` flag, the Windows `Release/` subdir gotcha and the cmake build command. Keep new native entry points behind that helper so the first-run failure stays actionable; `FheNativeBridge` itself is locked. `FheNativeBridge` resolves all ~15 native symbols **once at class-load** via `SymbolLookup.loaderLookup()` into `MethodHandle` statics (`MH_ADD`, `MH_MULTIPLY`, etc.) — any new native call must follow the same pattern. `FheCiphertextNative` wraps individual ciphertext handles and provides `toBlindCiphertext()` / `fromBlindCiphertext()` for serialization across the FFM boundary. `BlindMath` is the dispatcher that routes operations to either the pure-Java Paillier (`se.deversity.blindbean.math`, Vector API / SIMD) path or the native FHE path via `BlindContext`.
 
-3. **Test-support layer — `com.blindbean.junit`.** `@BlindBeanTest` (class-level) + `BlindBeanExtension` manage the `BlindContext` lifecycle per test method: `init()` before each test, `clear()` after, with `scheme` / `polyModulusDegree` / `ckksScale` attributes additionally booting the native BFV or CKKS context. The extension walks parent contexts so `@Nested` classes inherit the enclosing annotation, and `@ExtendWith(BlindBeanExtension.class)` alone behaves like the Paillier defaults. This ships in the **main** jar (that is why `junit-jupiter-api` is scope `provided`, not `test`) so consumers get it with the library. Prefer it over hand-rolled `@BeforeEach`/`@AfterEach` context wiring, in this repo's tests and in the example module.
+3. **Test-support layer — `se.deversity.blindbean.junit`.** `@BlindBeanTest` (class-level) + `BlindBeanExtension` manage the `BlindContext` lifecycle per test method: `init()` before each test, `clear()` after, with `scheme` / `polyModulusDegree` / `ckksScale` attributes additionally booting the native BFV or CKKS context. The extension walks parent contexts so `@Nested` classes inherit the enclosing annotation, and `@ExtendWith(BlindBeanExtension.class)` alone behaves like the Paillier defaults. This ships in the **main** jar (that is why `junit-jupiter-api` is scope `provided`, not `test`) so consumers get it with the library. Prefer it over hand-rolled `@BeforeEach`/`@AfterEach` context wiring, in this repo's tests and in the example module.
 
 4. **Native layer — `src/main/native/blindbean_fhe.{h,cpp}`.** Single DLL (`blindbean_fhe.dll`) built statically against SEAL + CRT (`x64-windows-static` triplet) so deployment needs no extra runtime. All exported symbols use `extern "C"` and `__declspec(dllexport)` on Windows. State lives in a `BlindBeanContext` struct on the C++ heap; Java never sees SEAL types directly. BFV auto-relinearizes after multiply; CKKS auto-relinearizes and rescales. Parameters target 128-bit security per the HomomorphicEncryption.org standard — **do not lower poly modulus degree below 8192 or weaken coeff modulus without an explicit request**.
 
@@ -73,6 +73,27 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 - The Codecov action input is **`files:`**, not `file:` (v7 renamed it and silently ignores the old name — check the run log for `Unexpected input(s) 'file'`).
 - A gate that runs only a subset of tests produces a report where everything else reads 0%. Codecov merges uploads, so a *missing* upload — not a missing test — is the usual reason a well-covered file shows 0%. Regenerate the suspect job's report locally (`mvn clean test` with the same flags, then read `target/site/jacoco/jacoco.xml`) before writing tests for a gap that may not exist. Note JaCoCo's agent **appends** to `jacoco.exec`, so always `clean` first or a previous run's data will inflate the numbers.
 
+## Releasing
+
+Coordinates are `se.deversity:blindbean` (packages live under `se.deversity.blindbean.*`). Cutting a release is tagging one — `.github/workflows/release.yml` fires on `v*`:
+
+```bash
+mvn versions:set -DnewVersion=0.2.0   # pom must already say 0.2.0
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+The tag **must** match `<version>` in `pom.xml`; the workflow refuses to run otherwise, because a Release labelled v0.2.0 shipping a 0.1.0 jar is worse than no release. SNAPSHOT versions are refused outright.
+
+The workflow builds the three native libraries, runs the full SEAL-backed suite on Windows, signs, uploads to Maven Central, and attaches the jar + all three natives + `SHA256SUMS.txt` to a GitHub Release. **`autoPublish` is `false`** — the bundle uploads and waits for a human to press Publish on central.sonatype.com, because a Central release is irreversible (a version can never be replaced or withdrawn). Central needs four secrets — `MAVEN_GPG_PRIVATE_KEY`, `MAVEN_GPG_PASSPHRASE`, `CENTRAL_USERNAME`, `CENTRAL_PASSWORD` — and until they are set the workflow **skips Central and still cuts the GitHub Release**, so a tag can never half-publish. See the header of `release.yml`.
+
+Central mandates POM `name`/`description`/`url`/`licenses`/`developers`/`scm` plus signed jar, **sources jar and javadoc jar** — a missing javadoc jar is the classic cause of a release that uploads then silently fails validation. All of that lives in the `release` profile, which is off by default so an ordinary `mvn install` never tries to sign anything. Verify it without publishing:
+
+```bash
+mvn -Prelease package -DskipTests -Dgpg.skip=true   # should produce -sources and -javadoc jars
+```
+
+Javadoc needs `--enable-preview`/`--add-modules` passed explicitly (`additionalJOptions`) or it refuses to parse the sources it is documenting.
+
 ## Further reading
 
 `docs/ARCHITECTURE.md` has PlantUML class/sequence diagrams of the FHE multiply flow and the full FFM bridge parameter table. `README.md` has the annotation-level quickstart, the consumer-build flags and scheme parameter choices. `docs/SECURITY-AND-LIMITATIONS.md` states what each scheme does and does not provide (no encrypted comparisons, malleability, CKKS approximation), the noise-budget rules and key-rotation guidance — consult it before changing crypto-adjacent behavior or advising users. `docs/DX-REVIEW.md` tracks the developer-experience backlog (publish + bundle natives, LTS baseline, Spring/JPA modules) with status.
@@ -81,39 +102,39 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 <!-- # Generated by VibeTags | https://github.com/PIsberg/vibetags -->
 <project_guardrails>
   <locked_files>
-    <file path="com.blindbean.context.KeyBundle.serialVersionUID">
+    <file path="se.deversity.blindbean.context.KeyBundle.serialVersionUID">
       <reason>Serialization UID — altering this invalidates all persisted key bundles and breaks key import/export across versions</reason>
     </file>
-    <file path="com.blindbean.fhe.FheNativeBridge">
+    <file path="se.deversity.blindbean.fhe.FheNativeBridge">
       <reason>Direct Memory FFM JNI mapping. Avoid breaking SEAL bridge architecture.</reason>
     </file>
-    <file path="com.blindbean.math.PaillierKeyPair.serialVersionUID">
+    <file path="se.deversity.blindbean.math.PaillierKeyPair.serialVersionUID">
       <reason>Serialization UID — changing this breaks deserialization of persisted KeyBundle files</reason>
     </file>
   </locked_files>
   <contextual_instructions>
-    <file path="com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
+    <file path="se.deversity.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
       <focus>Every native context entry point must be routed through this helper so the missing-library failure — the first error most new users hit — stays actionable</focus>
       <avoids>Calling FheNativeBridge init symbols directly from a factory, which would surface a bare UnsatisfiedLinkError with no remediation guidance</avoids>
     </file>
-    <file path="com.blindbean.processor.HomomorphicProcessor">
+    <file path="se.deversity.blindbean.processor.HomomorphicProcessor">
       <focus>Strictly maintain high-performance AST compilation speed</focus>
       <avoids>Heavy internal object allocations</avoids>
     </file>
   </contextual_instructions>
 
   <audit_requirements>
-    <file path="com.blindbean.async.BlindAsync">
+    <file path="se.deversity.blindbean.async.BlindAsync">
       <vulnerability_check>Thread Safety</vulnerability_check>
       <vulnerability_check>Resource Leaks</vulnerability_check>
       <vulnerability_check>Shutdown race conditions</vulnerability_check>
     </file>
-    <file path="com.blindbean.context.BlindContext">
+    <file path="se.deversity.blindbean.context.BlindContext">
       <vulnerability_check>Resource Leaks</vulnerability_check>
       <vulnerability_check>Thread Safety</vulnerability_check>
       <vulnerability_check>Context Closure failures</vulnerability_check>
     </file>
-    <file path="com.blindbean.fhe.FheCiphertextNative">
+    <file path="se.deversity.blindbean.fhe.FheCiphertextNative">
       <vulnerability_check>Resource Leaks</vulnerability_check>
       <vulnerability_check>Memory Segment lifecycle</vulnerability_check>
       <vulnerability_check>Double-free</vulnerability_check>
@@ -124,19 +145,22 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
   If you are asked to modify any file listed in <audit_requirements>, you must first silently analyze your proposed code for the listed <vulnerability_check> items. If your code introduces these vulnerabilities, you must rewrite it before displaying it to the user.
 </rule>
   <ignored_elements>
-    <file path="com.blindbean.async.BlindAsync.INIT_LOCK"/>
-    <file path="com.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)"/>
-    <file path="com.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)"/>
-    <file path="com.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)"/>
-    <file path="com.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)"/>
+    <file path="se.deversity.blindbean.async.BlindAsync.INIT_LOCK"/>
+    <file path="se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)"/>
+    <file path="se.deversity.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)"/>
+    <file path="se.deversity.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)"/>
+    <file path="se.deversity.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)"/>
   </ignored_elements>
 
 <rule>Never reference or suggest changes to any element listed in <ignored_elements>. Treat these as if they do not exist.</rule>
   <pii_guardrails>
-    <element path="com.blindbean.context.KeyBundle">
+    <element path="se.deversity.blindbean.context.BlindRotation">
+      <reason>Holds two generations of private key material — never log the key pairs, the native key payloads, the decrypted plaintext, or expose them in fixtures</reason>
+    </element>
+    <element path="se.deversity.blindbean.context.KeyBundle">
       <reason>Contains serialized Paillier private key material and SEAL key bytes — never log, transmit in plaintext, or expose field values in suggestions or test fixtures</reason>
     </element>
-    <element path="com.blindbean.math.PaillierKeyPair">
+    <element path="se.deversity.blindbean.math.PaillierKeyPair">
       <reason>Contains RSA-family private key components (lambda, mu) — never log values, include in test fixtures, or expose in suggestions</reason>
     </element>
   </pii_guardrails>
@@ -145,15 +169,15 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
   Never include runtime values of elements listed in <pii_guardrails> in logs, console output, external API calls, test fixtures, mock data, or code suggestions. Treat their values as strictly confidential.
 </rule>
   <core_elements>
-    <element path="com.blindbean.context.BlindContext">
+    <element path="se.deversity.blindbean.context.BlindContext">
       <sensitivity>High</sensitivity>
       <note>Well-tested core functionality. Make changes with extreme caution.</note>
     </element>
-    <element path="com.blindbean.fhe.FheContext">
+    <element path="se.deversity.blindbean.fhe.FheContext">
       <sensitivity>High</sensitivity>
       <note>Well-tested core functionality. Make changes with extreme caution.</note>
     </element>
-    <element path="com.blindbean.fhe.FheNativeBridge">
+    <element path="se.deversity.blindbean.fhe.FheNativeBridge">
       <sensitivity>High</sensitivity>
       <note>Well-tested core functionality. Make changes with extreme caution.</note>
     </element>
@@ -161,70 +185,79 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 
 <rule>Elements listed in <core_elements> are well-tested core components. Make changes with extreme caution and verify comprehensive test coverage before proposing modifications.</rule>
   <performance_constraints>
-    <element path="com.blindbean.fhe.FheContext.encryptLongArray(long[])">
+    <element path="se.deversity.blindbean.fhe.FheContext.encryptLongArray(long[])">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
-    <element path="com.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)">
+    <element path="se.deversity.blindbean.fhe.FheContext.multiply(java.lang.foreign.MemorySegment,java.lang.foreign.MemorySegment)">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
-    <element path="com.blindbean.math.PaillierMath">
+    <element path="se.deversity.blindbean.math.PaillierMath">
       <constraint>Encryption/decryption are modPow-heavy over large BigIntegers — never introduce extra copies, unnecessary allocations, or redundant modular reductions on the hot path</constraint>
     </element>
-    <element path="com.blindbean.math.PaillierVectorized">
+    <element path="se.deversity.blindbean.math.PaillierVectorized">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
-    <element path="com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)">
+    <element path="se.deversity.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)">
       <constraint>Strict time/space complexity constraints apply. Suboptimal complexity is unacceptable.</constraint>
     </element>
   </performance_constraints>
 
 <rule>Elements listed in <performance_constraints> are on a hot path. Never introduce O(n²) or worse complexity. Always reason about time and space complexity before suggesting changes.</rule>
   <contract_signatures>
-    <element path="com.blindbean.fhe.FheCiphertextNative">
+    <element path="se.deversity.blindbean.fhe.FheCiphertextNative">
       <reason>Serialization format and handle lifecycle are part of the public FFM contract; do not change method signatures</reason>
     </element>
-    <element path="com.blindbean.fhe.FheContext">
+    <element path="se.deversity.blindbean.fhe.FheContext">
       <reason>Public FHE API consumed by generated BlindWrapper classes; any signature change requires processor regeneration and a major version bump</reason>
     </element>
-    <element path="com.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)">
+    <element path="se.deversity.blindbean.junit.BlindBeanExtension.beforeEach(org.junit.jupiter.api.extension.ExtensionContext)">
       <reason>JUnit 5 BeforeEachCallback contract — signature is fixed by the framework SPI</reason>
     </element>
   </contract_signatures>
 
 <rule>You may refactor the internal logic of elements listed in <contract_signatures>, but you MUST NOT change their public signatures: method names, parameter types, parameter order, return types, or checked exceptions.</rule>
   <test_driven_requirements>
-    <element path="com.blindbean.context.BlindContext">
+    <element path="se.deversity.blindbean.context.BlindContext">
       <coverage_goal>90</coverage_goal>
       <frameworks>JUNIT_5</frameworks>
-      <test_location>src/test/java/com/blindbean/context</test_location>
+      <test_location>src/test/java/se.deversity.blindbean/context</test_location>
     </element>
-    <element path="com.blindbean.fhe.FheContext">
+    <element path="se.deversity.blindbean.context.BlindRotation">
       <coverage_goal>90</coverage_goal>
       <frameworks>JUNIT_5</frameworks>
-      <test_location>src/test/java/com/blindbean/fhe</test_location>
+      <test_location>src/test/java/se.deversity.blindbean/context</test_location>
     </element>
-    <element path="com.blindbean.junit.BlindBeanExtension">
+    <element path="se.deversity.blindbean.fhe.FheContext">
       <coverage_goal>90</coverage_goal>
       <frameworks>JUNIT_5</frameworks>
-      <test_location>src/test/java/com/blindbean/junit</test_location>
+      <test_location>src/test/java/se.deversity.blindbean/fhe</test_location>
+    </element>
+    <element path="se.deversity.blindbean.junit.BlindBeanExtension">
+      <coverage_goal>90</coverage_goal>
+      <frameworks>JUNIT_5</frameworks>
+      <test_location>src/test/java/se.deversity.blindbean/junit</test_location>
     </element>
   </test_driven_requirements>
 
 <rule>For any element listed in <test_driven_requirements>, you MUST provide both the implementation change AND the corresponding test code update in a single response. Changes without tests are incomplete and must not be proposed.</rule>
   <thread_safe_elements>
-    <element path="com.blindbean.async.BlindAsync">
+    <element path="se.deversity.blindbean.async.BlindAsync">
       <strategy>OTHER</strategy>
       <note>Executor + semaphore held as one immutable State behind a single volatile (DCL lazy init); CPU-bound semaphore serializes FHE tasks across virtual threads; shutdown races resolved by re-submitting under the init monitor, which shutdown() must also acquire</note>
     </element>
-    <element path="com.blindbean.context.BlindContext">
+    <element path="se.deversity.blindbean.context.BlindContext">
       <strategy>THREAD_LOCAL</strategy>
       <note>Paillier and FHE state isolated in ThreadLocal fields; snapshot()/restore() required to propagate across virtual-thread boundaries</note>
     </element>
-    <element path="com.blindbean.fhe.FheContext">
+    <element path="se.deversity.blindbean.context.BlindRotation">
+      <strategy>OTHER</strategy>
+      <note>rotate() is concurrency-safe: PaillierMath is effectively immutable with a thread-safe SecureRandom, and each FheContext serializes its own native calls on nativeLock. The counter is an AtomicLong; commit()/close() are guarded by the session monitor and flip volatile flags that rotate() reads.</note>
+    </element>
+    <element path="se.deversity.blindbean.fhe.FheContext">
       <strategy>SYNCHRONIZED</strategy>
       <note>All native FFM operations are guarded by nativeLock to prevent concurrent SEAL context access</note>
     </element>
-    <element path="com.blindbean.math.PaillierVectorized">
+    <element path="se.deversity.blindbean.math.PaillierVectorized">
       <strategy>IMMUTABLE</strategy>
       <note>Stateless utility class — SPECIES is a compile-time constant; no instance state</note>
     </element>
@@ -232,17 +265,17 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 
 <rule>Elements listed in <thread_safe_elements> are explicitly designed to be thread-safe via the named strategy. Any modification MUST preserve the synchronization invariant and document its reasoning in the change description.</rule>
   <immutable_types>
-    <type path="com.blindbean.core.Ciphertext">
+    <type path="se.deversity.blindbean.core.Ciphertext">
       <note>Java record — hexData and scheme are final record components; do not convert to a mutable class</note>
     </type>
-    <type path="com.blindbean.math.PaillierKeyPair">
+    <type path="se.deversity.blindbean.math.PaillierKeyPair">
       <note>All key material is computed once in the constructor and stored in final fields; never add setters, non-final fields, or post-construction mutation</note>
     </type>
   </immutable_types>
 
 <rule>Types listed in <immutable_types> are immutable by design. Never introduce non-final fields, setters, or methods that mutate instance state.</rule>
   <observability_instrumentation>
-    <element path="com.blindbean.fhe.FheContext.noiseBudget(java.lang.foreign.MemorySegment)">
+    <element path="se.deversity.blindbean.fhe.FheContext.noiseBudget(java.lang.foreign.MemorySegment)">
       <metric>fhe.noise_budget</metric>
       <note>Noise budget drives correctness alerts — dashboards fire when budget drops below safe threshold; do not remove or rename this method</note>
     </element>
@@ -250,103 +283,114 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 
 <rule>Elements listed in <observability_instrumentation> publish metrics, traces, or log statements that downstream dashboards and alerts depend on. Never remove or rename instrumentation without flagging the corresponding dashboard update.</rule>
   <test_isolation_elements>
-    <element path="com.blindbean.async.BlindAsync">
+    <element path="se.deversity.blindbean.async.BlindAsync">
       <isolation>strict</isolation>
     </element>
   </test_isolation_elements>
 
 <rule>For elements in <test_isolation_elements>, all generated or modified tests MUST run in complete isolation (no shared state, external resource conflicts, or order dependencies).</rule>
   <architecture_elements>
-    <element path="com.blindbean.math.BlindMath">
+    <element path="se.deversity.blindbean.math.BlindMath">
       <belongs_to>math-layer</belongs_to>
-      <cannot_reference>com.blindbean.fhe.FheNativeBridge</cannot_reference>
+      <cannot_reference>se.deversity.blindbean.fhe.FheNativeBridge</cannot_reference>
     </element>
   </architecture_elements>
 
 <rule>Respect layered architectural constraints in <architecture_elements>. Boundary crossing references are strictly prohibited.</rule>
   <public_api_elements>
-    <element path="com.blindbean.context.BlindContext">
+    <element path="se.deversity.blindbean.context.BlindContext">
       <api>public</api>
     </element>
-    <element path="com.blindbean.core.Ciphertext">
+    <element path="se.deversity.blindbean.context.BlindRotation">
       <api>public</api>
     </element>
-    <element path="com.blindbean.junit.BlindBeanExtension">
+    <element path="se.deversity.blindbean.core.Ciphertext">
+      <api>public</api>
+    </element>
+    <element path="se.deversity.blindbean.junit.BlindBeanExtension">
       <api>public</api>
       <reason>Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite</reason>
     </element>
-    <element path="com.blindbean.junit.BlindBeanTest">
+    <element path="se.deversity.blindbean.junit.BlindBeanTest">
       <api>public</api>
       <reason>Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot</reason>
     </element>
-    <element path="com.blindbean.math.BlindMath">
+    <element path="se.deversity.blindbean.math.BlindMath">
       <api>public</api>
     </element>
   </public_api_elements>
 
 <rule>Elements in <public_api_elements> expose public API. Preserve public signature, Javadoc, and backwards compatibility without exceptions.</rule>
   <strict_exceptions_elements>
-    <element path="com.blindbean.fhe.FheCiphertextNative">
+    <element path="se.deversity.blindbean.fhe.FheCiphertextNative">
       <exceptions>strict</exceptions>
     </element>
-    <element path="com.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
+    <element path="se.deversity.blindbean.fhe.FheContext.initNative(java.util.function.Supplier&lt;java.lang.foreign.MemorySegment&gt;)">
       <exceptions>strict</exceptions>
       <reason>Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem</reason>
     </element>
-    <element path="com.blindbean.math.PaillierMath">
+    <element path="se.deversity.blindbean.math.PaillierMath">
       <exceptions>strict</exceptions>
     </element>
   </strict_exceptions_elements>
 
 <rule>Catching or throwing generic Exception/Throwable is strictly prohibited in <strict_exceptions_elements>. Precise or custom exceptions required.</rule>
   <strict_types_elements>
-    <element path="com.blindbean.math.BlindMath">
+    <element path="se.deversity.blindbean.math.BlindMath">
       <types>strict</types>
     </element>
   </strict_types_elements>
 
 <rule>Loose typing (Object, Map<String, Object>, raw types) is strictly prohibited in <strict_types_elements>. Enforce type safety.</rule>
   <internationalized_elements>
-    <element path="com.blindbean.processor.HomomorphicProcessor">
+    <element path="se.deversity.blindbean.processor.HomomorphicProcessor">
       <i18n>required</i18n>
     </element>
   </internationalized_elements>
 
 <rule>Do not hardcode user-facing strings in <internationalized_elements>. Resolve all text via localization resource/message bundles.</rule>
   <strict_classpath_elements>
-    <element path="com.blindbean.processor.HomomorphicProcessor">
+    <element path="se.deversity.blindbean.processor.HomomorphicProcessor">
       <classpath>strict</classpath>
     </element>
   </strict_classpath_elements>
 
 <rule>Dynamic class loading, custom classloaders, reflection hacks, or unverified external code are prohibited in <strict_classpath_elements>.</rule>
   <schema_safe_elements>
-    <element path="com.blindbean.context.KeyBundle">
+    <element path="se.deversity.blindbean.context.KeyBundle">
       <schema>safe</schema>
     </element>
-    <element path="com.blindbean.core.Ciphertext">
+    <element path="se.deversity.blindbean.core.Ciphertext">
       <schema>safe</schema>
     </element>
-    <element path="com.blindbean.math.PaillierKeyPair">
+    <element path="se.deversity.blindbean.math.PaillierKeyPair">
       <schema>safe</schema>
     </element>
   </schema_safe_elements>
 
 <rule>Database or contract schema / serialization safety must be preserved in <schema_safe_elements>. Do not alter structures without migration paths.</rule>
   <idempotent_elements>
-    <element path="com.blindbean.context.BlindContext.clear()">
+    <element path="se.deversity.blindbean.context.BlindContext.clear()">
       <idempotent>true</idempotent>
       <reason>ThreadLocal.remove() and FheContext.close() are both safe to call when no state is present</reason>
     </element>
-    <element path="com.blindbean.fhe.FheCiphertextNative.close()">
+    <element path="se.deversity.blindbean.context.BlindRotation.commit()">
+      <idempotent>true</idempotent>
+      <reason>The second call observes committed == true and returns; installing the same keys twice must not be an error, and the source is retired once</reason>
+    </element>
+    <element path="se.deversity.blindbean.context.BlindRotation.close()">
+      <idempotent>true</idempotent>
+      <reason>Guarded by the closed flag; repeated close() is a no-op and never disturbs the installed context or double-frees a native context</reason>
+    </element>
+    <element path="se.deversity.blindbean.fhe.FheCiphertextNative.close()">
       <idempotent>true</idempotent>
       <reason>Guarded by freed flag; calling close() on an already-freed handle is a no-op</reason>
     </element>
-    <element path="com.blindbean.fhe.FheContext.close()">
+    <element path="se.deversity.blindbean.fhe.FheContext.close()">
       <idempotent>true</idempotent>
       <reason>Guarded by closed flag; subsequent calls after first close() are no-ops</reason>
     </element>
-    <element path="com.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)">
+    <element path="se.deversity.blindbean.junit.BlindBeanExtension.afterEach(org.junit.jupiter.api.extension.ExtensionContext)">
       <idempotent>true</idempotent>
       <reason>Cleanup must tolerate a failed/partial beforeEach and repeated invocation — BlindContext.clear() is itself idempotent; never make teardown conditional on setup having succeeded, or a failing test would leak keys and native handles into the next one</reason>
     </element>
@@ -354,11 +398,11 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 
 <rule>Operations listed in <idempotent_elements> must remain idempotent. Never introduce side effects that cause repeated invocations to produce different results.</rule>
   <feature_flag_elements>
-    <element path="com.blindbean.async.BlindAsync">
+    <element path="se.deversity.blindbean.async.BlindAsync">
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>
-    <element path="com.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List&lt;com.blindbean.processor.HomomorphicProcessor.FieldModel&gt;)">
+    <element path="se.deversity.blindbean.processor.HomomorphicProcessor.generateBlindWrapper(java.lang.String,java.lang.String,javax.lang.model.element.TypeElement,java.util.List&lt;se.deversity.blindbean.processor.HomomorphicProcessor.FieldModel&gt;)">
       <flag>blindbean.apt.async</flag>
       <default_value>false</default_value>
     </element>
@@ -366,87 +410,90 @@ Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which
 
 <rule>Elements listed in <feature_flag_elements> are gated by a feature flag. Always preserve the flag check — never assume the flag is always active.</rule>
   <security_elements>
-    <element path="com.blindbean.context.BlindContext">
+    <element path="se.deversity.blindbean.context.BlindContext">
       <aspect>key-management</aspect>
     </element>
-    <element path="com.blindbean.context.BlindContext.exportKeys(java.lang.String)">
+    <element path="se.deversity.blindbean.context.BlindContext.exportKeys(java.lang.String)">
       <aspect>key-serialization</aspect>
     </element>
-    <element path="com.blindbean.context.BlindContext.loadKeys(java.lang.String)">
+    <element path="se.deversity.blindbean.context.BlindContext.loadKeys(java.lang.String)">
       <aspect>key-deserialization</aspect>
     </element>
-    <element path="com.blindbean.fhe.FheContext">
+    <element path="se.deversity.blindbean.context.BlindRotation">
+      <aspect>key-rotation</aspect>
+    </element>
+    <element path="se.deversity.blindbean.fhe.FheContext">
       <aspect>fhe-encryption</aspect>
     </element>
-    <element path="com.blindbean.math.PaillierKeyPair">
+    <element path="se.deversity.blindbean.math.PaillierKeyPair">
       <aspect>key-generation</aspect>
     </element>
-    <element path="com.blindbean.math.PaillierMath">
+    <element path="se.deversity.blindbean.math.PaillierMath">
       <aspect>paillier-encryption</aspect>
     </element>
   </security_elements>
 
 <rule>Elements listed in <security_elements> are security-critical. Never weaken their security properties. Every proposed change must be explicitly reviewed for security impact.</rule>
   <access_limitations>
-    <file path="com.blindbean.context.KeyBundle">
-      <allowed_callers>com.blindbean.context.BlindContext</allowed_callers>
+    <file path="se.deversity.blindbean.context.KeyBundle">
+      <allowed_callers>se.deversity.blindbean.context.BlindContext</allowed_callers>
     </file>
   </access_limitations>
 
 <rule>Do not invoke elements in <access_limitations> from outside their specified allowed caller packages or classes.</rule>
   <memory_budget_elements>
-    <file path="com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
+    <file path="se.deversity.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
       <allocation_policy>NO_AUTOBOXING</allocation_policy>
     </file>
   </memory_budget_elements>
 
 <rule>Avoid runtime heap object allocations, autoboxing, or dynamic overhead within classes/methods in <memory_budget_elements>.</rule>
   <pure_functions>
-    <file path="com.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)">
+    <file path="se.deversity.blindbean.math.PaillierVectorized.batchAddBigInteger(java.math.BigInteger[],java.math.BigInteger[],java.math.BigInteger)">
       <policy>Pure function: no side effects, deterministic.</policy>
     </file>
   </pure_functions>
 
 <rule>Methods in <pure_functions> must remain mathematically pure. Side effects, mutations of class/static state, or blocking operations are strictly forbidden.</rule>
   <domain_model_elements>
-    <file path="com.blindbean.core.Ciphertext">
+    <file path="se.deversity.blindbean.core.Ciphertext">
       <domain_model_boundary>Pure Domain Model</domain_model_boundary>
-      <allowed_imports>com.blindbean.annotations.Scheme</allowed_imports>
+      <allowed_imports>se.deversity.blindbean.annotations.Scheme</allowed_imports>
     </file>
   </domain_model_elements>
 
 <rule>Classes in <domain_model_elements> are pure domain models. Do not import or reference database or web framework dependencies (Spring, Hibernate, JPA, Jackson).</rule>
   <sanitization_elements>
-    <file path="com.blindbean.context.BlindContext.exportKeys(java.lang.String)#filePath">
+    <file path="se.deversity.blindbean.context.BlindContext.exportKeys(java.lang.String)#filePath">
       <sanitization_types>PATH_TRAVERSAL</sanitization_types>
     </file>
-    <file path="com.blindbean.context.BlindContext.loadKeys(java.lang.String)#filePath">
+    <file path="se.deversity.blindbean.context.BlindContext.loadKeys(java.lang.String)#filePath">
       <sanitization_types>PATH_TRAVERSAL</sanitization_types>
     </file>
   </sanitization_elements>
 
 <rule>Strict input sanitization is mandatory for elements in <sanitization_elements>. Raw input must pass through approved filters before hitting queries or renderers.</rule>
   <secure_logging_elements>
-    <file path="com.blindbean.context.KeyBundle.paillierKeyPair">
+    <file path="se.deversity.blindbean.context.KeyBundle.paillierKeyPair">
       <logging_policy>OMIT</logging_policy>
     </file>
-    <file path="com.blindbean.context.KeyBundle.nativeFhePayload">
+    <file path="se.deversity.blindbean.context.KeyBundle.nativeFhePayload">
       <logging_policy>OMIT</logging_policy>
     </file>
-    <file path="com.blindbean.math.PaillierKeyPair.lambda">
+    <file path="se.deversity.blindbean.math.PaillierKeyPair.lambda">
       <logging_policy>OMIT</logging_policy>
     </file>
-    <file path="com.blindbean.math.PaillierKeyPair.mu">
+    <file path="se.deversity.blindbean.math.PaillierKeyPair.mu">
       <logging_policy>OMIT</logging_policy>
     </file>
   </secure_logging_elements>
 
 <rule>Sensitive variables in <secure_logging_elements> must never be printed or logged in raw form. Enforce secure masking or hashing.</rule>
   <explain_elements>
-    <file path="com.blindbean.math.PaillierMath">
+    <file path="se.deversity.blindbean.math.PaillierMath">
       <explanation_required>HIGH</explanation_required>
     </file>
-    <file path="com.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
+    <file path="se.deversity.blindbean.math.PaillierVectorized.batchAdd(long[],long[],long[],long)">
       <explanation_required>HIGH</explanation_required>
     </file>
   </explain_elements>
