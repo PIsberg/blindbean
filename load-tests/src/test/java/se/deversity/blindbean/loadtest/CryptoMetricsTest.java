@@ -127,9 +127,10 @@ class CryptoMetricsTest {
         if (!Native.available()) return;
 
         REPORT.section("Noise budget → multiplicative depth (BFV)",
-            "Every operation spends noise budget. At zero the ciphertext stops decrypting to "
-          + "anything meaningful — with NO error. The useful number is not the speed of a multiply "
-          + "but how many you can chain before the data is silently wrong.");
+            "Every operation spends noise budget. At zero the ciphertext is garbage. SEAL returns a "
+          + "plausible wrong number rather than failing, so BlindBean refuses to decrypt it (the "
+          + "noise guard). The useful number is not the speed of a multiply but how many you can "
+          + "chain before you hit the wall.");
         REPORT.columns("Depth", "Op", "Noise budget (bits)", "Decrypts correctly?");
 
         BlindContext.initBfv(8192);
@@ -154,17 +155,32 @@ class CryptoMetricsTest {
             expected *= 2L;
 
             int budget = ctx.noiseBudget(acc.handle());
-            long got = ctx.decryptLong(acc.handle());
-            boolean ok = got == expected;
-            REPORT.row(depth, "× encrypt(2)", budget, ok ? "yes" : "NO (got " + got + ")");
+
+            // Past the cliff the library now REFUSES to decrypt (FheContext's noise guard) rather
+            // than handing back the plausible wrong number it used to. This sweep is the one place
+            // that wants to observe the failure, so it records the refusal instead of propagating it.
+            boolean ok;
+            String verdict;
+            try {
+                long got = ctx.decryptLong(acc.handle());
+                ok = got == expected;
+                verdict = ok ? "yes" : "NO — returned " + got;
+            } catch (se.deversity.blindbean.fhe.FheException refused) {
+                ok = false;
+                verdict = "REFUSED (noise guard)";
+            }
+            REPORT.row(depth, "× encrypt(2)", budget, verdict);
             if (ok) lastGoodDepth = depth;
             if (budget <= 0 || !ok) break;
         }
         acc.close();
 
         REPORT.note("Usable multiplicative depth at these parameters: " + lastGoodDepth
-                  + ". Beyond it the value is wrong and nothing throws — which is why an "
-                  + "application chaining multiplies must watch noiseBudget(), not just results.");
+                  + ". Beyond it the ciphertext is garbage. Before the noise guard it decrypted to a "
+                  + "plausible wrong number (49,663 where 64 was expected) with no exception and no "
+                  + "warning; it is now refused. An application chaining multiplies should still "
+                  + "watch noiseBudget() — the guard tells you that you ran out, not that you are "
+                  + "about to.");
 
         // Regression gate. Depth is a property of the PARAMETERS, so a SEAL upgrade or a parameter
         // tweak that quietly costs a multiply would otherwise ship unnoticed — and every user who

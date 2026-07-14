@@ -183,6 +183,7 @@ public class FheContext implements AutoCloseable {
             if (scheme != Scheme.BFV) {
                 throw new FheException("decryptLong requires BFV context, got " + scheme);
             }
+            requireDecryptable(ct);
             return FheNativeBridge.fhe_decrypt_long(handle, ct);
         }
     }
@@ -321,6 +322,7 @@ public class FheContext implements AutoCloseable {
             if (scheme != Scheme.BFV) {
                 throw new FheException("decryptLongArray requires BFV context, got " + scheme);
             }
+            requireDecryptable(ct);
             try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
                 // BFV batching exposes exactly polyModulusDegree slots; a fixed-size buffer
                 // would silently drop the tail of the batch on larger contexts.
@@ -482,6 +484,58 @@ public class FheContext implements AutoCloseable {
         synchronized (nativeLock) {
             ensureOpen();
             return FheNativeBridge.fhe_noise_budget(handle, ct);
+        }
+    }
+
+    /**
+     * Set {@code blindbean.noise.guard=false} to decrypt a BFV ciphertext whose noise budget is
+     * exhausted instead of refusing it. There is exactly one honest reason to: you are deliberately
+     * studying the corruption. It is not a performance switch worth flipping — the budget check is
+     * one native call against a decryption that costs far more.
+     *
+     * <p>Read <em>per call</em>, not cached in a static. A static would only honour the flag when it
+     * was set before this class first loaded — so a JVM {@code -D} would work but a programmatic
+     * {@code System.setProperty} silently would not, which is a trap, and it would leave the
+     * guard-off path untestable. A property lookup is a map read against a decryption that costs
+     * milliseconds.
+     */
+    private static boolean noiseGuardEnabled() {
+        return !"false".equalsIgnoreCase(System.getProperty("blindbean.noise.guard"));
+    }
+
+    /**
+     * Refuses to decrypt a BFV ciphertext whose noise budget is spent.
+     *
+     * <p>Every homomorphic operation consumes noise budget. At zero, SEAL does not fail — it returns
+     * a plausible wrong number. Measured at the default parameters, the fifth chained multiplication
+     * decrypted to 49,663 where 64 was expected, with no exception and no warning
+     * ({@code load-tests/results/}). That is the last place in this library where wrong data could
+     * still be handed back in silence, and it is the same failure shape as the key-rotation
+     * corruption and the BFV slot wrap: the computation is finished, the answer is garbage, and
+     * nothing says so.
+     *
+     * <p>So it is refused. A caller who chains multiplies must watch {@link #noiseBudget}; if they
+     * do not, this tells them, rather than their users finding out from the data.
+     *
+     * <p>CKKS has no noise budget (the native call returns -1) — its failure mode is precision
+     * decay, not a cliff, and it cannot be detected this way.
+     */
+    private void requireDecryptable(MemorySegment ct) {
+        if (!noiseGuardEnabled() || scheme != Scheme.BFV) {
+            return;
+        }
+        int budget = FheNativeBridge.fhe_noise_budget(handle, ct);
+        if (budget <= 0) {
+            throw new FheException(
+                "Noise budget exhausted (" + budget + " bits): this ciphertext no longer decrypts to "
+                + "a meaningful value. Every homomorphic operation spends budget, and multiplies "
+                + "spend most of it — at the default parameters BFV survives about four chained "
+                + "multiplications. SEAL would have returned a plausible WRONG number here rather "
+                + "than failing, which is why this is refused instead.\n"
+                + "Watch FheContext.noiseBudget() as you chain operations, raise the polynomial "
+                + "modulus degree to buy more depth, or restructure to use fewer multiplies "
+                + "(additions are nearly free). To decrypt it anyway, set "
+                + "-Dblindbean.noise.guard=false.");
         }
     }
 
