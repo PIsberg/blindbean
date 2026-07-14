@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * context is not disturbed until {@link #commit()}.
  *
  * <pre>{@code
- * PaillierKeyPair next = new PaillierKeyPair(1024);
+ * PaillierKeyPair next = new PaillierKeyPair(2048);
  * try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
  *     for (Wallet w : repository.findAll()) {
  *         new WalletBlindWrapper(w).rotateBalance(rotation);
@@ -59,6 +59,18 @@ import java.util.concurrent.atomic.AtomicLong;
  * back a re-encrypted value, but persisting it is yours to do, and a crash midway leaves some
  * rows under the old keys and some under the new. Keep the old bundle until the batch has been
  * verified, and retire it only afterwards.
+ *
+ * <p><strong>Re-running an interrupted batch is safe.</strong> Every ciphertext is stamped with
+ * the key generation that produced it ({@link com.blindbean.core.KeyTag}), so a row that already
+ * moved is refused with a {@link com.blindbean.core.WrongKeyException} rather than rotated twice —
+ * catch it and skip that row. This is worth spelling out because the failure it replaces was
+ * invisible: neither Paillier nor SEAL rejects a foreign ciphertext, they decrypt it to a
+ * plausible wrong value, so a second rotation used to overwrite good data with well-formed
+ * garbage and nothing anywhere reported a problem.
+ *
+ * <p>Ciphertexts written before stamping existed carry no tag. They are still accepted (refusing
+ * them would make existing data unreadable), and rotating one produces a stamped value — so a
+ * dataset heals as it is rewritten, but an un-rewritten legacy row is not yet protected.
  *
  * <p>{@link #commit()} is terminal — rotating under retired keys after the application has moved
  * to the new ones is a bug, so it is refused rather than silently allowed.

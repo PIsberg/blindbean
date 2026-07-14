@@ -1,6 +1,7 @@
 package com.blindbean.math;
 
 import com.blindbean.core.Ciphertext;
+import com.blindbean.core.KeyTag;
 import com.blindbean.annotations.Scheme;
 
 import java.math.BigInteger;
@@ -19,12 +20,26 @@ public class PaillierMath {
     private final SecureRandom random = new SecureRandom();
     private final PaillierKeyPair keyPair;
 
+    /**
+     * This key generation's fingerprint, stamped into every ciphertext it produces and checked on
+     * every ciphertext it consumes. Derived once from the <em>public</em> modulus, so it costs one
+     * SHA-256 per PaillierMath rather than anything on the hot path — the wrap/unwrap that remains
+     * there is a 22-byte header copy against a modPow over a 1024-bit+ modulus.
+     */
+    private final byte[] keyTag;
+
     public PaillierMath(PaillierKeyPair keyPair) {
         this.keyPair = keyPair;
+        this.keyTag = KeyTag.derive(keyPair.getN().toByteArray());
     }
 
     public PaillierKeyPair getKeyPair() {
         return keyPair;
+    }
+
+    /** This key generation's fingerprint. A digest of the public modulus, not key material. */
+    public byte[] keyTag() {
+        return keyTag.clone();
     }
 
     public Ciphertext encrypt(BigInteger m) {
@@ -38,7 +53,7 @@ public class PaillierMath {
         BigInteger rn = r.modPow(keyPair.getN(), keyPair.getN2());
         BigInteger c = gm.multiply(rn).mod(keyPair.getN2());
 
-        return Ciphertext.fromBytes(c.toByteArray(), Scheme.PAILLIER);
+        return Ciphertext.fromBytes(KeyTag.wrap(keyTag, c.toByteArray()), Scheme.PAILLIER);
     }
 
     public BigInteger decrypt(Ciphertext c) {
@@ -46,7 +61,10 @@ public class PaillierMath {
             throw new IllegalArgumentException(
                 "PaillierMath.decrypt requires a PAILLIER ciphertext, got " + c.scheme());
         }
-        BigInteger cipher = new BigInteger(1, c.getBytes());
+        // Refuse a ciphertext from another key generation. Nothing below would fail on one:
+        // c^lambda = 1 (mod n) holds for any c coprime to n, so L() divides exactly and the
+        // wrong key yields a plausible wrong plaintext rather than an error.
+        BigInteger cipher = new BigInteger(1, unwrap(c, "decrypt this ciphertext"));
 
         // m = L(c^lambda mod n^2) * mu mod n
         BigInteger u = cipher.modPow(keyPair.getLambda(), keyPair.getN2());
@@ -62,12 +80,12 @@ public class PaillierMath {
         }
         // Ciphertext bytes are an unsigned magnitude — parse with signum 1, matching
         // decrypt(); the signed constructor misreads magnitudes whose top bit is set
-        BigInteger numA = new BigInteger(1, a.getBytes());
-        BigInteger numB = new BigInteger(1, b.getBytes());
+        BigInteger numA = new BigInteger(1, unwrap(a, "add this ciphertext"));
+        BigInteger numB = new BigInteger(1, unwrap(b, "add this ciphertext"));
 
         // Addition in Paillier is multiplication of ciphertexts mod n^2
         BigInteger result = numA.multiply(numB).mod(keyPair.getN2());
-        return Ciphertext.fromBytes(result.toByteArray(), Scheme.PAILLIER);
+        return Ciphertext.fromBytes(KeyTag.wrap(keyTag, result.toByteArray()), Scheme.PAILLIER);
     }
 
     public Ciphertext subtract(Ciphertext a, Ciphertext b) {
@@ -76,12 +94,20 @@ public class PaillierMath {
                 "PaillierMath.subtract requires PAILLIER ciphertexts, got "
                 + a.scheme() + " and " + b.scheme());
         }
-        BigInteger numA = new BigInteger(1, a.getBytes());
-        BigInteger numB = new BigInteger(1, b.getBytes());
+        BigInteger numA = new BigInteger(1, unwrap(a, "subtract this ciphertext"));
+        BigInteger numB = new BigInteger(1, unwrap(b, "subtract this ciphertext"));
 
         // Subtraction in Paillier is multiplication by the modular inverse mod n^2
         BigInteger inverseB = numB.modInverse(keyPair.getN2());
         BigInteger result = numA.multiply(inverseB).mod(keyPair.getN2());
-        return Ciphertext.fromBytes(result.toByteArray(), Scheme.PAILLIER);
+        return Ciphertext.fromBytes(KeyTag.wrap(keyTag, result.toByteArray()), Scheme.PAILLIER);
+    }
+
+    /**
+     * Strips the key-generation header, refusing a ciphertext stamped with a different generation.
+     * An unstamped (pre-{@link KeyTag}) payload is accepted as legacy and returned whole.
+     */
+    private byte[] unwrap(Ciphertext c, String operation) {
+        return KeyTag.verifyAndUnwrap(c.getBytes(), keyTag, operation);
     }
 }

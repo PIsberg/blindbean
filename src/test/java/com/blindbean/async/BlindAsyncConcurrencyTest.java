@@ -36,7 +36,7 @@ class BlindAsyncConcurrencyTest {
     // Generated once per test-class load; reused by per-thread BlindContext.init(keyPair) calls.
     // Generating a fresh 1024-bit key pair per invocation (2000+ times in tests 3 and 7) is the
     // primary cause of the CI "Install Core Library" timeout on 2-vCPU GitHub Actions runners.
-    private static final PaillierKeyPair SHARED_KEY_PAIR = new PaillierKeyPair(1024);
+    private static final PaillierKeyPair SHARED_KEY_PAIR = new PaillierKeyPair(1024);  // test-only key size: keygen speed, NOT a production size (see BlindContext.DEFAULT_PAILLIER_BITS)
 
     @BeforeEach
     void setup() {

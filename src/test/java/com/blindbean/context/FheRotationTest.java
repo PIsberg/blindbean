@@ -5,6 +5,7 @@ import com.blindbean.core.Ciphertext;
 import com.blindbean.fhe.FheCiphertextNative;
 import com.blindbean.fhe.FheContext;
 import com.blindbean.fhe.FheException;
+import com.blindbean.core.WrongKeyException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -209,5 +210,48 @@ public class FheRotationTest {
         BlindContext.init();
         assertThrows(FheException.class, BlindRotation::fromCurrentFhe,
             "no FHE context is installed, so there is nothing to rotate");
+    }
+
+    /**
+     * The FHE half of the re-rotation trap. SEAL does not save you here: the target context is
+     * built with the same parameters, so it shares a {@code parms_id} with the source and an
+     * already-rotated ciphertext deserializes cleanly into the old context and decrypts to noise
+     * instead of failing. Only the key stamp catches it.
+     */
+    @Test
+    public void anAlreadyRotatedBfvCiphertextCannotBeRotatedAgain() {
+        BlindContext.initBfv(4096);
+        Ciphertext underOld = encryptLong(BlindContext.getFheContext(), 4242L);
+
+        FheContext source = BlindContext.getFheContext();
+        try (FheContext target = FheContext.bfv(4096);
+             BlindRotation rotation = BlindRotation.fhe(source, target)) {
+
+            Ciphertext underNew = rotation.rotate(underOld);
+            assertEquals(4242L, decryptLong(target, underNew));
+
+            // The re-run: this row already moved.
+            assertThrows(WrongKeyException.class, () -> rotation.rotate(underNew),
+                "re-rotating an already-rotated BFV ciphertext must be refused, not decrypted to noise");
+
+            // ...and it is intact, which is the whole point of refusing.
+            assertEquals(4242L, decryptLong(target, underNew));
+        }
+    }
+
+    /** A context that reloads its keys must still recognise the ciphertexts it wrote before. */
+    @Test
+    public void theKeyStampSurvivesAnExportImportRoundTrip() {
+        BlindContext.initBfv(4096);
+        FheContext ctx = BlindContext.getFheContext();
+        Ciphertext ct = encryptLong(ctx, 77L);
+        byte[] keys = ctx.exportState();
+
+        try (FheContext reloaded = FheContext.bfv(4096)) {
+            reloaded.importState(keys);
+            assertEquals(77L, decryptLong(reloaded, ct),
+                "a restarted context that reloads its key file must accept its own ciphertexts — "
+                + "a randomly assigned key id would repudiate them here");
+        }
     }
 }

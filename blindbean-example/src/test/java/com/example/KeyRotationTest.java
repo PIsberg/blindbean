@@ -63,7 +63,7 @@ public class KeyRotationTest {
         String beforeRotation = accounts.get(0).getBalance();
 
         // Rotate: new keys, same data.
-        PaillierKeyPair nextKeys = new PaillierKeyPair(1024);
+        PaillierKeyPair nextKeys = new PaillierKeyPair(2048);
         try (BlindRotation rotation = BlindRotation.fromCurrent(nextKeys)) {
             for (UserAccount account : accounts) {
                 new UserAccountBlindWrapper(account).rotateBalance(rotation);
@@ -136,7 +136,7 @@ public class KeyRotationTest {
         new UserAccountBlindWrapper(account).encryptBalance(BigInteger.valueOf(42L));
 
         assertThrows(IllegalStateException.class, () -> {
-            try (BlindRotation rotation = BlindRotation.fromCurrent(new PaillierKeyPair(1024))) {
+            try (BlindRotation rotation = BlindRotation.fromCurrent(new PaillierKeyPair(2048))) {
                 new UserAccountBlindWrapper(account).rotateBalance(rotation);
                 throw new IllegalStateException("datastore went away mid-batch");
                 // no commit() — the session unwinds

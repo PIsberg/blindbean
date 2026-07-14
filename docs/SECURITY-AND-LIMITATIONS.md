@@ -72,7 +72,7 @@ produced under the context.
   swapped until you `commit()`:
 
   ```java
-  PaillierKeyPair next = new PaillierKeyPair(1024);
+  PaillierKeyPair next = new PaillierKeyPair(2048);
   try (BlindRotation rotation = BlindRotation.fromCurrent(next)) {
       for (Wallet w : repository.findAll()) {
           new WalletBlindWrapper(w).rotateBalance(rotation);  // generated hook
@@ -98,6 +98,62 @@ produced under the context.
   created, so a failed batch cannot strand you without working keys.
   `commit()` is terminal: it installs the new keys, closes the retired
   native context, and refuses further rotation under the old keys.
+
+  **Re-running an interrupted batch is safe.** Rows that already moved are
+  refused with a `WrongKeyException` instead of being rotated a second time —
+  catch it and skip them:
+
+  ```java
+  for (Wallet w : repository.findAll()) {
+      try {
+          new WalletBlindWrapper(w).rotateBalance(rotation);
+          repository.save(w);
+      } catch (WrongKeyException alreadyRotated) {
+          // this row moved before the crash — leave it alone
+      }
+  }
+  ```
+
+### Ciphertexts are bound to their key generation
+
+Every ciphertext carries a 16-byte stamp identifying the keys that produced
+it (`KeyTag`), and decryption, homomorphic operations and rotation all refuse
+one that belongs to a different generation.
+
+This is not belt-and-braces: **neither scheme fails on a foreign ciphertext.**
+Paillier decryption under the wrong key is well-defined — by the Carmichael
+property `c^λ ≡ 1 (mod n)` for any `c` coprime to `n`, so `L()` divides
+exactly and you get a plausible wrong number back. SEAL is no better: two
+contexts built from the same parameters share a `parms_id`, so a ciphertext
+from one deserializes cleanly into the other and decrypts to noise. Without
+the stamp, rotating an already-rotated value replaced real data with
+well-formed garbage, undetectably, and unrecoverably once the old key was
+retired.
+
+The stamp is a truncated SHA-256 over key material with domain separation —
+for Paillier the *public* modulus, for BFV/CKKS the serialized SEAL key blob.
+It is derived, not randomly assigned, so it survives an
+`exportKeys`/`loadKeys` round trip; a random id would be regenerated on
+restart and the context would then repudiate its own ciphertexts.
+
+Ciphertexts written before stamping existed carry no header. They are read as
+**legacy** and still decrypt — refusing them would make existing data
+unreadable — so a dataset heals as it is rewritten, but an un-rewritten legacy
+row does not yet have this protection.
+
+### Paillier key size
+
+`PaillierKeyPair(bits)` sizes the **modulus** `n`, splitting `bits` across the
+two primes. Paillier's hardness is factoring `n`, so size it like an RSA
+modulus: **2048 is the minimum** (`BlindContext.DEFAULT_PAILLIER_BITS`), and
+3072 is what backs a 128-bit-equivalent claim. The 1024-bit default this
+library previously shipped is ~80-bit security, which NIST disallowed after
+2013.
+
+Note the "128-bit security" figure quoted for the BFV/CKKS parameters is a
+statement about **those** parameters (per the HomomorphicEncryption.org
+standard) and says nothing about your Paillier modulus, which you size
+yourself.
 - Ciphertexts cannot move between parameter sets. Rotation requires the
   source and target contexts to share a scheme and `polyModulusDegree`;
   mismatches are rejected up front.
