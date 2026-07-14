@@ -176,6 +176,34 @@ stored as the unscaled integer at a fixed `scale`, so `19.99 + 0.01` is exactly
 already written decode at the wrong magnitude — and a value with more decimals
 than the scale is rejected rather than rounded.
 
+### Noise budget: you get four multiplies
+
+Every homomorphic operation spends noise budget. At zero, the ciphertext stops
+decrypting to anything meaningful — **with no exception and no warning**.
+
+Measured at the default BFV parameters (`load-tests`, see `results/0.1.0/`):
+
+| Depth | Noise budget | Correct? |
+|:------|:-------------|:---------|
+| 0 (encrypt) | 146 bits | yes |
+| 4 multiplies | 19 bits | yes |
+| **5 multiplies** | **0 bits** | **NO — returns a plausible wrong number** |
+
+So BFV survives **four chained multiplications** at these parameters. Additions
+are nearly free; multiplies are what spend the budget. An application that chains
+multiplies must watch `FheContext.noiseBudget()` — nothing else will tell it the
+answer has gone wrong.
+
+CKKS holds roughly 8-9 correct decimal digits over 1,000 chained additions. Fine
+for signals and ML features; never acceptable for money.
+
+### Ciphertext expansion
+
+A BFV ciphertext is sized by the parameters, not the payload: a single `long`
+costs the same ~432 KB as a full 8,192-slot vector — an expansion of **54,000x**
+for one value, versus **7x** when the slots are filled. Paillier-2048 is 67x.
+Batching is not an optimisation; it is how you stop paying for empty slots.
+
 ### Paillier key size
 
 `PaillierKeyPair(bits)` sizes the **modulus** `n`, splitting `bits` across the

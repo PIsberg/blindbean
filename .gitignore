@@ -6,4 +6,4 @@ vcpkg_installed/
 
 .vibetags-cache
 .vibetags-mod-_root_
-vibetags.log
+vibetags.logload-tests/target/
