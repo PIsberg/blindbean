@@ -21,7 +21,7 @@ package "Java Layer (FFM / Panama)" {
 
 package "Native Layer (C++)" {
     [MethodHandles] --> [blindbean_fhe.dll]
-    [blindbean_fhe.dll] --> [Microsoft SEAL 4.1]
+    [blindbean_fhe.dll] --> [Microsoft SEAL 4.3]
 }
 
 package "Test Support (ships in main jar)" {
@@ -65,7 +65,7 @@ At compile time, `HomomorphicProcessor` evaluates classes annotated with `@Blind
 
 ## 2. The Native Layer (FHE & Microsoft SEAL)
 
-For Fully Homomorphic Encryption (FHE) like BFV or CKKS, we bridge to **Microsoft SEAL 4.1** via a C++ backend and Project Panama.
+For Fully Homomorphic Encryption (FHE) like BFV or CKKS, we bridge to **Microsoft SEAL 4.3** via a C++ backend and Project Panama.
 
 ### Class Relationship
 

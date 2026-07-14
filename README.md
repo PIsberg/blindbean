@@ -6,7 +6,7 @@
 ![Microsoft SEAL](https://img.shields.io/badge/Microsoft_SEAL-4.1-0078D4.svg)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/PIsberg/blindbean/badge)](https://securityscorecards.dev/viewer/?uri=github.com/PIsberg/blindbean)
 [![codecov](https://codecov.io/gh/PIsberg/blindbean/graph/badge.svg?token=Y6W85Z8B6B)](https://codecov.io/gh/PIsberg/blindbean)
-![License](https://img.shields.io/badge/License-PolyForm_Commercial-blue.svg)
+[![License](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-orange.svg)](LICENSE)
 BlindBean is a developer-first Java 26 library that makes Homomorphic Encryption (HE) invisible to the end user. It allows you to perform secure, private arithmetic on encrypted data using standard Java objects, completely hiding the complex cryptography behind annotations.
 
 ![blind-bean-inforgraphics-v1](https://github.com/user-attachments/assets/de57a253-7b2d-41a9-ae68-8bd58e9af7f7)
@@ -17,7 +17,7 @@ If it feels like math, we failed. It feels like Hibernate. You annotate, we calc
 
 ## Features
 - **Pure Java Paillier**: Leverages the Java 26 Vector API (Project Panama SIMD) for parallelized Partially Homomorphic Encryption.
-- **Native FHE Bridge**: Supports **BFV** (exact integer) and **CKKS** (approximate real) schemes via Microsoft SEAL 4.1, bridged through Project Panama FFM — zero JNI.
+- **Native FHE Bridge**: Supports **BFV** (exact integer) and **CKKS** (approximate real) schemes via Microsoft SEAL 4.3, bridged through Project Panama FFM — zero JNI.
 - **Developer-first Annotations**: Simply slap `@Homomorphic` on your domain entities.
 - **AutoCloseable Resources**: `FheContext` and `FheCiphertextNative` support try-with-resources for deterministic native cleanup.
 
@@ -27,6 +27,22 @@ If you want to understand the cryptography powering BlindBean, check out these r
 - [Microsoft SEAL Repository](https://github.com/microsoft/SEAL)
 - [Paillier Cryptosystem (Wikipedia)](https://en.wikipedia.org/wiki/Paillier_cryptosystem)
 - [HomomorphicEncryption.org Standard](https://homomorphicencryption.org/standard/)
+
+## License — noncommercial only
+
+BlindBean is released under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+**Commercial use is not granted.** You may use, modify and redistribute it for
+noncommercial purposes — personal projects, research, study, and use by charities,
+educational institutions, public research bodies and government. Anything with an
+anticipated commercial application is outside the licence.
+
+If you want to use BlindBean commercially, open an issue — there is no commercial
+licence on offer today, and this section will say so plainly until there is.
+
+> Earlier versions of this file called the licence "PolyForm Commercial", over the
+> same noncommercial text. No such PolyForm licence exists, and the name said the
+> opposite of the terms. The terms have not changed; the label was wrong.
 
 ## Install
 

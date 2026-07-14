@@ -69,7 +69,7 @@ jobs:
         if: matrix.language == 'cpp'
         uses: lukka/run-vcpkg@7d259227a1fb6471a0253dd5ab7419835228f7d7 # v11
         with:
-          vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
+          vcpkgGitCommitId: 'b5229343b4b80264ed51e89c6a7dcd0cbe85e9cc'
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
       - name: Manual Build (CPP)
