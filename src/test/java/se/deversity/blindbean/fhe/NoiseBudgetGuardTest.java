@@ -106,11 +106,17 @@ public class NoiseBudgetGuardTest {
                 assertEquals(0, ctx.noiseBudget(ct.handle()), "budget is spent");
 
                 long got = ctx.decryptLong(ct.handle());   // no exception — that is the bug
+
+                // The ONLY guaranteed property is that it is wrong. The garbage itself is noise
+                // overflow: its sign and magnitude vary by machine and by run — an earlier version
+                // of this test asserted `got > 0`, which passed locally (49,663) and failed on CI
+                // with a negative value. Asserting anything about the shape of corruption is
+                // asserting on noise.
                 assertNotEquals(64L, got,
                     "with the guard off, an exhausted ciphertext decrypts to garbage; if it came "
                     + "back correct, the guard is no longer needed");
-                assertTrue(got > 0, "and the garbage is a plausible-looking number, not an obvious "
-                                  + "sentinel — which is exactly why it was never noticed: got " + got);
+                System.out.println("[noise-guard] exhausted ciphertext decrypted to " + got
+                                 + " (expected 64) — this is what the guard now refuses");
             }
         } finally {
             System.clearProperty("blindbean.noise.guard");
