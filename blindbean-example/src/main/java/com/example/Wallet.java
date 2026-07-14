@@ -4,7 +4,12 @@ import se.deversity.blindbean.annotations.BlindEntity;
 import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
+import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+
 @BlindEntity
+@AIPrivacy(reason = "Holds wallet funds as ciphertext — never log the decrypted balance")
+@AISchemaSafe
 public class Wallet {
     
     // Encrypted directly transparently via BlindBean annotations!

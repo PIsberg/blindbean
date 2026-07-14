@@ -4,7 +4,13 @@ import se.deversity.blindbean.annotations.BlindEntity;
 import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
+import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+
 @BlindEntity
+@AIPrivacy(reason = "Demonstrates every numeric width; the fields are ciphertext, so decrypted"
+                  + "values must not be logged")
+@AISchemaSafe
 public class NumericEntity {
 
     @Homomorphic(type = byte.class, scheme = Scheme.PAILLIER)

@@ -4,8 +4,14 @@ import se.deversity.blindbean.annotations.BlindEntity;
 import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
+import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISchemaSafe;
+
 /** One field per newly supported type — the consumer's-eye view of the type surface. */
 @BlindEntity
+@AIPrivacy(reason = "Carries a price, an opaque blob and timestamps as ciphertext — never log"
+                  + "the decrypted values")
+@AISchemaSafe
 public class TypeZoo {
 
     // Exact decimal money. Paillier, fixed scale — CKKS could hold it, but only approximately.
