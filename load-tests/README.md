@@ -70,6 +70,15 @@ It is a gate, not a benchmark — timings on a shared runner are noise, so it as
 
 The full sweep — the figures and charts here — is a local or release-time run.
 
+## What 0.2.0 changed
+
+Encryption of **wide plaintexts** (a `String`, `byte[]`, or large `BigInteger`/`BigDecimal` field)
+got **~2.2× faster** by dropping the `g^m` modular exponentiation — with `g = n+1` it is just
+`1 + m·n mod n²`. Small-integer fields are unchanged (their `g^m` was already free). Ciphertexts are
+byte-for-byte identical. Full write-up and the CPU-time before/after in
+[`results/0.2.0/`](results/0.2.0/paillier-encrypt-optimization.md); a new `paillierEncryptLarge` JMH
+benchmark prices the wide-plaintext path the small-int `paillierEncrypt` never exercised.
+
 ## What 0.1.0 says — and what you should do about it
 
 Full numbers in [`results/0.1.0/`](results/0.1.0/), charts in

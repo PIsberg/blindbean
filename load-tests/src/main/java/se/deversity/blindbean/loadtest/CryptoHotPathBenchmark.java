@@ -39,6 +39,8 @@ public class CryptoHotPathBenchmark {
 
     private PaillierMath paillier;
     private Ciphertext pA, pB;
+    /** A near-modulus-width plaintext — what a String or byte[] field actually encodes to. */
+    private BigInteger largeM;
 
     private FheContext bfv;
     private FheContext ckks;
@@ -50,6 +52,9 @@ public class CryptoHotPathBenchmark {
         paillier = new PaillierMath(new PaillierKeyPair(2048));
         pA = paillier.encrypt(BigInteger.valueOf(1234L));
         pB = paillier.encrypt(BigInteger.valueOf(5678L));
+        // A wide plaintext (~n/4, so a couple of bits under the modulus width) stands in for a
+        // String or byte[] field, whose magnitude fills the plaintext space rather than a small int.
+        largeM = paillier.getKeyPair().getN().shiftRight(2);
 
         try {
             bfv = FheContext.bfv(8192);
@@ -74,6 +79,17 @@ public class CryptoHotPathBenchmark {
     @Benchmark
     public Ciphertext paillierEncrypt() {
         return paillier.encrypt(BigInteger.valueOf(42L));
+    }
+
+    /**
+     * Encrypting a near-modulus-width plaintext — what a String or byte[] field costs, as opposed to
+     * the small-int {@link #paillierEncrypt}. Here the g^m term is a full-width modular exponentiation
+     * in its own right, so it is where the g=n+1 binomial shortcut ((1+n)^m ≡ 1+m·n mod n²) actually
+     * pays off; on the 6-bit int above it is already free.
+     */
+    @Benchmark
+    public Ciphertext paillierEncryptLarge() {
+        return paillier.encrypt(largeM);
     }
 
     /** modPow over n² — the most expensive step on the read path. */
