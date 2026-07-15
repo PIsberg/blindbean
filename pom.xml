@@ -183,61 +183,62 @@
         <profile>
             <id>release</id>
             <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-source-plugin</artifactId>
-                            <version>3.3.1</version>
-                            <executions>
-                                <execution>
-                                    <id>attach-sources</id>
-                                    <goals><goal>jar-no-fork</goal></goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-javadoc-plugin</artifactId>
-                            <version>3.11.2</version>
-                            <executions>
-                                <execution>
-                                    <id>attach-javadocs</id>
-                                    <goals><goal>jar</goal></goals>
-                                </execution>
-                            </executions>
-                            <configuration>
-                                <release>26</release>
-                                <additionalJOptions>
-                                    <additionalJOption>--enable-preview</additionalJOption>
-                                    <additionalJOption>--add-modules</additionalJOption>
-                                    <additionalJOption>jdk.incubator.vector</additionalJOption>
-                                </additionalJOptions>
-                                <doclint>none</doclint>
-                                <quiet>true</quiet>
-                            </configuration>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-gpg-plugin</artifactId>
-                            <version>3.2.7</version>
-                            <executions>
-                                <execution>
-                                    <id>sign-artifacts</id>
-                                    <phase>verify</phase>
-                                    <goals><goal>sign</goal></goals>
-                                    <configuration>
-                                        <gpgArguments>
-                                            <arg>--pinentry-mode</arg>
-                                            <arg>loopback</arg>
-                                        </gpgArguments>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
                 <plugins>
+                    <!--
+                      Inherited by every module (source/javadoc skip pom-packaged modules cleanly;
+                      GPG signs whatever a module produces). blindbean-tests opts out of deploy, so
+                      it is never published even though it inherits these.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals><goal>jar-no-fork</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.11.2</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals><goal>jar</goal></goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <release>26</release>
+                            <additionalJOptions>
+                                <additionalJOption>--enable-preview</additionalJOption>
+                                <additionalJOption>--add-modules</additionalJOption>
+                                <additionalJOption>jdk.incubator.vector</additionalJOption>
+                            </additionalJOptions>
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals><goal>sign</goal></goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Central publishing runs once, at the reactor root, for all modules. -->
                     <plugin>
                         <groupId>org.sonatype.central</groupId>

@@ -137,7 +137,7 @@ public class FheContext implements AutoCloseable {
             }
             sb.append(".\n");
         }
-        sb.append("  Build it once with: cmake -S src/main/native -B build-native "
+        sb.append("  Build it once with: cmake -S blindbean-fhe/src/main/native -B build-native "
                 + "-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake && "
                 + "cmake --build build-native --config Release\n");
         sb.append("  Docs: README.md 'Prerequisites' and CLAUDE.md 'Build & Test'.");

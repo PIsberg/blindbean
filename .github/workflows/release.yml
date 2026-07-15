@@ -108,7 +108,7 @@ jobs:
 
       - name: Configure Native Build (CMake + SEAL)
         run: |
-          cmake -S src/main/native -B build-native \
+          cmake -S blindbean-fhe/src/main/native -B build-native \
             -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
             -DCMAKE_BUILD_TYPE=Release \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
@@ -201,7 +201,11 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp target/blindbean-${VERSION}.jar dist/
+          # The library is now several module jars, not one. Attach them all; a consumer picks
+          # the aggregate coordinate or the individual modules (see the release body).
+          find . -path '*/target/blindbean-*-'"${VERSION}"'.jar' \
+                 ! -name '*-sources.jar' ! -name '*-javadoc.jar' \
+                 ! -path '*blindbean-tests*' -exec cp {} dist/ \;
           cp natives/blindbean_fhe-linux-x64/blindbean_fhe.so    dist/blindbean_fhe-linux-x64.so
           cp natives/blindbean_fhe-macos-arm64/blindbean_fhe.dylib dist/blindbean_fhe-macos-arm64.dylib
           cp natives/blindbean_fhe-windows-x64/blindbean_fhe.dll  dist/blindbean_fhe-windows-x64.dll
@@ -218,15 +222,23 @@ jobs:
           body: |
             ## BlindBean v${{ env.VERSION }}
 
+            Classpath — one coordinate pulls the whole library:
+
             ```xml
             <dependency>
               <groupId>se.deversity</groupId>
               <artifactId>blindbean</artifactId>
               <version>${{ env.VERSION }}</version>
+              <type>pom</type>
             </dependency>
             ```
 
-            The jar does **not** bundle the native library. BFV/CKKS need `blindbean_fhe` for your
+            Module path — require the modules you use (import `blindbean-bom` for versions):
+            `se.deversity.blindbean.runtime`, and the `se.deversity.blindbean.processor` on your
+            `--processor-module-path`. Native FFM needs
+            `--enable-native-access=se.deversity.blindbean.fhe`.
+
+            The jars do **not** bundle the native library. BFV/CKKS need `blindbean_fhe` for your
             platform — download it below and point `-Dblindbean.native.path` at the directory
             holding it. Paillier is pure Java and needs nothing.
 

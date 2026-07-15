@@ -37,22 +37,18 @@ jobs:
           distribution: 'oracle'
           cache: maven
 
-      - name: Compile core
-        run: ./mvnw -B -pl . compile test-compile
-        shell: bash
-
-      # Everything that does not need blindbean_fhe.dll — the annotation processor, Paillier,
-      # the key-generation stamp, contexts, rotation, the JUnit extension. This used to run one
-      # test class, so JaCoCo on this platform saw almost nothing and Codecov scored the patch
-      # against a report in which the code had never executed.
-      - name: Run the non-native test suite
-        run: ./mvnw -B -pl . test -DexcludedGroups=native
+      # Build every module and run everything that does not need blindbean_fhe.dll — the annotation
+      # processor, Paillier, the key stamp, contexts, rotation, the JUnit extension. The reactor
+      # resolves modules internally, so no install step is needed; the tests all live in
+      # blindbean-tests, which is where the JaCoCo report lands.
+      - name: Build + run the non-native test suite
+        run: ./mvnw -B test -DexcludedGroups=native
         shell: bash
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
-          files: ./target/site/jacoco/jacoco.xml
+          files: ./blindbean-tests/target/site/jacoco/jacoco.xml
           name: java-fast-gate
           fail_ci_if_error: false
 
@@ -101,7 +97,7 @@ jobs:
       - name: Configure Native Build (CMake + SEAL)
         id: cmake_config
         run: |
-          cmake -S src/main/native -B build-native \
+          cmake -S blindbean-fhe/src/main/native -B build-native \
             -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
             -DCMAKE_BUILD_TYPE=Release \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
@@ -170,9 +166,20 @@ jobs:
           Write-Host "DLL size: $((Get-Item build-native/Release/blindbean_fhe.dll).Length) bytes"
         shell: pwsh
 
-      - name: Install Core Library
+      # Reactor build: compiles all six modules, runs the full test suite (incl. native), and
+      # installs each module to the local repo so the standalone example / load-tests /
+      # module-path checks can resolve them.
+      - name: Build + test all modules
         run: .\mvnw.cmd clean install -B "-Dblindbean.native.path=build-native/Release"
         shell: pwsh
+
+      # The crown jewel of the split: a consumer on the MODULE path, in its own JVM, resolving the
+      # split modules, discovering the processor on the --processor-module-path, and calling native
+      # FFM from the named fhe module. This is the check that fails if a module-info export is wrong.
+      - name: Module-path consumer test
+        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release"
+        shell: pwsh
+        working-directory: module-path-tests
 
       - name: Build and Test Example Application
         run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release"
@@ -203,7 +210,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
-          files: ./target/site/jacoco/jacoco.xml,./blindbean-example/target/site/jacoco/jacoco.xml
+          files: ./blindbean-tests/target/site/jacoco/jacoco.xml,./blindbean-example/target/site/jacoco/jacoco.xml
           name: full-windows
           fail_ci_if_error: false
 
