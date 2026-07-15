@@ -69,10 +69,13 @@ class ModulePathConsumerTest {
      * the {@code --processor-module-path} at compile time. That is exactly what the split is for,
      * and this test documents the new shape rather than hiding it.
      */
+    // The consumer does not touch the Vector API directly — only runtime does, transitively — so it
+    // neither requires jdk.incubator.vector nor compiles with --add-modules for it. Beyond being
+    // correct, this dodges a javac internal NPE ("visiblePackages is null") that fired on the CI
+    // runner when an incubator module met --module-source-path + --processor-module-path.
     private static final String MODULE_INFO = """
         module consumer.app {
             requires se.deversity.blindbean.runtime;
-            requires jdk.incubator.vector;
         }
         """;
 
@@ -171,7 +174,6 @@ class ModulePathConsumerTest {
             bin("javac"),
             "--release", "26",
             "--enable-preview",
-            "--add-modules", "jdk.incubator.vector",
             "--module-path", mp,
             "--processor-module-path", mp,
             "-d", out.toString(),
