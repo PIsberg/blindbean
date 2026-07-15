@@ -169,8 +169,13 @@ jobs:
       # Reactor build: compiles all six modules, runs the full test suite (incl. native), and
       # installs each module to the local repo so the standalone example / load-tests /
       # module-path checks can resolve them.
+      #
+      # No -Dblindbean.native.path here on purpose: surefire forks with the blindbean-tests module
+      # as its cwd, so a RELATIVE path would resolve under that module, not the repo root. The
+      # blindbean-tests pom defaults it to ${project.basedir}/../build-native/Release, which points
+      # at the DLL the download step placed at the repo root.
       - name: Build + test all modules
-        run: .\mvnw.cmd clean install -B "-Dblindbean.native.path=build-native/Release"
+        run: .\mvnw.cmd clean install -B
         shell: pwsh
 
       # The crown jewel of the split: a consumer on the MODULE path, in its own JVM, resolving the
