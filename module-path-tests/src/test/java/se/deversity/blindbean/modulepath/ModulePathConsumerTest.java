@@ -169,7 +169,13 @@ class ModulePathConsumerTest {
         String mp = modules.toAbsolutePath().toString();
 
         // ── compile the consumer as a named module against blindbean on the MODULE path ──
-        // The annotation processor is on the module path too; javac must still find and run it.
+        //
+        // The annotation processor is on the module path too; javac must still find and run it via
+        // the processor's `provides` clause. We compile the single module by listing its sources
+        // explicitly rather than with --module-source-path: on the CI runner's JDK build, the
+        // combination of --module-source-path and --processor-module-path crashes javac with an
+        // internal "visiblePackages is null" NPE (a compiler bug, not our code — it passes on other
+        // 26 builds). The explicit-file form drives the same module resolution without that path.
         Result compiled = run(
             bin("javac"),
             "--release", "26",
@@ -177,8 +183,9 @@ class ModulePathConsumerTest {
             "--module-path", mp,
             "--processor-module-path", mp,
             "-d", out.toString(),
-            "--module-source-path", tmp.resolve("src").toString(),
-            "--module", "consumer.app");
+            src.resolve("module-info.java").toString(),
+            src.resolve("consumer/Account.java").toString(),
+            src.resolve("consumer/Main.java").toString());
 
         assertEquals(0, compiled.exit(),
             "the consumer module failed to compile against blindbean on the module path.\n"
