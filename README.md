@@ -46,24 +46,38 @@ licence on offer today, and this section will say so plainly until there is.
 
 ## Install
 
+BlindBean is a set of JPMS modules. On the **classpath**, one aggregate coordinate pulls the whole
+library:
+
 ```xml
 <dependency>
     <groupId>se.deversity</groupId>
     <artifactId>blindbean</artifactId>
     <version>0.1.0</version>
+    <type>pom</type>
 </dependency>
 ```
 
-The jar does **not** bundle the native library. Paillier is pure Java and works out of the box;
+On the **module path**, depend on the modules you use (import `blindbean-bom` for versions) and add
+`requires`:
+
+```java
+requires se.deversity.blindbean.runtime;   // BlindContext, rotation, Paillier — brings fhe/core/annotations
+// put se.deversity.blindbean.processor on your --processor-module-path (compile time)
+```
+
+Either way the annotation processor is `blindbean-processor`; add it to your compiler's processor
+path. It depends on **nothing but the annotations**, so your compile step never pulls the runtime,
+the native bridge, or the Vector API.
+
+The jars do **not** bundle the native library. Paillier is pure Java and works out of the box;
 BFV/CKKS need `blindbean_fhe` for your platform — take it from the
 [release assets](https://github.com/PIsberg/blindbean/releases) and point
 `-Dblindbean.native.path` at the directory holding it.
 
-Every JVM running BlindBean needs:
-
-```
---enable-preview --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED
-```
+Every JVM running BlindBean needs `--enable-preview --add-modules jdk.incubator.vector`, plus native
+access for BFV/CKKS: `--enable-native-access=ALL-UNNAMED` on the classpath, or
+`--enable-native-access=se.deversity.blindbean.fhe` on the module path.
 
 ## Prerequisites
 
@@ -80,7 +94,7 @@ Only if you are building from source:
 
 ```bash
 # 1. Build the native SEAL-backed DLL
-cmake -S src/main/native -B build-native \
+cmake -S blindbean-fhe/src/main/native -B build-native \
     -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
 cmake --build build-native --config Release
 

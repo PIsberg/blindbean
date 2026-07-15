@@ -59,11 +59,23 @@ class ModulePathConsumerTest {
         assumeTrue(Files.isDirectory(modules), "module path not laid out: " + modules);
     }
 
-    /** The consumer: its own named module, requiring blindbean across a real module boundary. */
+    /**
+     * The consumer: its own named module, requiring blindbean across real module boundaries.
+     *
+     * <p>This is the one genuine consumer-facing change the split introduces. Before, a single
+     * {@code requires se.deversity.blindbean} pulled everything. Now a module-path consumer names
+     * the modules it uses — {@code runtime} for {@code BlindContext}/rotation (which brings
+     * {@code fhe}, {@code core}, {@code annotations} transitively), and the {@code processor} on
+     * the {@code --processor-module-path} at compile time. That is exactly what the split is for,
+     * and this test documents the new shape rather than hiding it.
+     */
+    // The consumer does not touch the Vector API directly — only runtime does, transitively — so it
+    // neither requires jdk.incubator.vector nor compiles with --add-modules for it. Beyond being
+    // correct, this dodges a javac internal NPE ("visiblePackages is null") that fired on the CI
+    // runner when an incubator module met --module-source-path + --processor-module-path.
     private static final String MODULE_INFO = """
         module consumer.app {
-            requires se.deversity.blindbean;
-            requires jdk.incubator.vector;
+            requires se.deversity.blindbean.runtime;
         }
         """;
 
@@ -157,17 +169,23 @@ class ModulePathConsumerTest {
         String mp = modules.toAbsolutePath().toString();
 
         // ── compile the consumer as a named module against blindbean on the MODULE path ──
-        // The annotation processor is on the module path too; javac must still find and run it.
+        //
+        // The annotation processor is on the module path too; javac must still find and run it via
+        // the processor's `provides` clause. We compile the single module by listing its sources
+        // explicitly rather than with --module-source-path: on the CI runner's JDK build, the
+        // combination of --module-source-path and --processor-module-path crashes javac with an
+        // internal "visiblePackages is null" NPE (a compiler bug, not our code — it passes on other
+        // 26 builds). The explicit-file form drives the same module resolution without that path.
         Result compiled = run(
             bin("javac"),
             "--release", "26",
             "--enable-preview",
-            "--add-modules", "jdk.incubator.vector",
             "--module-path", mp,
             "--processor-module-path", mp,
             "-d", out.toString(),
-            "--module-source-path", tmp.resolve("src").toString(),
-            "--module", "consumer.app");
+            src.resolve("module-info.java").toString(),
+            src.resolve("consumer/Account.java").toString(),
+            src.resolve("consumer/Main.java").toString());
 
         assertEquals(0, compiled.exit(),
             "the consumer module failed to compile against blindbean on the module path.\n"
@@ -179,7 +197,7 @@ class ModulePathConsumerTest {
             bin("java"),
             "--enable-preview",
             "--add-modules", "jdk.incubator.vector",
-            "--enable-native-access=consumer.app,se.deversity.blindbean",
+            "--enable-native-access=se.deversity.blindbean.fhe",
             "-Dblindbean.native.path=" + System.getProperty("blindbean.native.path", "../build-native/Release"),
             "--module-path", out + java.io.File.pathSeparator + mp,
             "--module", "consumer.app/consumer.Main",

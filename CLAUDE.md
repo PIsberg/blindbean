@@ -11,8 +11,8 @@ BlindBean is a Java 26 library that hides Homomorphic Encryption behind annotati
 Requires **JDK 26-ea** with `--enable-preview` and `--add-modules jdk.incubator.vector`. The native DLL must be built before the Java tests that exercise FHE will pass.
 
 ```bash
-# 1. Build native SEAL bridge (one-time / when src/main/native changes)
-cmake -S src/main/native -B build-native \
+# 1. Build native SEAL bridge (one-time / when blindbean-fhe/src/main/native changes)
+cmake -S blindbean-fhe/src/main/native -B build-native \
     -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake \
     -DVCPKG_TARGET_TRIPLET=x64-windows-static
 cmake --build build-native --config Release
@@ -38,6 +38,37 @@ The `blindbean-example` module is a separate Maven project demonstrating consume
 
 Tests that touch BFV/CKKS need the native library; pure-Paillier, processor and JUnit-extension tests do not. Consumer-style tests should use `@BlindBeanTest` (below) rather than hand-rolling context setup.
 
+## Module layout (JPMS reactor)
+
+The build is a Maven reactor of six library modules, each a real named module with a
+`module-info.java`, plus a BOM and a thin aggregate:
+
+| Maven artifact | JPMS module | packages | requires |
+|---|---|---|---|
+| `blindbean-annotations` | `se.deversity.blindbean.annotations` | annotations | — |
+| `blindbean-core` | `se.deversity.blindbean.core` | core | annotations |
+| `blindbean-fhe` | `se.deversity.blindbean.fhe` | fhe (+ native under `src/main/native`) | core |
+| `blindbean-runtime` | `se.deversity.blindbean.runtime` | math, context, async | fhe, `jdk.incubator.vector` |
+| `blindbean-processor` | `se.deversity.blindbean.processor` | processor | annotations only; `provides` Processor |
+| `blindbean-junit` | `se.deversity.blindbean.junit` | junit | runtime, junit-api |
+| `blindbean` (pom) | — | — | aggregate; keeps the classpath coordinate |
+| `blindbean-bom` (pom) | — | — | version management |
+
+- **`math`, `context`, `async` ship together as `-runtime`** because `BlindMath` (in `math`) dispatches
+  into `context`, and `context` uses the Paillier types back — a cycle a module boundary cannot cut,
+  and `BlindMath`'s package cannot move (public API + guardrail). Do not try to separate them.
+- **`processor` depends only on `annotations`** — it emits runtime calls as text. Keep it that way:
+  a consumer's compile path must not pull the runtime, native, or the Vector API.
+- **All tests live in `blindbean-tests`** (classpath, depends on everything). New tests go there, not
+  in the library modules — most are integration tests that cross module boundaries.
+- **A module-path consumer** (see `module-path-tests`) `requires se.deversity.blindbean.runtime`, puts
+  `blindbean-processor` on the `--processor-module-path`, and needs
+  `--enable-native-access=se.deversity.blindbean.fhe` for BFV/CKKS. Classpath consumers use the
+  `blindbean` aggregate (`<type>pom</type>`). That test is the guard against a wrong `exports`.
+- The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retention). The vibetags
+  guardrail *generator* is **not** run in the reactor (per-module it fragments `GEMINI.md`), so the
+  committed `GEMINI.md`/`CLAUDE.md` guardrail blocks are now hand-maintained until regenerated once.
+
 ## Architecture (three layers)
 
 1. **Developer layer — `se.deversity.blindbean.annotations` + `se.deversity.blindbean.processor.HomomorphicProcessor`.** An annotation processor (registered via AutoService) runs at compile time, reads `@BlindEntity` / `@Homomorphic` classes, resolves the `type()` TypeMirror (e.g. `String.class`, `long[].class`, `boolean.class`), and generates `<Entity>BlindWrapper` source files. Proxies are **source-generated, not reflective** — do not add runtime reflection or bytecode weaving. The processor must also enforce algebraic boundaries: math operations (`add*`/`multiply*`) are omitted for String / boolean fields because they would corrupt the encoded value.
@@ -46,7 +77,7 @@ Tests that touch BFV/CKKS need the native library; pure-Paillier, processor and 
 
 3. **Test-support layer — `se.deversity.blindbean.junit`.** `@BlindBeanTest` (class-level) + `BlindBeanExtension` manage the `BlindContext` lifecycle per test method: `init()` before each test, `clear()` after, with `scheme` / `polyModulusDegree` / `ckksScale` attributes additionally booting the native BFV or CKKS context. The extension walks parent contexts so `@Nested` classes inherit the enclosing annotation, and `@ExtendWith(BlindBeanExtension.class)` alone behaves like the Paillier defaults. This ships in the **main** jar (that is why `junit-jupiter-api` is scope `provided`, not `test`) so consumers get it with the library. Prefer it over hand-rolled `@BeforeEach`/`@AfterEach` context wiring, in this repo's tests and in the example module.
 
-4. **Native layer — `src/main/native/blindbean_fhe.{h,cpp}`.** Single DLL (`blindbean_fhe.dll`) built statically against SEAL + CRT (`x64-windows-static` triplet) so deployment needs no extra runtime. All exported symbols use `extern "C"` and `__declspec(dllexport)` on Windows. State lives in a `BlindBeanContext` struct on the C++ heap; Java never sees SEAL types directly. BFV auto-relinearizes after multiply; CKKS auto-relinearizes and rescales. Parameters target 128-bit security per the HomomorphicEncryption.org standard — **do not lower poly modulus degree below 8192 or weaken coeff modulus without an explicit request**.
+4. **Native layer — `blindbean-fhe/src/main/native/blindbean_fhe.{h,cpp}`.** Single DLL (`blindbean_fhe.dll`) built statically against SEAL + CRT (`x64-windows-static` triplet) so deployment needs no extra runtime. All exported symbols use `extern "C"` and `__declspec(dllexport)` on Windows. State lives in a `BlindBeanContext` struct on the C++ heap; Java never sees SEAL types directly. BFV auto-relinearizes after multiply; CKKS auto-relinearizes and rescales. Parameters target 128-bit security per the HomomorphicEncryption.org standard — **do not lower poly modulus degree below 8192 or weaken coeff modulus without an explicit request**.
 
 ## Runtime flags
 
@@ -64,7 +95,7 @@ The native library location is controlled by the `blindbean.native.path` system 
 
 ## CI
 
-GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (everything that does not need the DLL), a native build matrix on Linux/macOS/Windows publishing the shared library as an artifact, and the full Maven test suite on Windows against the published `blindbean_fhe.dll`. Changes touching `src/main/native/**` require the native matrix to stay green before the Windows test job can consume the artifact.
+GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (everything that does not need the DLL), a native build matrix on Linux/macOS/Windows publishing the shared library as an artifact, and the full Maven test suite on Windows against the published `blindbean_fhe.dll`. Changes touching `blindbean-fhe/src/main/native/**` require the native matrix to stay green before the Windows test job can consume the artifact.
 
 **Tests that need the DLL carry `@Tag("native")`.** The fast gate runs `-DexcludedGroups=native`; a local or Windows run leaves `excludedGroups` empty and executes everything. If you add a test that boots a BFV/CKKS context, tag it — an untagged one breaks the Linux gate. Tag the `@Nested` class, not the outer one, when only part of a suite needs native (see `BlindMathTest`, `BlindBeanExtensionTest`).
 

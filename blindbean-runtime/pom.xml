@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>se.deversity</groupId>
+        <artifactId>blindbean-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>blindbean-runtime</artifactId>
+    <name>BlindBean Runtime</name>
+    <description>The runtime a consumer actually calls: BlindContext, BlindRotation, KeyBundle, the
+        pure-Java Paillier (Vector API), the BlindMath dispatcher, and BlindAsync. The math and
+        context packages ship together because the BlindMath dispatcher makes them mutually
+        dependent — a genuine cycle that a module boundary cannot cut.</description>
+    <url>https://github.com/PIsberg/blindbean</url>
+    <licenses><license><name>PolyForm Noncommercial License 1.0.0</name><url>https://polyformproject.org/licenses/noncommercial/1.0.0/</url></license></licenses>
+    <developers><developer><id>PIsberg</id><name>Peter Isberg</name></developer></developers>
+    <scm><url>https://github.com/PIsberg/blindbean</url></scm>
+
+    <dependencies>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-fhe</artifactId></dependency>
+    </dependencies>
+</project>

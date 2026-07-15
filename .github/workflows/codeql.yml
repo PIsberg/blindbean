@@ -75,7 +75,7 @@ jobs:
       - name: Manual Build (CPP)
         if: matrix.language == 'cpp'
         run: |
-          cmake -S src/main/native -B build-native \
+          cmake -S blindbean-fhe/src/main/native -B build-native \
             -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build-native --config Release

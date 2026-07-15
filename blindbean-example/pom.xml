@@ -32,6 +32,7 @@
             <groupId>se.deversity</groupId>
             <artifactId>blindbean</artifactId>
             <version>0.1.0</version>
+            <type>pom</type>
         </dependency>
 
         <!-- VibeTags AI Guardrail Annotations -->
@@ -68,7 +69,7 @@
                     <annotationProcessorPaths>
                         <path>
                             <groupId>se.deversity</groupId>
-                            <artifactId>blindbean</artifactId>
+                            <artifactId>blindbean-processor</artifactId>
                             <version>0.1.0</version>
                         </path>
                         <path>
