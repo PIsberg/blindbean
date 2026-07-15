@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>se.deversity</groupId>
+        <artifactId>blindbean-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>blindbean-core</artifactId>
+    <name>BlindBean Core</name>
+    <description>The portable domain model: Ciphertext, the KeyTag that binds a ciphertext to its
+        key generation, and WrongKeyException. No cryptography, no native code.</description>
+    <url>https://github.com/PIsberg/blindbean</url>
+    <licenses><license><name>PolyForm Noncommercial License 1.0.0</name><url>https://polyformproject.org/licenses/noncommercial/1.0.0/</url></license></licenses>
+    <developers><developer><id>PIsberg</id><name>Peter Isberg</name></developer></developers>
+    <scm><url>https://github.com/PIsberg/blindbean</url></scm>
+
+    <dependencies>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-annotations</artifactId></dependency>
+    </dependencies>
+</project>

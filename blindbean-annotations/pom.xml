@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>se.deversity</groupId>
+        <artifactId>blindbean-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>blindbean-annotations</artifactId>
+    <name>BlindBean Annotations</name>
+    <description>@BlindEntity, @Homomorphic, @BlindNested, Scheme — the marker types a consumer puts
+        on a field. Zero dependencies, so the compile-time processor path pulls almost nothing.</description>
+    <url>https://github.com/PIsberg/blindbean</url>
+    <licenses><license><name>PolyForm Noncommercial License 1.0.0</name><url>https://polyformproject.org/licenses/noncommercial/1.0.0/</url></license></licenses>
+    <developers><developer><id>PIsberg</id><name>Peter Isberg</name></developer></developers>
+    <scm><url>https://github.com/PIsberg/blindbean</url></scm>
+</project>

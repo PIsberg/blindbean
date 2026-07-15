@@ -5,17 +5,37 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>se.deversity</groupId>
-    <artifactId>blindbean</artifactId>
+    <artifactId>blindbean-parent</artifactId>
     <version>0.1.0</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <!-- name/description/url/licenses/developers/scm are all MANDATORY for Maven Central;
-         a release fails validation without them. -->
-    <name>BlindBean</name>
-    <description>Homomorphic encryption behind annotations. Mark a field @Homomorphic and operate
-        on the encrypted value through a generated wrapper. Paillier in pure Java (Vector API);
-        BFV/CKKS bridged to Microsoft SEAL over Project Panama FFM.</description>
+    <name>BlindBean (parent)</name>
+    <description>Reactor parent for the BlindBean modules. Homomorphic encryption behind annotations:
+        mark a field @Homomorphic and operate on the encrypted value through a generated wrapper.
+        Split into modules so a consumer pulls only what it uses — the annotation processor needs
+        only the annotations, and the SEAL native bridge and the Vector API are isolated in their
+        own modules.</description>
     <url>https://github.com/PIsberg/blindbean</url>
+
+    <!--
+      Module order is resolved by Maven from the dependency graph, but listed here bottom-up so a
+      reader sees the layering:
+        annotations ─ core ─ fhe ─┐
+                                  runtime (math + context + async; Vector API)
+        processor (annotations only)   junit (runtime)   tests (everything, classpath)
+      blindbean is a thin aggregator that keeps the se.deversity:blindbean coordinate working.
+    -->
+    <modules>
+        <module>blindbean-bom</module>
+        <module>blindbean-annotations</module>
+        <module>blindbean-core</module>
+        <module>blindbean-fhe</module>
+        <module>blindbean-runtime</module>
+        <module>blindbean-processor</module>
+        <module>blindbean-junit</module>
+        <module>blindbean</module>
+        <module>blindbean-tests</module>
+    </modules>
 
     <licenses>
         <license>
@@ -46,18 +66,31 @@
         <maven.compiler.source>26</maven.compiler.source>
         <maven.compiler.target>26</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jmh.version>1.37</jmh.version>
-        <license.mock.mode>true</license.mock.mode>
-        <!-- Overridden to "native" on the DLL-less Linux/macOS gate. -->
-        <excludedGroups></excludedGroups>
+        <junit.version>6.1.2</junit.version>
+        <vibetags.version>1.0.0-RC2</vibetags.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Our own module versions live in one place, imported by everything. -->
+            <dependency>
+                <groupId>se.deversity</groupId>
+                <artifactId>blindbean-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>se.deversity.vibetags</groupId>
                 <artifactId>vibetags-bom</artifactId>
-                <version>1.0.0-RC2</version>
+                <version>${vibetags.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -65,251 +98,154 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- AutoService for Annotation Processor -->
-        <dependency>
-            <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>1.1.1</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- JMH for Benchmarks -->
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>${jmh.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- JUnit for Unit Testing. Scope is provided (not test) because
-             se.deversity.blindbean.junit ships a JUnit 5 extension in the main jar;
-             consumers bring their own JUnit at runtime. -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>6.1.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>6.1.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- async-test-lib: concurrent stress testing with @AsyncTest -->
-        <dependency>
-            <groupId>se.deversity.async-test-lib</groupId>
-            <artifactId>async-test-lib</artifactId>
-            <version>1.7.0-RC2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- VibeTags AI Guardrail Annotations -->
+        <!--
+          The @AI* guardrail annotations are SOURCE-retention: needed to compile, gone at runtime,
+          read by nobody. So `provided` here (compile-only) matches `requires static` in every
+          module-info. The guardrail GENERATOR (vibetags-processor) is deliberately NOT run in the
+          reactor — per-module it would fragment the generated GEMINI.md; the committed copy stands.
+        -->
         <dependency>
             <groupId>se.deversity.vibetags</groupId>
             <artifactId>vibetags-annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.15.0</version>
+                    <configuration>
+                        <source>26</source>
+                        <target>26</target>
+                        <compilerArgs>
+                            <arg>--enable-preview</arg>
+                            <arg>--add-modules</arg>
+                            <arg>jdk.incubator.vector</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.6</version>
+                    <configuration>
+                        <argLine>
+                            @{argLine}
+                            --enable-preview
+                            --add-modules jdk.incubator.vector
+                            --enable-native-access=ALL-UNNAMED
+                        </argLine>
+                        <systemPropertyVariables>
+                            <license.mock.mode>true</license.mock.mode>
+                        </systemPropertyVariables>
+                        <!-- native tests skipped on the DLL-less Linux/macOS gate via -DexcludedGroups=native -->
+                        <excludedGroups>${excludedGroups}</excludedGroups>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.15</version>
+                    <executions>
+                        <execution>
+                            <goals><goal>prepare-agent</goal></goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>test</phase>
+                            <goals><goal>report</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
-            <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
-                <configuration>
-                    <source>26</source>
-                    <target>26</target>
-                    <compilerArgs>
-                        <arg>--enable-preview</arg>
-                        <arg>--add-modules</arg>
-                        <arg>jdk.incubator.vector</arg>
-                    </compilerArgs>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>com.google.auto.service</groupId>
-                            <artifactId>auto-service</artifactId>
-                            <version>1.1.1</version>
-                        </path>
-                        <path>
-                            <groupId>se.deversity.vibetags</groupId>
-                            <artifactId>vibetags-processor</artifactId>
-                            <version>1.0.0-RC2</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
-            <!-- Surefire plugin -->
-            <!--
-              Without this the jar is an automatic module whose NAME IS DERIVED FROM THE FILENAME
-              ("blindbean-0.1.0.jar" -> "blindbean"). Any consumer that writes `requires` against it
-              is pinned to our file naming, which is why Maven Central warns about it — and it is why
-              a module-path consumer could not `requires se.deversity.blindbean` at all.
-
-              Declaring the name makes it stable, and makes it the SAME name the real module-info
-              will carry after modularisation, so nothing downstream has to change twice.
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Automatic-Module-Name>se.deversity.blindbean</Automatic-Module-Name>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.6</version>
-                <configuration>
-                    <argLine>
-                        @{argLine}
-                        --enable-preview
-                        --add-modules jdk.incubator.vector
-                        --enable-native-access=ALL-UNNAMED
-                    </argLine>
-                    <systemPropertyVariables>
-                        <!-- lib owner: async-test-lib license gate runs in auto-mocked mode by default -->
-                        <license.mock.mode>${license.mock.mode}</license.mock.mode>
-                    </systemPropertyVariables>
-                    <!--
-                      Tests tagged "native" need blindbean_fhe.dll. The Linux/macOS gate has no
-                      DLL, so it runs with -DexcludedGroups=native and everything else still
-                      executes — which is the point: those platforms used to run a single test
-                      class, so JaCoCo saw almost nothing and Codecov judged the whole patch on
-                      a report where the code had never run.
-                      Empty by default, so a full local/Windows run executes the native tests too.
-                    -->
-                    <excludedGroups>${excludedGroups}</excludedGroups>
-                </configuration>
-            </plugin>
-
-            <!-- JaCoCo for Test Coverage -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.15</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/sun/tools/javac/**</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
         <!--
-          Release to Maven Central. Kept in a profile so an ordinary `mvn install` never tries to
-          sign anything (GPG would prompt or fail on a machine with no key) and never contacts
-          Sonatype. Activated only by the release workflow: `mvn -Prelease deploy`.
-
-          Central requires, per artifact: a signed jar, a signed -sources jar, a signed -javadoc
-          jar, and the POM metadata above. A missing javadoc jar is the usual cause of a release
-          that uploads and then silently fails validation.
+          Release to Maven Central. Off by default so `mvn install` never signs or contacts
+          Sonatype. Activated by the release workflow (`mvn -Prelease deploy`). Each publishable
+          module inherits source/javadoc/gpg; the aggregator and the test-only modules opt out.
         -->
         <profile>
             <id>release</id>
             <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-source-plugin</artifactId>
+                            <version>3.3.1</version>
+                            <executions>
+                                <execution>
+                                    <id>attach-sources</id>
+                                    <goals><goal>jar-no-fork</goal></goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <version>3.11.2</version>
+                            <executions>
+                                <execution>
+                                    <id>attach-javadocs</id>
+                                    <goals><goal>jar</goal></goals>
+                                </execution>
+                            </executions>
+                            <configuration>
+                                <release>26</release>
+                                <additionalJOptions>
+                                    <additionalJOption>--enable-preview</additionalJOption>
+                                    <additionalJOption>--add-modules</additionalJOption>
+                                    <additionalJOption>jdk.incubator.vector</additionalJOption>
+                                </additionalJOptions>
+                                <doclint>none</doclint>
+                                <quiet>true</quiet>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-gpg-plugin</artifactId>
+                            <version>3.2.7</version>
+                            <executions>
+                                <execution>
+                                    <id>sign-artifacts</id>
+                                    <phase>verify</phase>
+                                    <goals><goal>sign</goal></goals>
+                                    <configuration>
+                                        <gpgArguments>
+                                            <arg>--pinentry-mode</arg>
+                                            <arg>loopback</arg>
+                                        </gpgArguments>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals><goal>jar-no-fork</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.2</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals><goal>jar</goal></goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <release>26</release>
-                            <!-- The codebase uses preview features; javadoc must be told, or it
-                                 refuses to parse the sources it is documenting. -->
-                            <additionalJOptions>
-                                <additionalJOption>--enable-preview</additionalJOption>
-                                <additionalJOption>--add-modules</additionalJOption>
-                                <additionalJOption>jdk.incubator.vector</additionalJOption>
-                            </additionalJOptions>
-                            <!-- Do not fail a release on a missing @param. -->
-                            <doclint>none</doclint>
-                            <quiet>true</quiet>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals><goal>sign</goal></goals>
-                                <configuration>
-                                    <!-- Non-interactive: the passphrase comes from the
-                                         MAVEN_GPG_PASSPHRASE env var, never a TTY prompt. -->
-                                    <gpgArguments>
-                                        <arg>--pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
+                    <!-- Central publishing runs once, at the reactor root, for all modules. -->
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
                         <version>0.7.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <!-- Matches the <server> id the workflow writes into settings.xml. -->
                             <publishingServerId>central</publishingServerId>
-                            <!-- Upload and stop. A human presses Publish on central.sonatype.com.
-                                 A Central release is IRREVERSIBLE — a version can never be
-                                 replaced or withdrawn — so the first one should not be automatic.
-                                 Flip to true once you trust the pipeline. -->
                             <autoPublish>false</autoPublish>
                             <waitUntil>validated</waitUntil>
                         </configuration>

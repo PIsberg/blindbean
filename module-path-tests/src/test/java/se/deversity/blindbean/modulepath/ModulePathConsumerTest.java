@@ -59,10 +59,19 @@ class ModulePathConsumerTest {
         assumeTrue(Files.isDirectory(modules), "module path not laid out: " + modules);
     }
 
-    /** The consumer: its own named module, requiring blindbean across a real module boundary. */
+    /**
+     * The consumer: its own named module, requiring blindbean across real module boundaries.
+     *
+     * <p>This is the one genuine consumer-facing change the split introduces. Before, a single
+     * {@code requires se.deversity.blindbean} pulled everything. Now a module-path consumer names
+     * the modules it uses — {@code runtime} for {@code BlindContext}/rotation (which brings
+     * {@code fhe}, {@code core}, {@code annotations} transitively), and the {@code processor} on
+     * the {@code --processor-module-path} at compile time. That is exactly what the split is for,
+     * and this test documents the new shape rather than hiding it.
+     */
     private static final String MODULE_INFO = """
         module consumer.app {
-            requires se.deversity.blindbean;
+            requires se.deversity.blindbean.runtime;
             requires jdk.incubator.vector;
         }
         """;
@@ -179,7 +188,7 @@ class ModulePathConsumerTest {
             bin("java"),
             "--enable-preview",
             "--add-modules", "jdk.incubator.vector",
-            "--enable-native-access=consumer.app,se.deversity.blindbean",
+            "--enable-native-access=se.deversity.blindbean.fhe",
             "-Dblindbean.native.path=" + System.getProperty("blindbean.native.path", "../build-native/Release"),
             "--module-path", out + java.io.File.pathSeparator + mp,
             "--module", "consumer.app/consumer.Main",

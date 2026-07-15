@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>se.deversity</groupId>
+        <artifactId>blindbean-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <!--
+      Every existing test lives here, unchanged, on the CLASSPATH — which is exactly how they ran
+      before the split. Almost all of them are integration tests that cross module boundaries
+      (a core test that uses PaillierMath, an fhe test that boots a BlindContext), so placing each
+      in its "owning" module would force the low modules to depend on the high ones in test scope.
+      One test module that sees the whole library is the honest home for them.
+
+      This module is never published (see skip config below); it exists only to run the suite.
+    -->
+    <artifactId>blindbean-tests</artifactId>
+    <name>BlindBean Tests</name>
+    <description>Integration test suite for the BlindBean modules (not published).</description>
+
+    <properties>
+        <blindbean.native.path>${project.basedir}/../build-native/Release</blindbean.native.path>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
+
+    <dependencies>
+        <!-- the whole library, on the classpath -->
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-annotations</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-core</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-fhe</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-runtime</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-junit</artifactId></dependency>
+
+        <!-- the processor runs against these tests' @BlindEntity classes at compile time -->
+        <dependency>
+            <groupId>se.deversity</groupId>
+            <artifactId>blindbean-processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>se.deversity.async-test-lib</groupId>
+            <artifactId>async-test-lib</artifactId>
+            <version>1.7.0-RC2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>26</source>
+                    <target>26</target>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                        <arg>--add-modules</arg>
+                        <arg>jdk.incubator.vector</arg>
+                    </compilerArgs>
+                    <!-- the BlindBean processor + JMH's, both on the test compile path -->
+                    <annotationProcessorPaths>
+                        <path><groupId>se.deversity</groupId><artifactId>blindbean-processor</artifactId><version>${project.version}</version></path>
+                        <path><groupId>org.openjdk.jmh</groupId><artifactId>jmh-generator-annprocess</artifactId><version>1.37</version></path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <blindbean.native.path>${blindbean.native.path}</blindbean.native.path>
+                        <license.mock.mode>true</license.mock.mode>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <!--
+              Must be declared here, not just in the parent's pluginManagement: prepare-agent is
+              what defines the `argLine` property the surefire config expands as @{argLine}. Without
+              it running, `@{argLine}` reaches java verbatim and the fork dies on startup.
+              This is also the module where coverage is actually collected — the library modules
+              have no tests of their own.
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

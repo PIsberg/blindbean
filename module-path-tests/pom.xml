@@ -29,9 +29,21 @@
     </properties>
 
     <dependencies>
+        <!--
+          A real module-path consumer depends on the specific modules it uses, not the aggregate
+          pom. runtime brings fhe/core/annotations transitively; the processor is compile-time and
+          goes on the processor module path.
+        -->
         <dependency>
             <groupId>se.deversity</groupId>
-            <artifactId>blindbean</artifactId>
+            <artifactId>blindbean-runtime</artifactId>
+            <version>${blindbean.version}</version>
+        </dependency>
+        <!-- compile scope (not provided) purely so copy-dependencies lays it into the module
+             directory the test hands to the compiler as the processor module path. -->
+        <dependency>
+            <groupId>se.deversity</groupId>
+            <artifactId>blindbean-processor</artifactId>
             <version>${blindbean.version}</version>
         </dependency>
         <dependency>

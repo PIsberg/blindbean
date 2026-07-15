@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>se.deversity</groupId>
+        <artifactId>blindbean-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <!--
+      Keeps the se.deversity:blindbean coordinate working for CLASSPATH consumers: one dependency
+      still pulls the whole library. It carries no code of its own.
+
+      Module-path consumers do NOT use this — an aggregator has no exports. They `requires` the
+      specific modules they use, or import blindbean-bom. There is deliberately no single module
+      that re-exports everything; that is the point of the split.
+    -->
+    <artifactId>blindbean</artifactId>
+    <packaging>pom</packaging>
+    <name>BlindBean (aggregate)</name>
+    <description>Convenience aggregate: depend on this to get the whole library on the classpath.
+        On the module path, require the individual modules or import blindbean-bom.</description>
+    <url>https://github.com/PIsberg/blindbean</url>
+    <licenses><license><name>PolyForm Noncommercial License 1.0.0</name><url>https://polyformproject.org/licenses/noncommercial/1.0.0/</url></license></licenses>
+    <developers><developer><id>PIsberg</id><name>Peter Isberg</name></developer></developers>
+    <scm><url>https://github.com/PIsberg/blindbean</url></scm>
+
+    <dependencies>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-annotations</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-core</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-fhe</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-runtime</artifactId></dependency>
+        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-junit</artifactId></dependency>
+        <!-- processor is compile-time; consumers add it to their processor path, not runtime cp,
+             so it is intentionally NOT a transitive runtime dep of the aggregate. -->
+    </dependencies>
+</project>
