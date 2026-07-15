@@ -7,7 +7,14 @@ for it (same arrangement as `vibetags/load-tests`).
 |---|---|---|
 | Crypto metrics | `CryptoMetricsTest` | Ciphertext expansion, noise budget → multiplicative depth, CKKS precision decay, batching amortisation, keygen cost by modulus size |
 | Concurrency & leaks | `ConcurrentCryptoStressTest` | Thread-local key isolation under 32 virtual threads, foreign-key rejection under load, native-handle lifecycle over thousands of ops |
+| Resource usage | `ResourceUsageTest` | Process **CPU per op**, cores utilised (CPU-time ÷ wall-time), heap **allocation per op**, and peak heap for a representative Paillier and BFV round-trip |
 | Hot-path microbenchmarks | `CryptoHotPathBenchmark` (JMH) | Per-operation cost of encrypt/decrypt/add/multiply across Paillier, BFV and CKKS, plus batched ops |
+
+Resource usage is measured with process CPU time and thread-allocation counters rather than wall
+clock, because both are **runner-independent**: a busy CI box inflates wall time but not the
+CPU-nanoseconds of real work, and bytes-allocated is deterministic. So a feature that quietly doubles
+the work or the garbage shows up as a CPU-per-op or KB-per-op jump in `target/resource-usage.txt` —
+the thing you diff to confirm a new feature carries no negative trend.
 
 Throughput alone tells you almost nothing about a homomorphic library. The numbers that decide
 whether a design is *viable* are cryptographic: how much your data swells, and how many operations
@@ -62,6 +69,15 @@ It is a gate, not a benchmark — timings on a shared runner are noise, so it as
   for the very reason the chart below explains.
 
 The full sweep — the figures and charts here — is a local or release-time run.
+
+## What 0.2.0 changed
+
+Encryption of **wide plaintexts** (a `String`, `byte[]`, or large `BigInteger`/`BigDecimal` field)
+got **~2.2× faster** by dropping the `g^m` modular exponentiation — with `g = n+1` it is just
+`1 + m·n mod n²`. Small-integer fields are unchanged (their `g^m` was already free). Ciphertexts are
+byte-for-byte identical. Full write-up and the CPU-time before/after in
+[`results/0.2.0/`](results/0.2.0/paillier-encrypt-optimization.md); a new `paillierEncryptLarge` JMH
+benchmark prices the wide-plaintext path the small-int `paillierEncrypt` never exercised.
 
 ## What 0.1.0 says — and what you should do about it
 

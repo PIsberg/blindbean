@@ -48,10 +48,24 @@ public class PaillierMath {
             r = new BigInteger(keyPair.getN().bitLength(), random);
         } while (r.compareTo(keyPair.getN()) >= 0 || r.compareTo(BigInteger.ZERO) <= 0);
 
-        // c = g^m * r^n mod n^2
-        BigInteger gm = keyPair.getG().modPow(m, keyPair.getN2());
-        BigInteger rn = r.modPow(keyPair.getN(), keyPair.getN2());
-        BigInteger c = gm.multiply(rn).mod(keyPair.getN2());
+        // c = g^m * r^n mod n^2.
+        //
+        // With g = n+1 (see PaillierKeyPair) the g^m term needs no modPow at all: by the
+        // binomial theorem (1+n)^m = 1 + m*n + C(m,2)n^2 + ... and every term from k>=2
+        // carries an n^2 factor, so modulo n^2 it collapses to (1 + m*n). That identity holds
+        // for EVERY integer m — negative m included, since (1+m*n) mod n^2 is periodic in m
+        // with period n exactly as g^m is — so one multiply-add-reduce replaces a full modular
+        // exponentiation over a 2n-bit modulus. Encryption previously paid two modPows of
+        // roughly equal cost; this removes one of them.
+        //
+        // Only the g^m term is affected. The random blinding r^n — the part that provides
+        // Paillier's semantic security — keeps its modPow untouched, and the resulting c is the
+        // identical value, so ciphertexts stay byte-for-byte compatible with the old path.
+        BigInteger n = keyPair.getN();
+        BigInteger n2 = keyPair.getN2();
+        BigInteger gm = m.multiply(n).add(BigInteger.ONE).mod(n2);
+        BigInteger rn = r.modPow(n, n2);
+        BigInteger c = gm.multiply(rn).mod(n2);
 
         return Ciphertext.fromBytes(KeyTag.wrap(keyTag, c.toByteArray()), Scheme.PAILLIER);
     }
