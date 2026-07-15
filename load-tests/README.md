@@ -7,7 +7,14 @@ for it (same arrangement as `vibetags/load-tests`).
 |---|---|---|
 | Crypto metrics | `CryptoMetricsTest` | Ciphertext expansion, noise budget → multiplicative depth, CKKS precision decay, batching amortisation, keygen cost by modulus size |
 | Concurrency & leaks | `ConcurrentCryptoStressTest` | Thread-local key isolation under 32 virtual threads, foreign-key rejection under load, native-handle lifecycle over thousands of ops |
+| Resource usage | `ResourceUsageTest` | Process **CPU per op**, cores utilised (CPU-time ÷ wall-time), heap **allocation per op**, and peak heap for a representative Paillier and BFV round-trip |
 | Hot-path microbenchmarks | `CryptoHotPathBenchmark` (JMH) | Per-operation cost of encrypt/decrypt/add/multiply across Paillier, BFV and CKKS, plus batched ops |
+
+Resource usage is measured with process CPU time and thread-allocation counters rather than wall
+clock, because both are **runner-independent**: a busy CI box inflates wall time but not the
+CPU-nanoseconds of real work, and bytes-allocated is deterministic. So a feature that quietly doubles
+the work or the garbage shows up as a CPU-per-op or KB-per-op jump in `target/resource-usage.txt` —
+the thing you diff to confirm a new feature carries no negative trend.
 
 Throughput alone tells you almost nothing about a homomorphic library. The numbers that decide
 whether a design is *viable* are cryptographic: how much your data swells, and how many operations
