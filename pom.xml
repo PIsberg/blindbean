@@ -149,6 +149,28 @@
             </plugin>
 
             <!-- Surefire plugin -->
+            <!--
+              Without this the jar is an automatic module whose NAME IS DERIVED FROM THE FILENAME
+              ("blindbean-0.1.0.jar" -> "blindbean"). Any consumer that writes `requires` against it
+              is pinned to our file naming, which is why Maven Central warns about it — and it is why
+              a module-path consumer could not `requires se.deversity.blindbean` at all.
+
+              Declaring the name makes it stable, and makes it the SAME name the real module-info
+              will carry after modularisation, so nothing downstream has to change twice.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>se.deversity.blindbean</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
