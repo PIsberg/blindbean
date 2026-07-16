@@ -6,6 +6,7 @@ import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
 import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISandboxOnly;
 import se.deversity.vibetags.annotations.AISchemaSafe;
 
 /**
@@ -21,6 +22,7 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
 @AIPrivacy(reason = "Holds an order total as ciphertext and owns an account whose balance is "
                   + "encrypted — never log decrypted values")
 @AISchemaSafe
+@AISandboxOnly(reason = "Demo fixture for the example walkthrough — production code must never import or copy it")
 public class Order {
 
     @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)

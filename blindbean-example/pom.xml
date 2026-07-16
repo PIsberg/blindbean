@@ -72,10 +72,14 @@
                             <artifactId>blindbean-processor</artifactId>
                             <version>0.1.0</version>
                         </path>
+                        <!-- No version: managed by the imported vibetags-bom, so the
+                             processor can never skew from the annotations again (it sat
+                             at 0.9.7 against 1.0.0-RC2 annotations, silently dropping
+                             the newer annotations from generated output). Version-less
+                             annotationProcessorPaths need maven-compiler-plugin >= 3.12. -->
                         <path>
                             <groupId>se.deversity.vibetags</groupId>
                             <artifactId>vibetags-processor</artifactId>
-                            <version>0.9.7</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

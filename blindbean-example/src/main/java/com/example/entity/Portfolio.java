@@ -5,6 +5,7 @@ import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
 import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISandboxOnly;
 import se.deversity.vibetags.annotations.AISchemaSafe;
 
 /**
@@ -15,6 +16,7 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
 @AIPrivacy(reason = "Holds a cash balance and holdings as ciphertext — never log decrypted"
                   + "values, and never put a real portfolio in a fixture")
 @AISchemaSafe
+@AISandboxOnly(reason = "Demo fixture for the example walkthrough — production code must never import or copy it")
 public class Portfolio {
 
     @Homomorphic(scheme = Scheme.PAILLIER)
