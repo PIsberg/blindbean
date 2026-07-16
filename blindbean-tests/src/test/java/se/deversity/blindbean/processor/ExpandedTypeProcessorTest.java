@@ -265,6 +265,35 @@ public class ExpandedTypeProcessorTest {
     }
 
     @Test
+    public void aBoxedBooleanGeneratesCompilableCodeAndDecryptsToNull(@TempDir Path tmp) throws Exception {
+        // Boxed Boolean is a supported boxed scalar (isNullable treats it as one), so like Long it
+        // must decrypt to null for a null column — which requires the generated decrypt method to
+        // return Boolean, not the primitive. A primitive return with a null guard does not even
+        // compile, so the wrapper for any entity with a Boolean field failed the consumer's build.
+        Result r = compile("Flag", entity("Flag",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = Boolean.class)", "active"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("Boolean decryptActive()"),
+            "a boxed Boolean must decrypt to the boxed type so a null column can decrypt to null");
+        assertTrue(r.wrapper().contains("if (entity.getActive() == null) return null;"));
+        assertTrue(r.wrapper().contains("encryptActive(boolean plain)"),
+            "boxed scalars take the primitive in — the established choice for every other boxed type");
+        assertFalse(r.wrapper().contains("addActive"), "no arithmetic on booleans");
+    }
+
+    @Test
+    public void aPrimitiveBooleanKeepsThePrimitiveSignatureAndNoNullGuard(@TempDir Path tmp) throws Exception {
+        Result r = compile("PFlag", entity("PFlag",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = boolean.class)", "active"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("boolean decryptActive()"));
+        assertFalse(r.wrapper().contains("return null;"),
+            "a primitive boolean cannot be null — a guard there would not compile");
+    }
+
+    @Test
     public void aReferenceTypeAcceptsNullOnBothSides(@TempDir Path tmp) throws Exception {
         Result r = compile("Ref", entity("Ref",
             "@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)",
@@ -284,6 +313,46 @@ public class ExpandedTypeProcessorTest {
         assertFalse(prim.failed(), prim.errors());
         assertFalse(prim.wrapper().contains("return null;"),
             "a primitive cannot be null — a guard there would not even compile");
+    }
+
+    @Test
+    public void aStringFieldAcceptsNullOnBothSides(@TempDir Path tmp) throws Exception {
+        // String is in the reference-typed set that must accept null on both sides: decrypt
+        // already null-guards, so without the encrypt-side guard a null round trip dies with an
+        // NPE inside generated code instead of writing null through.
+        Result r = compile("Msg", entity("Msg",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = String.class)", "note"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("if (plain == null) { entity.setNote(null); return; }"),
+            "encrypting a null String must write null, not NPE on plain.getBytes(...)");
+        assertTrue(r.wrapper().contains("if (entity.getNote() == null) return null;"));
+    }
+
+    @Test
+    public void aBigIntegerFieldAcceptsNullOnBothSides(@TempDir Path tmp) throws Exception {
+        Result r = compile("Big", entity("Big",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigInteger.class)", "amount"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("if (plain == null) { entity.setAmount(null); return; }"),
+            "encrypting a null BigInteger must write null, not NPE inside PaillierMath");
+        assertTrue(r.wrapper().contains("if (entity.getAmount() == null) return null;"));
+    }
+
+    @Test
+    public void rotatingANullColumnIsANoOpNotAnNpe(@TempDir Path tmp) throws Exception {
+        // A dataset with nullable encrypted columns must survive a rotation batch: a null field
+        // has nothing to rotate. Without a guard, rotateX() feeds null into new Ciphertext(...)
+        // and the whole batch dies with an NPE thrown from generated code on the first null row.
+        Result r = compile("Row", entity("Row",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigInteger.class)", "amount"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("rotateAmount(BlindRotation rotation)"));
+        assertTrue(r.wrapper().replaceAll("\\s+", " ").contains(
+                "rotateAmount(BlindRotation rotation) { if (entity.getAmount() == null) return;"),
+            "rotating a null column must be a no-op, not an NPE mid-batch");
     }
 
     // ── Nested entities ──────────────────────────────────────────────────────

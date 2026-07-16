@@ -115,6 +115,9 @@ public class HomomorphicProcessor extends AbstractProcessor {
      * take a reference and therefore accept null on both sides.
      */
     private String scalarParamType(String t) {
+        // Boolean is a boxed scalar like the rest and takes the primitive on the way in;
+        // a boxed parameter would NPE on auto-unboxing instead of storing anything useful.
+        if (t.equals("java.lang.Boolean")) return "boolean";
         return getPrimitiveType(t);
     }
 
@@ -627,6 +630,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
         if (typeName.equals("java.lang.String")) {
             out.println("    public void encrypt" + f.capName() + "(String plain) {");
+            emitNullGuardOnEncrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        java.math.BigInteger encoded = new java.math.BigInteger(1, plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));");
                 out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(encoded);");
@@ -715,6 +719,9 @@ public class HomomorphicProcessor extends AbstractProcessor {
             switch (f.scheme()) {
                 case PAILLIER -> {
                     out.println("    public void encrypt" + f.capName() + "(java.math.BigInteger plain) {");
+                    // No-op unless the declared type is a nullable reference (BigInteger);
+                    // the java.lang.Void default emits no guard, exactly as before.
+                    emitNullGuardOnEncrypt(out, f);
                     out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain);");
                     out.println("        entity.set" + f.capName() + "(ct.hexData());");
                     out.println("    }");
@@ -827,7 +834,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
             }
             out.println("    }");
         } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
-            out.println("    public boolean decrypt" + f.capName() + "() {");
+            // A boxed Boolean must return the boxed type: the null guard below emits
+            // `return null;`, which does not compile against a primitive return.
+            String rType = typeName.equals("java.lang.Boolean") ? "Boolean" : "boolean";
+            out.println("    public " + rType + " decrypt" + f.capName() + "() {");
             emitNullGuardOnDecrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        return java.math.BigInteger.ZERO.compareTo(BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "())) != 0;");
@@ -945,6 +955,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
      */
     private void emitRotate(PrintWriter out, FieldModel f) {
         out.println("    public void rotate" + f.capName() + "(BlindRotation rotation) {");
+        // A null column has nothing to rotate. The stored field is a String for every declared
+        // type — primitives included — so this guard is unconditional: without it the first null
+        // row kills an entire rotation batch with an NPE thrown from generated code.
+        out.println("        if (entity.get" + f.capName() + "() == null) return;");
         out.println("        Ciphertext rotated = rotation.rotate(getCiphertext" + f.capName() + "());");
         out.println("        entity.set" + f.capName() + "(rotated.hexData());");
         out.println("    }");

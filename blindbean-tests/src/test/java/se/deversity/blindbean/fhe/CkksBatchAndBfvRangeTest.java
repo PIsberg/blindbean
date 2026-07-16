@@ -107,6 +107,34 @@ public class CkksBatchAndBfvRangeTest {
     }
 
     @Test
+    public void aScalarTooBigForASlotIsRefusedNotSilentlyWrapped() {
+        // The scalar path encodes through the same BatchEncoder as the array path (the value
+        // lands in slot 0), so an out-of-range value is reduced mod t exactly the same way —
+        // encryptLong(1_000_000) decrypted to a plausible wrong number. The guard must cover
+        // both entry points, not just the array one.
+        BlindContext.initBfv(8192);
+        FheContext ctx = BlindContext.getFheContext();
+        long tooBig = ctx.maxSlotValue() + 1;
+
+        assertThrows(FheException.class, () -> ctx.encryptLong(tooBig));
+        assertThrows(FheException.class, () -> ctx.encryptLong(-tooBig));
+        assertThrows(FheException.class, () -> ctx.encryptLong(Long.MAX_VALUE));
+    }
+
+    @Test
+    public void scalarValuesAtTheSlotBoundaryStillRoundTrip() {
+        BlindContext.initBfv(8192);
+        FheContext ctx = BlindContext.getFheContext();
+        long max = ctx.maxSlotValue();
+
+        for (long v : new long[] { 0L, 42L, -7L, max, -max }) {
+            try (var ct = new FheCiphertextNative(ctx.encryptLong(v), ctx)) {
+                assertEquals(v, ctx.decryptLong(ct.handle()), "scalar " + v + " must survive the round trip");
+            }
+        }
+    }
+
+    @Test
     public void valuesInsideTheSlotRangeStillRoundTrip() {
         BlindContext.initBfv(8192);
         FheContext ctx = BlindContext.getFheContext();

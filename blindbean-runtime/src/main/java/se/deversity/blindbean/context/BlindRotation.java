@@ -287,7 +287,15 @@ public final class BlindRotation implements AutoCloseable {
 
         @Override
         public Ciphertext rotate(Ciphertext ciphertext) {
-            BigInteger plain = source.decrypt(ciphertext);
+            // Rotate the SIGNED value, not the raw residue. A negative number is stored as the
+            // residue n_src - |v|; re-encrypting that residue under a different modulus yields
+            // (n_src - |v|) mod n_tgt, which no longer decodes to -|v| — every negative value
+            // would be silently replaced with well-formed garbage on every rotation. The balanced
+            // representation (decryptSigned) is the library-wide numeric convention, and it is
+            // also safe for the unsigned encodings (String / byte[]): their magnitudes sit far
+            // below n/2 for any payload the modulus can hold at all, where the signed and
+            // unsigned readings agree exactly.
+            BigInteger plain = source.decryptSigned(ciphertext);
             return target.encrypt(plain);
         }
 
