@@ -5,6 +5,7 @@ import se.deversity.blindbean.annotations.Homomorphic;
 import se.deversity.blindbean.annotations.Scheme;
 
 import se.deversity.vibetags.annotations.AIPrivacy;
+import se.deversity.vibetags.annotations.AISandboxOnly;
 import se.deversity.vibetags.annotations.AISchemaSafe;
 
 /**
@@ -19,6 +20,7 @@ import se.deversity.vibetags.annotations.AISchemaSafe;
 @AIPrivacy(reason = "Holds an account balance as ciphertext — never log the decrypted value, and "
                   + "never put a real balance in a fixture")
 @AISchemaSafe
+@AISandboxOnly(reason = "Demo fixture for the example walkthrough — production code must never import or copy it")
 public class UserAccount {
 
     @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
