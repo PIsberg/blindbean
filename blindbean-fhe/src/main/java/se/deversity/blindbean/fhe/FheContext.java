@@ -168,6 +168,11 @@ public class FheContext implements AutoCloseable {
             if (scheme != Scheme.BFV) {
                 throw new FheException("encryptLong requires BFV context, got " + scheme);
             }
+            // Same guard as encryptLongArray: the scalar path encodes through the same
+            // BatchEncoder (the value lands in slot 0), so SEAL reduces an out-of-range value
+            // mod t just as silently here — encryptLong(1_000_000) decrypted to a plausible
+            // wrong number with no error.
+            requireEncodable(value);
             MemorySegment ct = FheNativeBridge.fhe_encrypt_long(handle, value);
             if (ct.equals(MemorySegment.NULL)) {
                 throw new FheException("fhe_encrypt_long returned NULL");
@@ -242,6 +247,18 @@ public class FheContext implements AutoCloseable {
                     + "plausible wrong number instead of failing — and corrupted the other slots with "
                     + "it. Scale the value down, or raise the plaintext modulus.");
             }
+        }
+    }
+
+    /** Scalar twin of {@link #requireEncodable(long[])} for the {@code encryptLong} path. */
+    private void requireEncodable(long value) {
+        long max = maxSlotValue();
+        if (value > max || value < -max) {
+            throw new FheException(
+                "BFV cannot represent " + value + ": the plaintext modulus is " + plainModulus()
+                + ", so a value carries only [-" + max + ", " + max + "]. SEAL would have reduced "
+                + "it mod t and returned a plausible wrong number instead of failing. Scale the "
+                + "value down, or raise the plaintext modulus.");
         }
     }
 
