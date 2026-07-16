@@ -630,6 +630,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
         if (typeName.equals("java.lang.String")) {
             out.println("    public void encrypt" + f.capName() + "(String plain) {");
+            emitNullGuardOnEncrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        java.math.BigInteger encoded = new java.math.BigInteger(1, plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));");
                 out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(encoded);");
@@ -718,6 +719,9 @@ public class HomomorphicProcessor extends AbstractProcessor {
             switch (f.scheme()) {
                 case PAILLIER -> {
                     out.println("    public void encrypt" + f.capName() + "(java.math.BigInteger plain) {");
+                    // No-op unless the declared type is a nullable reference (BigInteger);
+                    // the java.lang.Void default emits no guard, exactly as before.
+                    emitNullGuardOnEncrypt(out, f);
                     out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(plain);");
                     out.println("        entity.set" + f.capName() + "(ct.hexData());");
                     out.println("    }");

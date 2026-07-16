@@ -315,6 +315,31 @@ public class ExpandedTypeProcessorTest {
             "a primitive cannot be null — a guard there would not even compile");
     }
 
+    @Test
+    public void aStringFieldAcceptsNullOnBothSides(@TempDir Path tmp) throws Exception {
+        // String is in the reference-typed set that must accept null on both sides: decrypt
+        // already null-guards, so without the encrypt-side guard a null round trip dies with an
+        // NPE inside generated code instead of writing null through.
+        Result r = compile("Msg", entity("Msg",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = String.class)", "note"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("if (plain == null) { entity.setNote(null); return; }"),
+            "encrypting a null String must write null, not NPE on plain.getBytes(...)");
+        assertTrue(r.wrapper().contains("if (entity.getNote() == null) return null;"));
+    }
+
+    @Test
+    public void aBigIntegerFieldAcceptsNullOnBothSides(@TempDir Path tmp) throws Exception {
+        Result r = compile("Big", entity("Big",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigInteger.class)", "amount"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("if (plain == null) { entity.setAmount(null); return; }"),
+            "encrypting a null BigInteger must write null, not NPE inside PaillierMath");
+        assertTrue(r.wrapper().contains("if (entity.getAmount() == null) return null;"));
+    }
+
     // ── Nested entities ──────────────────────────────────────────────────────
 
     /** Two entities in one compilation unit: an outer one nesting an inner one. */
