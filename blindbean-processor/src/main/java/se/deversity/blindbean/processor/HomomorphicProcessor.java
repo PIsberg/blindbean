@@ -955,6 +955,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
      */
     private void emitRotate(PrintWriter out, FieldModel f) {
         out.println("    public void rotate" + f.capName() + "(BlindRotation rotation) {");
+        // A null column has nothing to rotate. The stored field is a String for every declared
+        // type — primitives included — so this guard is unconditional: without it the first null
+        // row kills an entire rotation batch with an NPE thrown from generated code.
+        out.println("        if (entity.get" + f.capName() + "() == null) return;");
         out.println("        Ciphertext rotated = rotation.rotate(getCiphertext" + f.capName() + "());");
         out.println("        entity.set" + f.capName() + "(rotated.hexData());");
         out.println("    }");

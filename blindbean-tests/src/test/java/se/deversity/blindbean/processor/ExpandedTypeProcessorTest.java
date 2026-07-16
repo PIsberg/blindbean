@@ -340,6 +340,21 @@ public class ExpandedTypeProcessorTest {
         assertTrue(r.wrapper().contains("if (entity.getAmount() == null) return null;"));
     }
 
+    @Test
+    public void rotatingANullColumnIsANoOpNotAnNpe(@TempDir Path tmp) throws Exception {
+        // A dataset with nullable encrypted columns must survive a rotation batch: a null field
+        // has nothing to rotate. Without a guard, rotateX() feeds null into new Ciphertext(...)
+        // and the whole batch dies with an NPE thrown from generated code on the first null row.
+        Result r = compile("Row", entity("Row",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigInteger.class)", "amount"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("rotateAmount(BlindRotation rotation)"));
+        assertTrue(r.wrapper().replaceAll("\\s+", " ").contains(
+                "rotateAmount(BlindRotation rotation) { if (entity.getAmount() == null) return;"),
+            "rotating a null column must be a no-op, not an NPE mid-batch");
+    }
+
     // ── Nested entities ──────────────────────────────────────────────────────
 
     /** Two entities in one compilation unit: an outer one nesting an inner one. */
