@@ -57,6 +57,47 @@ public class BlindRotationTest {
     }
 
     @Test
+    public void negativeValuesSurviveRotation() {
+        // A negative number is stored as the residue n_old - |v|. Rotating by re-encrypting that
+        // raw residue under a DIFFERENT modulus n_new produces (n_old - |v|) mod n_new, which no
+        // longer decodes to -|v| under the balanced representation — the value is silently
+        // replaced with well-formed garbage, which is exactly the corruption shape rotation
+        // exists to prevent. Rotation must therefore move the SIGNED value, not the residue.
+        PaillierKeyPair oldKeys = new PaillierKeyPair(512);
+        PaillierKeyPair newKeys = new PaillierKeyPair(512);
+        BigInteger message = BigInteger.valueOf(-5);
+
+        Ciphertext underOld = new PaillierMath(oldKeys).encrypt(message);
+
+        Ciphertext underNew;
+        try (BlindRotation rotation = BlindRotation.paillier(oldKeys, newKeys)) {
+            underNew = rotation.rotate(underOld);
+        }
+
+        assertEquals(message, new PaillierMath(newKeys).decryptSigned(underNew),
+            "a negative value must decrypt to itself after rotation");
+    }
+
+    @Test
+    public void signedValuesStillAddHomomorphicallyAfterRotation() {
+        // The rotated ciphertext must stay consistent with the additive homomorphism under the
+        // new keys: (-5 rotated) + 7 must decrypt to 2.
+        PaillierKeyPair oldKeys = new PaillierKeyPair(512);
+        PaillierKeyPair newKeys = new PaillierKeyPair(512);
+
+        Ciphertext underOld = new PaillierMath(oldKeys).encrypt(BigInteger.valueOf(-5));
+
+        Ciphertext underNew;
+        try (BlindRotation rotation = BlindRotation.paillier(oldKeys, newKeys)) {
+            underNew = rotation.rotate(underOld);
+        }
+
+        PaillierMath newMath = new PaillierMath(newKeys);
+        Ciphertext sum = newMath.add(underNew, newMath.encrypt(BigInteger.valueOf(7)));
+        assertEquals(BigInteger.valueOf(2), newMath.decryptSigned(sum));
+    }
+
+    @Test
     public void fromCurrentRotatesOffTheInstalledContext() {
         BlindContext.init();
         BigInteger message = BigInteger.valueOf(31337L);
