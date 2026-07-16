@@ -265,6 +265,35 @@ public class ExpandedTypeProcessorTest {
     }
 
     @Test
+    public void aBoxedBooleanGeneratesCompilableCodeAndDecryptsToNull(@TempDir Path tmp) throws Exception {
+        // Boxed Boolean is a supported boxed scalar (isNullable treats it as one), so like Long it
+        // must decrypt to null for a null column — which requires the generated decrypt method to
+        // return Boolean, not the primitive. A primitive return with a null guard does not even
+        // compile, so the wrapper for any entity with a Boolean field failed the consumer's build.
+        Result r = compile("Flag", entity("Flag",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = Boolean.class)", "active"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("Boolean decryptActive()"),
+            "a boxed Boolean must decrypt to the boxed type so a null column can decrypt to null");
+        assertTrue(r.wrapper().contains("if (entity.getActive() == null) return null;"));
+        assertTrue(r.wrapper().contains("encryptActive(boolean plain)"),
+            "boxed scalars take the primitive in — the established choice for every other boxed type");
+        assertFalse(r.wrapper().contains("addActive"), "no arithmetic on booleans");
+    }
+
+    @Test
+    public void aPrimitiveBooleanKeepsThePrimitiveSignatureAndNoNullGuard(@TempDir Path tmp) throws Exception {
+        Result r = compile("PFlag", entity("PFlag",
+            "@Homomorphic(scheme = Scheme.PAILLIER, type = boolean.class)", "active"), tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("boolean decryptActive()"));
+        assertFalse(r.wrapper().contains("return null;"),
+            "a primitive boolean cannot be null — a guard there would not compile");
+    }
+
+    @Test
     public void aReferenceTypeAcceptsNullOnBothSides(@TempDir Path tmp) throws Exception {
         Result r = compile("Ref", entity("Ref",
             "@Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)",

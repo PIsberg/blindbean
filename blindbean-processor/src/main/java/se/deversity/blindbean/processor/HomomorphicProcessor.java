@@ -115,6 +115,9 @@ public class HomomorphicProcessor extends AbstractProcessor {
      * take a reference and therefore accept null on both sides.
      */
     private String scalarParamType(String t) {
+        // Boolean is a boxed scalar like the rest and takes the primitive on the way in;
+        // a boxed parameter would NPE on auto-unboxing instead of storing anything useful.
+        if (t.equals("java.lang.Boolean")) return "boolean";
         return getPrimitiveType(t);
     }
 
@@ -827,7 +830,10 @@ public class HomomorphicProcessor extends AbstractProcessor {
             }
             out.println("    }");
         } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
-            out.println("    public boolean decrypt" + f.capName() + "() {");
+            // A boxed Boolean must return the boxed type: the null guard below emits
+            // `return null;`, which does not compile against a primitive return.
+            String rType = typeName.equals("java.lang.Boolean") ? "Boolean" : "boolean";
+            out.println("    public " + rType + " decrypt" + f.capName() + "() {");
             emitNullGuardOnDecrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
                 out.println("        return java.math.BigInteger.ZERO.compareTo(BlindContext.getPaillier().decrypt(getCiphertext" + f.capName() + "())) != 0;");
