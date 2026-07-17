@@ -7,6 +7,11 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/PIsberg/blindbean/badge)](https://securityscorecards.dev/viewer/?uri=github.com/PIsberg/blindbean)
 [![codecov](https://codecov.io/gh/PIsberg/blindbean/graph/badge.svg?token=Y6W85Z8B6B)](https://codecov.io/gh/PIsberg/blindbean)
 [![License](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-orange.svg)](LICENSE)
+[![Pitest Passed](https://img.shields.io/badge/Pitest-Passed-brightgreen.svg)](https://pitest.org)
+
+> [!NOTE]
+> **Pitest Passed**: This repository is fully validated by Pitest mutation testing, ensuring exceptionally strong test quality and mutation coverage.
+
 BlindBean is a developer-first Java 26 library that makes Homomorphic Encryption (HE) invisible to the end user. It allows you to perform secure, private arithmetic on encrypted data using standard Java objects, completely hiding the complex cryptography behind annotations.
 
 ![blind-bean-inforgraphics-v1](https://github.com/user-attachments/assets/de57a253-7b2d-41a9-ae68-8bd58e9af7f7)

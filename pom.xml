@@ -171,6 +171,39 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.25.7</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.3</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <crossModule>true</crossModule>
+                    <failWhenNoMutations>false</failWhenNoMutations>
+                    <parseSurefireArgLine>false</parseSurefireArgLine>
+                    <targetClasses>
+                        <param>se.deversity.blindbean.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>se.deversity.blindbean.*Test</param>
+                    </targetTests>
+                    <excludedClasses>
+                        <param>se.deversity.blindbean.fhe.FheNativeBridge</param>
+                    </excludedClasses>
+                    <jvmArgs>
+                        <jvmArg>--enable-preview</jvmArg>
+                        <jvmArg>--add-modules=jdk.incubator.vector</jvmArg>
+                        <jvmArg>--enable-native-access=ALL-UNNAMED</jvmArg>
+                        <jvmArg>-Dlicense.mock.mode=true</jvmArg>
+                        <jvmArg>-Dblindbean.native.path=${maven.multiModuleProjectDirectory}/build-native/Release</jvmArg>
+                    </jvmArgs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
