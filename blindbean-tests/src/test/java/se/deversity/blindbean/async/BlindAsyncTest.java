@@ -107,4 +107,79 @@ class BlindAsyncTest {
 
         assertEquals(original, decrypted.get());
     }
+
+    @Test
+    void blindContextSnapshotPropagatedToSupplyAsync() throws Exception {
+        PaillierMath callerPaillier = BlindContext.getPaillier();
+        AtomicReference<PaillierMath> asyncPaillier = new AtomicReference<>();
+        BlindAsync.supplyAsync(() -> {
+            asyncPaillier.set(BlindContext.getPaillier());
+            return null;
+        }).get();
+        assertSame(callerPaillier, asyncPaillier.get(),
+                "Virtual thread in supplyAsync should use the same PaillierMath as the caller");
+    }
+
+    @Test
+    void semaphoreLimitsConcurrentSupplyTasks() throws Exception {
+        int cores = Runtime.getRuntime().availableProcessors();
+        int tasks = cores * 4;
+
+        AtomicInteger concurrentPeak = new AtomicInteger(0);
+        AtomicInteger active         = new AtomicInteger(0);
+        CountDownLatch allSlotsHeld = new CountDownLatch(cores);
+        CountDownLatch releaseAll   = new CountDownLatch(1);
+
+        List<CompletableFuture<Integer>> futures = new ArrayList<>();
+        for (int i = 0; i < tasks; i++) {
+            final int index = i;
+            futures.add(BlindAsync.supplyAsync(() -> {
+                int current = active.incrementAndGet();
+                concurrentPeak.accumulateAndGet(current, Math::max);
+                allSlotsHeld.countDown();
+                try { releaseAll.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+                active.decrementAndGet();
+                return index;
+            }));
+        }
+
+        assertTrue(allSlotsHeld.await(5, TimeUnit.SECONDS), "Supply tasks did not fill semaphore slots in time");
+        releaseAll.countDown();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
+
+        assertTrue(concurrentPeak.get() <= cores,
+                "Peak concurrency in supplyAsync " + concurrentPeak.get() + " exceeded core count " + cores);
+    }
+
+    @Test
+    void shutdownClosesExecutor() throws Exception {
+        BlindAsync.runAsync(() -> {}).get();
+
+        java.lang.reflect.Field stateField = BlindAsync.class.getDeclaredField("state");
+        stateField.setAccessible(true);
+        Object stateObj = stateField.get(null);
+        assertNotNull(stateObj);
+
+        java.lang.reflect.Method executorMethod = stateObj.getClass().getMethod("executor");
+        java.util.concurrent.ExecutorService executor = (java.util.concurrent.ExecutorService) executorMethod.invoke(stateObj);
+
+        assertFalse(executor.isShutdown());
+
+        BlindAsync.shutdown();
+
+        assertTrue(executor.isShutdown());
+    }
+
+    @Test
+    void testBlindAsyncException() {
+        BlindAsyncException ex = new BlindAsyncException("test", 3);
+        assertEquals("test", ex.getMessage());
+        assertEquals(3, ex.getAttempts());
+
+        RuntimeException cause = new RuntimeException("cause");
+        BlindAsyncException exWithCause = new BlindAsyncException("test", 3, cause);
+        assertEquals("test", exWithCause.getMessage());
+        assertEquals(3, exWithCause.getAttempts());
+        assertEquals(cause, exWithCause.getCause());
+    }
 }
