@@ -70,7 +70,7 @@
         <dependency>
             <groupId>se.deversity.async-test-lib</groupId>
             <artifactId>async-test-lib</artifactId>
-            <version>1.7.0-RC2</version>
+            <version>1.7.0-RC3</version>
             <scope>test</scope>
         </dependency>
         <!-- ArchUnit: codifies the module-boundary guardrails (see se…blindbean.arch) as tests -->
