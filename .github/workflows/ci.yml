@@ -206,9 +206,15 @@ jobs:
       - name: Run native tests under ASan + UBSan
         run: |
           ASAN_RT="$(gcc -print-file-name=libasan.so)"
-          echo "Preloading ASan runtime: $ASAN_RT"
-          LD_PRELOAD="$ASAN_RT" \
-          ASAN_OPTIONS="detect_leaks=0:handle_segv=0:handle_sigbus=0:handle_sigfpe=0:abort_on_error=1:halt_on_error=1:detect_stack_use_after_return=1:strict_string_checks=1:symbolize=1" \
+          CXX_RT="$(g++ -print-file-name=libstdc++.so.6)"
+          echo "Preloading ASan runtime + libstdc++: $ASAN_RT : $CXX_RT"
+          # Preload libstdc++ alongside libasan so ASan resolves the real __cxa_throw at init time.
+          # SEAL throws C++ exceptions on invalid-parameter paths; without this the interceptor hits
+          # CHECK(REAL(__cxa_throw)) and aborts as the exception unwinds. Fake-stack
+          # (detect_stack_use_after_return) is off too — it interacts badly with unwinding through
+          # the uninstrumented JVM frames. Heap use-after-free / double-free / overflow stay on.
+          LD_PRELOAD="$ASAN_RT:$CXX_RT" \
+          ASAN_OPTIONS="detect_leaks=0:handle_segv=0:handle_sigbus=0:handle_sigfpe=0:abort_on_error=1:halt_on_error=1:detect_stack_use_after_return=0:strict_string_checks=1:symbolize=1" \
           UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=1" \
           ./mvnw -B -pl blindbean-tests test \
             -Dgroups=native \
