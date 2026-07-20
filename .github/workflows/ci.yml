@@ -134,6 +134,96 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  native-sanitizers:
+    name: Native ASan/UBSan (linux-x64)
+    runs-on: ubuntu-latest
+    needs: java-fast-gate
+    timeout-minutes: 45
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11.6
+        with:
+          vcpkgGitCommitId: 'b5229343b4b80264ed51e89c6a7dcd0cbe85e9cc'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          runVcpkgInstall: false
+
+      # Build the bridge with ASan + UBSan. SEAL comes from vcpkg uninstrumented; the sanitizer
+      # interceptors are global so heap errors crossing into it are still caught, while UBSan
+      # instruments our own translation units.
+      - name: Configure + build sanitized native library
+        id: cmake_config
+        run: |
+          cmake -S blindbean-fhe/src/main/native -B build-native \
+            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DVCPKG_TARGET_TRIPLET=x64-linux \
+            -DBLINDBEAN_SANITIZE=ON
+          cmake --build build-native
+        shell: bash
+
+      - name: Show vcpkg Error Log on Failure
+        if: failure() && steps.cmake_config.outcome == 'failure'
+        run: |
+          if [ -f build-native/vcpkg-manifest-install.log ]; then
+            cat build-native/vcpkg-manifest-install.log
+          fi
+        shell: bash
+
+      - name: Verify the library is instrumented
+        run: |
+          test -f build-native/blindbean_fhe.so
+          echo "ASan runtime linkage:"
+          ldd build-native/blindbean_fhe.so | grep -i asan || echo "  (asan linked statically or via interceptors)"
+        shell: bash
+
+      # Build + install the modules without sanitizers (normal JVM, fast), so the sanitizer run
+      # only has to execute the native tests.
+      - name: Build + install modules (no sanitizer)
+        run: ./mvnw -B -DskipTests -Dcheckstyle.skip=true -Dpmd.skip=true -Dspotbugs.skip=true install
+        shell: bash
+
+      # Run only the @Tag("native") tests against the sanitized .so. The JVM is not instrumented, so
+      # LD_PRELOAD pulls in the ASan runtime before the JVM allocates. handle_segv=0 is essential:
+      # the JVM raises SIGSEGV for implicit null checks and safepoint polling, which ASan must not
+      # intercept. LeakSanitizer is off (detect_leaks=0) because a live JVM legitimately holds many
+      # allocations it would report as leaks; this job targets use-after-free / double-free / heap
+      # overflow / UB at the FFM boundary. abort_on_error makes any finding fail the job.
+      - name: Run native tests under ASan + UBSan
+        run: |
+          ASAN_RT="$(gcc -print-file-name=libasan.so)"
+          echo "Preloading ASan runtime: $ASAN_RT"
+          LD_PRELOAD="$ASAN_RT" \
+          ASAN_OPTIONS="detect_leaks=0:handle_segv=0:handle_sigbus=0:handle_sigfpe=0:abort_on_error=1:halt_on_error=1:detect_stack_use_after_return=1:strict_string_checks=1:symbolize=1" \
+          UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=1" \
+          ./mvnw -B -pl blindbean-tests test \
+            -Dgroups=native \
+            -Dblindbean.native.path="$GITHUB_WORKSPACE/build-native"
+        shell: bash
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sanitizer-surefire-reports
+          path: blindbean-tests/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 14
+
   full-windows:
     name: Full Windows test
     runs-on: windows-latest
