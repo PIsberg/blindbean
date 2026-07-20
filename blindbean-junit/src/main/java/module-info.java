@@ -10,6 +10,7 @@ module se.deversity.blindbean.junit {
     requires transitive se.deversity.blindbean.runtime;
     requires transitive org.junit.jupiter.api;
     requires static se.deversity.vibetags.annotations;
+    requires static org.jspecify;
 
     exports se.deversity.blindbean.junit;
 }

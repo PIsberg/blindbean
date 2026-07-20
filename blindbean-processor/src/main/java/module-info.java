@@ -13,6 +13,7 @@ module se.deversity.blindbean.processor {
     requires se.deversity.blindbean.annotations;
     requires static com.google.auto.service;
     requires static se.deversity.vibetags.annotations;
+    requires static org.jspecify;
 
     provides javax.annotation.processing.Processor
         with se.deversity.blindbean.processor.HomomorphicProcessor;

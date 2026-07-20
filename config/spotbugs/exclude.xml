@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs exclude filter for BlindBean.
+
+  Kept intentionally small: entries here are documented false positives or patterns that are
+  correct-by-design in this codebase (chiefly the Project Panama FFM boundary, where SpotBugs'
+  heuristics about escaping references and unread fields do not model native ownership). Every
+  suppression states why. Do NOT broaden these to silence a genuine finding.
+-->
+<FindBugsFilter>
+    <!-- module descriptors carry no analyzable logic -->
+    <Match>
+        <Source name="~.*module-info\.java"/>
+    </Match>
+
+    <!-- generated wrapper sources are validated by the processor's own golden-file tests -->
+    <Match>
+        <Class name="~.*BlindWrapper"/>
+    </Match>
+    <!--
+      Project Panama FFM boundary. These two classes wrap a native handle as a MemorySegment,
+      whose exposure and lifecycle are deliberately part of the public FFM contract (see CLAUDE.md
+      <contract_signatures>). SpotBugs' escape heuristics do not model native ownership:
+        * EI_EXPOSE_REP / EI_EXPOSE_REP2 — returning/storing the handle is the contract; a defensive
+          copy of a MemorySegment would break native ownership and the double-free/lifecycle rules.
+        * CT_CONSTRUCTOR_THROW — the wrappers validate inputs and throw; both are AutoCloseable with
+          no finalizer, so there is no partially-constructed finalizer-attack surface.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.fhe.FheContext"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="se.deversity.blindbean.fhe.FheCiphertextNative"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!--
+      BlindContext.Snapshot is a record whose whole purpose is to carry the live PaillierMath and
+      FheContext references across a virtual-thread boundary (snapshot()/restore()); a defensive copy
+      would defeat it, and FheContext owns native memory that cannot be copied.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.context.BlindContext$Snapshot"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+      BlindRotation's documented thread-safety strategy guards commit()/close() with the session
+      monitor (see CLAUDE.md <thread_safe_elements>). Instances are confined to a single rotation
+      session and are never used as external locks; changing the lock object is a concurrency
+      refactor out of scope here and would touch a security-critical, high-coverage class.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.context.BlindRotation"/>
+        <Bug pattern="USO_UNSAFE_METHOD_SYNCHRONIZATION"/>
+    </Match>
+
+    <!--
+      KeyBundle carries serialized private key material and is reachable only from BlindContext
+      (see CLAUDE.md <access_limitations>). Not defensively copying the key-payload byte[] is
+      deliberate secret hygiene — extra copies of secret bytes are more to leak/zeroize, and no
+      untrusted caller can reach or mutate this instance.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.context.KeyBundle"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>

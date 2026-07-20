@@ -67,7 +67,7 @@
         <maven.compiler.target>26</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.1.2</junit.version>
-        <vibetags.version>1.0.0-RC2</vibetags.version>
+        <vibetags.version>1.0.0-RC4</vibetags.version>
     </properties>
 
     <dependencyManagement>
@@ -94,6 +94,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- JSpecify nullness annotations — version managed here, consumed as `provided` below -->
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>1.0.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -109,6 +115,16 @@
             <artifactId>vibetags-annotations</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!--
+          JSpecify nullness annotations. `provided` (compile-only) + `requires static org.jspecify`
+          in every module-info — the same treatment as the vibetags annotations above. NullAway
+          reads them at compile time; consumers need not carry them at runtime.
+        -->
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -121,11 +137,38 @@
                     <configuration>
                         <source>26</source>
                         <target>26</target>
+                        <fork>true</fork>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                             <arg>--add-modules</arg>
                             <arg>jdk.incubator.vector</arg>
+                            <!-- Error Prone + NullAway: nullness enforcement over @NullMarked code -->
+                            <arg>-XDcompilePolicy=simple</arg>
+                            <arg>--should-stop=ifError=FLOW</arg>
+                            <arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                         </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.errorprone</groupId>
+                                <artifactId>error_prone_core</artifactId>
+                                <version>2.50.0</version>
+                            </path>
+                            <path>
+                                <groupId>com.uber.nullaway</groupId>
+                                <artifactId>nullaway</artifactId>
+                                <version>0.13.8</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
 
@@ -163,6 +206,105 @@
                         </execution>
                     </executions>
                 </plugin>
+
+                <!--
+                  Static-analysis gates (build-failing, bound to `verify`). Versions/config live
+                  here; each is switched on per library module by declaring the GA in <plugins>.
+                  Rulesets are curated-lean and shared from config/ via multiModuleProjectDirectory
+                  so every module resolves the same files. pom-packaged and test-only modules opt
+                  out via checkstyle.skip / pmd.skip / spotbugs.skip.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.6.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>13.8.0</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <configLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/checkstyle.xml</configLocation>
+                        <suppressionsLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/suppressions.xml</suppressionsLocation>
+                        <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                        <!-- module descriptors have a distinct grammar checkstyle's Java parser trips on -->
+                        <excludes>**/module-info.java</excludes>
+                        <consoleOutput>true</consoleOutput>
+                        <failOnViolation>true</failOnViolation>
+                        <violationSeverity>error</violationSeverity>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>checkstyle-check</id>
+                            <phase>verify</phase>
+                            <goals><goal>check</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>3.28.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>net.sourceforge.pmd</groupId>
+                            <artifactId>pmd-core</artifactId>
+                            <version>7.26.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>net.sourceforge.pmd</groupId>
+                            <artifactId>pmd-java</artifactId>
+                            <version>7.26.0</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <rulesets>
+                            <ruleset>${maven.multiModuleProjectDirectory}/config/pmd/ruleset.xml</ruleset>
+                        </rulesets>
+                        <includeTests>false</includeTests>
+                        <failOnViolation>true</failOnViolation>
+                        <printFailingErrors>true</printFailingErrors>
+                        <excludes>
+                            <exclude>**/module-info.java</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>pmd-check</id>
+                            <phase>verify</phase>
+                            <goals><goal>check</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>4.10.3.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs</artifactId>
+                            <version>4.10.3</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Medium</threshold>
+                        <failOnError>true</failOnError>
+                        <excludeFilterFile>${maven.multiModuleProjectDirectory}/config/spotbugs/exclude.xml</excludeFilterFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>spotbugs-check</id>
+                            <phase>verify</phase>
+                            <goals><goal>check</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -170,6 +312,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <!-- static-analysis gate: config + verify binding inherited from pluginManagement -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.pitest</groupId>

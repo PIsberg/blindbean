@@ -159,7 +159,7 @@ public final class BlindRotation implements AutoCloseable {
     public static BlindRotation fhe(FheContext source, FheContext target) {
         Objects.requireNonNull(source, "source context must not be null");
         Objects.requireNonNull(target, "target context must not be null");
-        if (source == target) {
+        if (source == target) { // NOPMD CompareObjectsWithEquals - intentional identity check: rotating a context against its own instance is the error being rejected
             throw new IllegalArgumentException(sameKeys("FHE context"));
         }
         if (source.scheme() != target.scheme()) {

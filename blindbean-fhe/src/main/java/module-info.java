@@ -10,6 +10,7 @@ module se.deversity.blindbean.fhe {
     // FheCiphertextNative/FheContext expose Ciphertext (and Scheme) in their public API.
     requires transitive se.deversity.blindbean.core;
     requires static se.deversity.vibetags.annotations;
+    requires static org.jspecify;
 
     exports se.deversity.blindbean.fhe;
 }

@@ -14,6 +14,7 @@ module se.deversity.blindbean.runtime {
     requires transitive se.deversity.blindbean.fhe;   // BlindMath/BlindContext hand back FheContext
     requires jdk.incubator.vector;                    // PaillierVectorized (SIMD)
     requires static se.deversity.vibetags.annotations;
+    requires static org.jspecify;
 
     exports se.deversity.blindbean.math;
     exports se.deversity.blindbean.context;

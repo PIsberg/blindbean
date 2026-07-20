@@ -5,6 +5,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Binds a ciphertext to the key generation that produced it.
  *
@@ -96,7 +98,7 @@ public final class KeyTag {
      * header bytes by chance; the odds are 2^-48 per value, and the alternative — no legacy path —
      * would mean refusing to decrypt every ciphertext written before this format existed.
      */
-    public static byte[] tagOf(byte[] enveloped) {
+    public static byte @Nullable [] tagOf(byte[] enveloped) {
         if (!isTagged(enveloped)) {
             return null;
         }

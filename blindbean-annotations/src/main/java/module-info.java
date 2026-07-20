@@ -5,6 +5,7 @@
 module se.deversity.blindbean.annotations {
     // The @AI* guardrail annotations are SOURCE-retention: needed to compile, gone at runtime.
     requires static se.deversity.vibetags.annotations;
+    requires static org.jspecify;
 
     exports se.deversity.blindbean.annotations;
 }

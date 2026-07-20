@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="BlindBean PMD rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Curated, correctness-focused PMD rules for BlindBean. This is a build-failing gate, so it
+        references individual high-signal rules rather than whole categories — no style, naming,
+        design-opinion or "code size" rules that would fight the library's deliberately terse
+        idiom. Complements Checkstyle (imports/blocks) and SpotBugs (bytecode) without overlap noise.
+    </description>
+
+    <!-- dead code: genuinely unused members are almost always a mistake -->
+    <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod"/>
+    <rule ref="category/java/bestpractices.xml/UnusedFormalParameter"/>
+    <rule ref="category/java/bestpractices.xml/PrimitiveWrapperInstantiation"/>
+
+    <!-- equality / null correctness -->
+    <rule ref="category/java/errorprone.xml/CompareObjectsWithEquals"/>
+    <rule ref="category/java/errorprone.xml/UseEqualsToCompareStrings"/>
+    <rule ref="category/java/errorprone.xml/BrokenNullCheck"/>
+    <rule ref="category/java/errorprone.xml/MisplacedNullCheck"/>
+    <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode"/>
+
+    <!-- control-flow / resource bugs -->
+    <rule ref="category/java/errorprone.xml/JumbledIncrementer"/>
+    <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock"/>
+    <rule ref="category/java/errorprone.xml/UnconditionalIfStatement"/>
+    <rule ref="category/java/errorprone.xml/ProperCloneImplementation"/>
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+        <properties>
+            <property name="allowCommentedBlocks" value="true"/>
+            <property name="allowExceptionNameRegex" value="^(ignored|expected)$"/>
+        </properties>
+    </rule>
+</ruleset>
