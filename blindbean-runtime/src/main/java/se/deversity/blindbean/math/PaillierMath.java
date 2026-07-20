@@ -43,10 +43,14 @@ public class PaillierMath {
     }
 
     public Ciphertext encrypt(BigInteger m) {
+        BigInteger n = keyPair.getN();
         BigInteger r;
         do {
-            r = new BigInteger(keyPair.getN().bitLength(), random);
-        } while (r.compareTo(keyPair.getN()) >= 0 || r.compareTo(BigInteger.ZERO) <= 0);
+            r = new BigInteger(n.bitLength(), random);
+            // Paillier IND-CPA needs the blinding r in Z_n*: reject r outside (0, n) or one sharing a
+            // factor with n. The gcd is asymptotically cheaper than the r^n modPow below, and for a
+            // 2048-bit modulus a non-coprime draw is a ~2^-1000 event, so the loop exits first try.
+        } while (r.compareTo(n) >= 0 || r.signum() <= 0 || !r.gcd(n).equals(BigInteger.ONE));
 
         // c = g^m * r^n mod n^2.
         //
@@ -61,7 +65,6 @@ public class PaillierMath {
         // Only the g^m term is affected. The random blinding r^n — the part that provides
         // Paillier's semantic security — keeps its modPow untouched, and the resulting c is the
         // identical value, so ciphertexts stay byte-for-byte compatible with the old path.
-        BigInteger n = keyPair.getN();
         BigInteger n2 = keyPair.getN2();
         BigInteger gm = m.multiply(n).add(BigInteger.ONE).mod(n2);
         BigInteger rn = r.modPow(n, n2);
