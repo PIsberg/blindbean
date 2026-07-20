@@ -1,6 +1,5 @@
 package se.deversity.blindbean.junit;
 
-import se.deversity.blindbean.annotations.Scheme;
 import se.deversity.blindbean.context.BlindContext;
 
 import org.junit.jupiter.api.extension.AfterEachCallback;

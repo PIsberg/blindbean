@@ -4,6 +4,8 @@ import se.deversity.blindbean.annotations.Scheme;
 import se.deversity.blindbean.math.PaillierKeyPair;
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import se.deversity.vibetags.annotations.AICallersOnly;
 import se.deversity.vibetags.annotations.AILocked;
 import se.deversity.vibetags.annotations.AIPrivacy;
@@ -29,16 +31,16 @@ public class KeyBundle implements Serializable {
     private final short formatVersion;
 
     @AISecureLogging(AISecureLogging.MaskingPolicy.OMIT)
-    private final PaillierKeyPair paillierKeyPair;
+    private final @Nullable PaillierKeyPair paillierKeyPair;
 
     // FHE Parameters
-    private final Scheme fheScheme;
+    private final @Nullable Scheme fheScheme;
     private final int polyModulusDegree;
     private final double scale;
     @AISecureLogging(AISecureLogging.MaskingPolicy.OMIT)
-    private final byte[] nativeFhePayload;
+    private final byte @Nullable [] nativeFhePayload;
 
-    public KeyBundle(PaillierKeyPair paillierKeyPair, Scheme fheScheme, int polyModulusDegree, double scale, byte[] nativeFhePayload) {
+    public KeyBundle(@Nullable PaillierKeyPair paillierKeyPair, @Nullable Scheme fheScheme, int polyModulusDegree, double scale, byte @Nullable [] nativeFhePayload) {
         this.formatVersion     = CURRENT_FORMAT_VERSION;
         this.paillierKeyPair   = paillierKeyPair;
         this.fheScheme         = fheScheme;
@@ -56,11 +58,11 @@ public class KeyBundle implements Serializable {
         return formatVersion;
     }
 
-    public PaillierKeyPair getPaillierKeyPair() {
+    public @Nullable PaillierKeyPair getPaillierKeyPair() {
         return paillierKeyPair;
     }
 
-    public Scheme getFheScheme() {
+    public @Nullable Scheme getFheScheme() {
         return fheScheme;
     }
 
@@ -72,7 +74,7 @@ public class KeyBundle implements Serializable {
         return scale;
     }
 
-    public byte[] getNativeFhePayload() {
+    public byte @Nullable [] getNativeFhePayload() {
         return nativeFhePayload;
     }
 }

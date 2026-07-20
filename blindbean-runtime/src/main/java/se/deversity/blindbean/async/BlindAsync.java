@@ -9,6 +9,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import se.deversity.vibetags.annotations.AIAudit;
 import se.deversity.vibetags.annotations.AIFeatureFlag;
 import se.deversity.vibetags.annotations.AIIgnore;
@@ -57,7 +59,7 @@ public final class BlindAsync {
     /** Immutable pairing of the executor and its semaphore — readers see both or neither. */
     private record State(ExecutorService executor, Semaphore semaphore) {}
 
-    private static volatile State state;
+    private static volatile @Nullable State state;
     /** Guarded by the init monitor; the JVM shutdown hook survives executor recycling, so register it once. */
     private static boolean shutdownHookRegistered;
     @AIIgnore(reason = "Internal DCL synchronization monitor — not relevant to AI-assisted development workflows")

@@ -6,6 +6,7 @@ module se.deversity.blindbean.core {
     // Ciphertext exposes Scheme in its public API, so consumers of core also need annotations.
     requires transitive se.deversity.blindbean.annotations;
     requires static se.deversity.vibetags.annotations;
+    requires static org.jspecify;
 
     exports se.deversity.blindbean.core;
 }

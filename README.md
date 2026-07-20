@@ -8,9 +8,20 @@
 [![codecov](https://codecov.io/gh/PIsberg/blindbean/graph/badge.svg?token=Y6W85Z8B6B)](https://codecov.io/gh/PIsberg/blindbean)
 [![License](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-orange.svg)](LICENSE)
 [![Pitest Passed](https://img.shields.io/badge/Pitest-Passed-brightgreen.svg)](https://pitest.org)
+[![Checkstyle](https://img.shields.io/badge/Checkstyle-passing-brightgreen.svg)](https://checkstyle.org)
+[![PMD](https://img.shields.io/badge/PMD-passing-brightgreen.svg)](https://pmd.github.io)
+[![SpotBugs](https://img.shields.io/badge/SpotBugs-passing-brightgreen.svg)](https://spotbugs.github.io)
+[![ArchUnit](https://img.shields.io/badge/ArchUnit-enforced-brightgreen.svg)](https://www.archunit.org)
+[![JSpecify](https://img.shields.io/badge/JSpecify-null--marked-brightgreen.svg)](https://jspecify.dev)
+[![NullAway](https://img.shields.io/badge/NullAway-enforced-brightgreen.svg)](https://github.com/uber/NullAway)
 
 > [!NOTE]
 > **Pitest Passed**: This repository is fully validated by Pitest mutation testing, ensuring exceptionally strong test quality and mutation coverage.
+
+> [!TIP]
+> **Coverage**: BlindBean holds high line and branch coverage across every module — tracked on [Codecov](https://codecov.io/gh/PIsberg/blindbean), with a patch-coverage gate enforced on every pull request. The sunburst below maps coverage per package and file (click through for the live report).
+
+[![Coverage sunburst](https://codecov.io/gh/PIsberg/blindbean/graphs/sunburst.svg?token=Y6W85Z8B6B)](https://codecov.io/gh/PIsberg/blindbean)
 
 BlindBean is a developer-first Java 26 library that makes Homomorphic Encryption (HE) invisible to the end user. It allows you to perform secure, private arithmetic on encrypted data using standard Java objects, completely hiding the complex cryptography behind annotations.
 

@@ -5,6 +5,8 @@ import se.deversity.blindbean.annotations.Scheme;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
+import org.jspecify.annotations.Nullable;
+
 import se.deversity.vibetags.annotations.AIContext;
 import se.deversity.vibetags.annotations.AIContract;
 import se.deversity.vibetags.annotations.AICore;
@@ -54,7 +56,7 @@ public class FheContext implements AutoCloseable {
      * constructor of a context that may never serialize a ciphertext — and cleared by
      * {@link #importState(byte[])}, which replaces the keys underneath it.
      */
-    private volatile byte[] keyTag;
+    private volatile byte @Nullable [] keyTag;
 
     /** BFV plaintext modulus, fetched once. -1 = not yet asked. */
     private volatile long plainModulus = -1;

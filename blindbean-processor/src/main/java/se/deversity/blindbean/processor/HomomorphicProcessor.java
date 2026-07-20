@@ -263,11 +263,6 @@ public class HomomorphicProcessor extends AbstractProcessor {
             ok = false;
         }
 
-        // Check for accessible no-arg constructor
-        boolean hasNoArg = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
-            .stream()
-            .anyMatch(c -> c.getParameters().isEmpty()
-                       && !c.getModifiers().contains(Modifier.PRIVATE));
         // Note: some entities only have parameterized constructors (like Wallet) — that is fine;
         // the wrapper just wraps an existing instance. We only require one constructor to exist.
         // (Relax: just check the class is not an interface — already handled by KIND check.)
@@ -896,7 +891,6 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("        }");
                 out.println("    }");
             } else {
-                String rType = boxedDecryptReturnType(f);
                 out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                 emitNullGuardOnDecrypt(out, f);
                 out.println("        throw new UnsupportedOperationException(\"Floating point types require Scheme.CKKS\");");
@@ -1042,7 +1036,6 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitAddPlain(PrintWriter out, FieldModel f) {
-        String typeName = f.typeName();
         if (emitPlainOverloadForNewTypes(out, f, "add")) return;
         switch (f.scheme()) {
             case PAILLIER -> {
@@ -1072,7 +1065,6 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitSubPlain(PrintWriter out, FieldModel f) {
-        String typeName = f.typeName();
         if (emitPlainOverloadForNewTypes(out, f, "sub")) return;
         switch (f.scheme()) {
             case PAILLIER -> {
@@ -1109,7 +1101,6 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     private void emitMulPlain(PrintWriter out, FieldModel f) {
-        String typeName = f.typeName();
         // mul is only reached for BFV/CKKS (Paillier cannot multiply), so BigDecimal/Duration —
         // both Paillier-only — never land here.
         if (emitPlainOverloadForNewTypes(out, f, "mul")) return;

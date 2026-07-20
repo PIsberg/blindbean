@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- module descriptors have their own grammar (requires/exports/provides), not ordinary code -->
+    <suppress files="module-info\.java" checks=".*"/>
+
+    <!-- generated sources are never hand-edited; the processor's output is validated by its own tests -->
+    <suppress files="[\\/]generated-sources[\\/]" checks=".*"/>
+    <suppress files="[\\/]generated-test-sources[\\/]" checks=".*"/>
+
+    <!--
+      FheNativeBridge is a locked file (FFM/SEAL bridge — see CLAUDE.md <locked_files>): its source,
+      including imports, must not be edited. Suppress the lint finding here rather than touch it.
+    -->
+    <suppress files="FheNativeBridge\.java" checks="UnusedImports"/>
+</suppressions>

@@ -5,6 +5,8 @@ import se.deversity.blindbean.fhe.FheException;
 import se.deversity.blindbean.math.PaillierKeyPair;
 import se.deversity.blindbean.math.PaillierMath;
 
+import org.jspecify.annotations.Nullable;
+
 import se.deversity.vibetags.annotations.AIAudit;
 import se.deversity.vibetags.annotations.AICore;
 import se.deversity.vibetags.annotations.AIIdempotent;
@@ -165,22 +167,25 @@ public class BlindContext {
             KeyBundle bundle = (KeyBundle) ois.readObject();
 
             // Paillier resumption
-            if (bundle.getPaillierKeyPair() != null) {
-                init(bundle.getPaillierKeyPair());
+            PaillierKeyPair paillierKeyPair = bundle.getPaillierKeyPair();
+            if (paillierKeyPair != null) {
+                init(paillierKeyPair);
             }
 
             // FHE resumption
-            if (bundle.getFheScheme() != null && bundle.getNativeFhePayload() != null) {
-                if (bundle.getFheScheme() == se.deversity.blindbean.annotations.Scheme.BFV) {
+            se.deversity.blindbean.annotations.Scheme fheScheme = bundle.getFheScheme();
+            byte[] nativeFhePayload = bundle.getNativeFhePayload();
+            if (fheScheme != null && nativeFhePayload != null) {
+                if (fheScheme == se.deversity.blindbean.annotations.Scheme.BFV) {
                     initBfv(bundle.getPolyModulusDegree());
-                } else if (bundle.getFheScheme() == se.deversity.blindbean.annotations.Scheme.CKKS) {
+                } else if (fheScheme == se.deversity.blindbean.annotations.Scheme.CKKS) {
                     initCkks(bundle.getPolyModulusDegree(), bundle.getScale());
                 }
 
                 // Mount native pointers strictly; on failure close the freshly created
                 // context rather than leaving one installed with non-imported default keys
                 try {
-                    fheInstance.get().importState(bundle.getNativeFhePayload());
+                    fheInstance.get().importState(nativeFhePayload);
                 } catch (RuntimeException e) {
                     closeExistingFhe();
                     throw e;
@@ -219,7 +224,7 @@ public class BlindContext {
      * Captures the calling thread's Paillier and FHE context references.
      * Used by {@code BlindAsync} to propagate context across virtual-thread boundaries.
      */
-    public record Snapshot(PaillierMath paillier, FheContext fhe) {}
+    public record Snapshot(@Nullable PaillierMath paillier, @Nullable FheContext fhe) {}
 
     /**
      * Returns a snapshot of the current thread's cryptographic context.
