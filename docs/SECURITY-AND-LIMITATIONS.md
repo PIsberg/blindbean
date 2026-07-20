@@ -32,6 +32,14 @@ encrypted fields in production.
 - **String/boolean math.** Encrypted storage of `String`/`boolean` is
   supported, but the processor deliberately generates no `add*`/`multiply*`
   for them; arithmetic on encoded text would corrupt it silently.
+- **Constant-time execution / timing-side-channel resistance.** The pure-Java
+  Paillier path relies on `BigInteger.modPow`, which is *not* constant-time on
+  the JVM — encryption and, especially, decryption timings can vary with the
+  secret exponent. The threat model here is confidentiality of data *in use*,
+  **not** an adversary who can measure fine-grained timing of a key holder's
+  decrypt calls. If that is in scope, isolate the key-holding process and do
+  not expose its per-operation latency (and note SEAL's BFV/CKKS are likewise
+  not hardened against local micro-architectural side channels).
 
 ## Operational rules
 
@@ -231,6 +239,14 @@ yourself.
 - Ciphertexts are bound to the keys and (for BFV/CKKS) the context
   parameters that produced them; a ciphertext from one context cannot be
   operated on under another.
+
+### Paillier encryption is randomised
+
+Every Paillier encryption draws a fresh blinding factor `r` from `SecureRandom`,
+rejection-sampled to a unit in `Z_n*` (coprime to `n`). This is what makes the
+scheme semantically secure (IND-CPA): encrypting the same value twice yields
+different ciphertexts that both decrypt to it. The randomness is neither
+optional nor configurable — a deterministic encryption here would be a break.
 
 ### Threading
 
