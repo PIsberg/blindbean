@@ -28,11 +28,11 @@ if(BLINDBEAN_SANITIZE)
     if(MSVC)
         message(FATAL_ERROR "BLINDBEAN_SANITIZE requires GCC or Clang")
     endif()
-    # -shared-libasan: reference the dynamic ASan runtime (libasan.so) rather than static-linking it
-    # into the .so, so the JVM can LD_PRELOAD the same runtime when it dlopens this library.
+    # A shared library already links the dynamic ASan runtime (libasan.so), which the CI job
+    # LD_PRELOADs into the uninstrumented JVM before it dlopens this .so — no -shared-libasan needed.
     target_compile_options(blindbean_fhe PRIVATE
-        -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -shared-libasan)
-    target_link_options(blindbean_fhe PRIVATE -fsanitize=address,undefined -shared-libasan)
+        -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer)
+    target_link_options(blindbean_fhe PRIVATE -fsanitize=address,undefined)
 endif()
 
 # On Windows the DLL is placed next to the import lib by default.
