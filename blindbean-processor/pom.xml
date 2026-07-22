@@ -44,12 +44,30 @@
                         <arg>--enable-preview</arg>
                         <arg>--add-modules</arg>
                         <arg>jdk.incubator.vector</arg>
+                        <!-- This module overrides compilerArgs, so it must repeat the reactor-root
+                             pointer or its guardrails never reach the merged repo-root files. -->
+                        <arg>-Avibetags.root=${maven.multiModuleProjectDirectory}</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>com.google.auto.service</groupId>
                             <artifactId>auto-service</artifactId>
                             <version>1.1.1</version>
+                        </path>
+                        <!--
+                          This module overrides the parent's annotationProcessorPaths, so the
+                          VibeTags RC5 generator must be listed here too or the processor's own
+                          @AI* guardrails vanish from the merged root files. Versionless: managed
+                          by the imported vibetags-bom. Emits blindbean-processor/.claude/rules/
+                          (grouped by its .vibetags-roles) + its sidecar fragment for the root merge.
+                        -->
+                        <path>
+                            <groupId>se.deversity.vibetags</groupId>
+                            <artifactId>vibetags-processor</artifactId>
+                            <!-- Pinned via the shared property (not versionless): an overriding
+                                 annotationProcessorPaths does not reliably inherit the bom-managed
+                                 version and Maven mis-resolved it to a sibling path's version. -->
+                            <version>${vibetags.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

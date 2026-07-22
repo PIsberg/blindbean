@@ -1,0 +1,6 @@
+# VibeTags role config (RC5) — groups this module's per-class granular rules under
+# .claude/rules/ into human-named topic files (multi-glob `paths:` frontmatter),
+# instead of one file per annotated class. Directory-scoped: applies to the
+# .claude/rules/ dir in this same module. First match wins; unmatched → per-class file.
+
+core-domain = **/core/*.java

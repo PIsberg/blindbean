@@ -67,7 +67,7 @@
         <maven.compiler.target>26</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.1.2</junit.version>
-        <vibetags.version>1.0.0-RC4</vibetags.version>
+        <vibetags.version>1.0.0-RC6</vibetags.version>
     </properties>
 
     <dependencyManagement>
@@ -107,8 +107,10 @@
         <!--
           The @AI* guardrail annotations are SOURCE-retention: needed to compile, gone at runtime,
           read by nobody. So `provided` here (compile-only) matches `requires static` in every
-          module-info. The guardrail GENERATOR (vibetags-processor) is deliberately NOT run in the
-          reactor — per-module it would fragment the generated GEMINI.md; the committed copy stands.
+          module-info. The guardrail GENERATOR (vibetags-processor) now runs across the reactor
+          (RC5): each annotated module owns a scoped CLAUDE.md, the root keeps the sidecar-merged
+          block, and .vibetags-roles groups the granular .claude/rules/*.md by topic. Wired on the
+          compiler plugin's annotationProcessorPaths below.
         -->
         <dependency>
             <groupId>se.deversity.vibetags</groupId>
@@ -156,6 +158,8 @@
                             <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
                             <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                             <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                            <!-- Reactor root: drives the merged repo-root CLAUDE.md/GEMINI.md aggregate. -->
+                            <arg>-Avibetags.root=${maven.multiModuleProjectDirectory}</arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
@@ -167,6 +171,16 @@
                                 <groupId>com.uber.nullaway</groupId>
                                 <artifactId>nullaway</artifactId>
                                 <version>0.13.8</version>
+                            </path>
+                            <!--
+                              VibeTags RC5 guardrail generator. Versionless: managed by the imported
+                              vibetags-bom so the processor can never skew from the annotations.
+                              Runs alongside Error Prone + NullAway. Emits per-module CLAUDE.md +
+                              the sidecar-merged root block + role-grouped .claude/rules/*.md.
+                            -->
+                            <path>
+                                <groupId>se.deversity.vibetags</groupId>
+                                <artifactId>vibetags-processor</artifactId>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
