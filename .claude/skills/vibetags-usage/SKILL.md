@@ -1,7 +1,7 @@
 ---
 name: vibetags-usage
 description: This skill should be used when the user asks how to "use VibeTags", "add VibeTags annotations", "set up AI guardrails", "protect code from AI", "configure AI platforms", asks about @AILocked, @AIContext, @AIDraft, @AIAudit, @AIIgnore, @AIPrivacy, @AICore, @AIPerformance, @AIContract, @AITestDriven, @AIThreadSafe, @AIImmutable, @AIDeprecated, @AIObservability, @AIRegulation, @AIArchitecture, @AILegacyBridge, @AIStrictClasspath, @AIInternationalized, @AIPublicAPI, @AISchemaSafe, @AIStrictExceptions, @AIStrictTypes, @AIParallelTests, @AIIdempotent, @AIFeatureFlag, @AISecure, @AICallersOnly, @AISandboxOnly, @AIMemoryBudget, @AIPure, @AIDomainModel, @AIExtensible, @AIInputSanitized, @AISecureLogging, @AIExplain, @AIPrototype, @AISunset, @AITemporary annotations, or wants to control how AI tools interact with Java code.
-version: 0.9.9
+version: 1.0.0-RC5
 ---
 
 # VibeTags Usage Guide
@@ -17,15 +17,15 @@ VibeTags is a **compile-time Java annotation processor** that generates AI platf
 <dependency>
     <groupId>se.deversity.vibetags</groupId>
     <artifactId>vibetags-processor</artifactId>
-    <version>0.9.9</version>
+    <version>1.0.0-RC5</version>
     <scope>provided</scope>
 </dependency>
 ```
 
 **Gradle:**
 ```groovy
-compileOnly 'se.deversity.vibetags:vibetags-processor:0.9.9'
-annotationProcessor 'se.deversity.vibetags:vibetags-processor:0.9.9'
+compileOnly 'se.deversity.vibetags:vibetags-processor:1.0.0-RC5'
+annotationProcessor 'se.deversity.vibetags:vibetags-processor:1.0.0-RC5'
 ```
 
 ### 2. Opt in to AI platforms (file-presence model)
@@ -64,7 +64,8 @@ touch GEMINI.md                            # Gemini (official markdown)
 touch .antigravityignore                   # Antigravity AI
 touch .clinerules                          # Cline AI assistant
 mkdir -p .junie && touch .junie/guidelines.md  # JetBrains Junie
-mkdir -p .kiro/steering                    # Amazon Kiro (granular per-class rules)
+mkdir -p .kiro/steering
+mkdir -p .claude/rules .github/instructions                    # Amazon Kiro (granular per-class rules)
 touch DESIGN.md                            # AI design agents (Cursor, Claude, Copilot, etc.)
 ```
 
@@ -907,6 +908,8 @@ When the granular rule directories exist, VibeTags generates **one rule file per
 
 | Directory | Platform | Format |
 |---|---|---|
+| `.claude/rules/*.md` | Claude Code | YAML front-matter (`paths:`) + Markdown |
+| `.github/instructions/*.instructions.md` | GitHub Copilot | YAML front-matter (`applyTo:`) + Markdown |
 | `.cursor/rules/*.mdc` | Cursor | YAML front-matter + Markdown |
 | `.windsurf/rules/*.md` | Windsurf IDE | YAML front-matter + Markdown |
 | `.trae/rules/*.md` | Trae IDE | YAML front-matter + Markdown |
@@ -923,7 +926,47 @@ Enable by creating the directories:
 mkdir -p .cursor/rules .windsurf/rules .trae/rules .roo/rules
 mkdir -p .continue/rules .tabnine/guidelines .amazonq/rules .ai/rules .pearai/rules
 mkdir -p .kiro/steering
+mkdir -p .claude/rules .github/instructions
 ```
+
+---
+
+## Role/topic grouping (`.vibetags-roles`) — RC5
+
+By default the granular dirs emit **one file per annotated class** (FQN-named, single-class glob).
+Drop a `.vibetags-roles` config **in the same directory as the granular dir** to instead group
+matching classes into a few human-named **topic files** with a multi-glob `paths:` frontmatter:
+
+```
+# <role-name> = <glob-or-FQN>[, <glob-or-FQN> ...]   — first match wins; unmatched → per-class file
+api-endpoints = **/*Controller.java
+persistence   = **/*Repository.java, **/*Entity.java, com.example.LegacyDao
+```
+
+- **Directory-scoped.** A `.vibetags-roles` groups only the granular files written into *its own*
+  directory. A repo-root config does **not** reach a module's granular dir — put a `.vibetags-roles`
+  in each module that has a `.claude/rules/`.
+- The config's content hash folds into the build fingerprint, so edits regenerate.
+- Absent `.vibetags-roles`, granular output is byte-for-byte the per-class default.
+
+## Multi-module Maven reactor (per-module output) — RC5
+
+Opt-in is by file/dir existence, per directory:
+
+- **Root aggregate** (`CLAUDE.md`, `GEMINI.md`, …): the sidecar **merges every module** into one
+  block. This merge is driven by `-Avibetags.root=${maven.multiModuleProjectDirectory}` on the
+  compiler plugin — without it each module treats itself as its own root and the merged root goes
+  stale. Each module drops a `.vibetags-mod-<id>` fragment at that root; they are transient (gitignore
+  `.vibetags-mod-*`, `.vibetags-cache`, `vibetags.log`).
+- **Per-module granular** (`module/.claude/rules/` + `module/.vibetags-roles`): role-grouped topic
+  files scoped to that module's own annotations, written directly (no cross-module merge). Separate
+  dirs mean no clobbering — unlike a *root* `.claude/rules/`, which does **not** merge across modules
+  (last module wins) and should be avoided.
+- **A module that overrides the compiler config** (its own `annotationProcessorPaths`/`compilerArgs`)
+  must re-declare the `vibetags-processor` path (pin the version — an overriding versionless path can
+  mis-resolve) **and** repeat `-Avibetags.root`, or its guardrails silently drop out of the merge.
+- Don't put a granular dir *and* an aggregate `CLAUDE.md` in the same module unless you want the same
+  guardrails twice (both auto-load) — pick one per module.
 
 ---
 
