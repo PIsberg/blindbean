@@ -33,6 +33,10 @@
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-fhe</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-runtime</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-junit</artifactId></dependency>
+        <dependency>
+            <groupId>com.karta</groupId>
+            <artifactId>code-karta-core</artifactId>
+        </dependency>
         <!-- processor is compile-time; consumers add it to their processor path, not runtime cp,
              so it is intentionally NOT a transitive runtime dep of the aggregate. -->
     </dependencies>

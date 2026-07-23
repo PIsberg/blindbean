@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="5880" height="11776" viewBox="0 0 5880 11776">
+<defs>
+<style>
+svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; }
+.node-rect { transition: filter 0.2s ease, stroke-width 0.2s ease, stroke 0.2s ease; }
+.node-rect:hover { stroke-width: 2.2 !important; filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.12)) !important; }
+.edge-line { stroke-linecap: round; stroke-linejoin: round; transition: stroke-width 0.2s ease; }
+.edge-line:hover { stroke-width: 2.5 !important; }
+.edge-label { paint-order: stroke; stroke: #f9fafb; stroke-width: 3; font-weight: 500; }
+.diagram-attribution { fill: #9ca3af; text-decoration: none; transition: fill 0.2s ease; }
+.diagram-attribution:hover { fill: #4b5563; text-decoration: underline; }
+.group-rect { transition: stroke-width 0.2s ease; }
+.node-label { pointer-events: none; }
+</style>
+<filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+</filter>
+<linearGradient id="grad-CLASS" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#ffffff"/>
+  <stop offset="100%" stop-color="#f3f4f6"/>
+</linearGradient>
+<linearGradient id="grad-INTERFACE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#eff6ff"/>
+  <stop offset="100%" stop-color="#dbeafe"/>
+</linearGradient>
+<linearGradient id="grad-MODULE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#faf5ff"/>
+  <stop offset="100%" stop-color="#ede9fe"/>
+</linearGradient>
+<linearGradient id="grad-METHOD" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#fffbeb"/>
+  <stop offset="100%" stop-color="#fef3c7"/>
+</linearGradient>
+<linearGradient id="grad-PACKAGE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#ecfdf5"/>
+  <stop offset="100%" stop-color="#d1fae5"/>
+</linearGradient>
+<linearGradient id="grad-EXCEPTION" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#fef2f2"/>
+  <stop offset="100%" stop-color="#fee2e2"/>
+</linearGradient>
+<linearGradient id="grad-STATE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#f0f9ff"/>
+  <stop offset="100%" stop-color="#e0f2fe"/>
+</linearGradient>
+<pattern id="dotGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+  <circle cx="2" cy="2" r="1" fill="#e5e7eb"/>
+</pattern>
+<marker id="seq-marker-call" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+  <path d="M0,0 L8,4 L0,8 Z" fill="#92400e"/>
+</marker>
+<marker id="seq-marker-exc" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+  <path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/>
+</marker>
+</defs>
+<rect width="5880" height="11776" fill="#f9fafb"/>
+<rect width="5880" height="11776" fill="url(#dotGrid)"/>
+<rect class="group-rect" x="91.0" y="436.0" width="1738.0" height="7634.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="436.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="447.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="91.0" y="274.0" width="1298.0" height="8336.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="274.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="285.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="311.0" y="4702.0" width="2618.0" height="74.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="311.0" y="4702.0" width="544.0" height="16" rx="2" fill="#fef08a"/>
+<text x="315.0" y="4713.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(UnsatisfiedLinkError|ExceptionInInitializerError|NoClassDefFoundError)</text>
+<rect class="group-rect" x="91.0" y="2812.0" width="1298.0" height="6554.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="2812.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="2823.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="91.0" y="2812.0" width="1298.0" height="6554.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="2812.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="2823.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="91.0" y="436.0" width="1298.0" height="7418.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="436.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="447.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="91.0" y="436.0" width="1298.0" height="7634.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="436.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="447.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="91.0" y="436.0" width="1298.0" height="7634.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="436.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="447.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="91.0" y="2812.0" width="1298.0" height="5852.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="91.0" y="2812.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="95.0" y="2823.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Exception)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="598.0" width="3058.0" height="9254.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="598.0" width="124.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="609.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(Throwable)</text>
+<rect class="group-rect" x="1191.0" y="11560.0" width="638.0" height="74.0" rx="4" fill="#fef9c3" fill-opacity="0.35" stroke="#ca8a04" stroke-dasharray="6,3" stroke-width="1.2"/>
+<rect x="1191.0" y="11560.0" width="201.0" height="16" rx="2" fill="#fef08a"/>
+<text x="1195.0" y="11571.0" font-family="sans-serif" font-size="10" fill="#713f12">catch(UnsatisfiedLinkError)</text>
+<line x1="190.0" y1="98.0" x2="190.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="410.0" y1="98.0" x2="410.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="630.0" y1="98.0" x2="630.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="850.0" y1="98.0" x2="850.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="1070.0" y1="98.0" x2="1070.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="1290.0" y1="98.0" x2="1290.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="1510.0" y1="98.0" x2="1510.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="1730.0" y1="98.0" x2="1730.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="1950.0" y1="98.0" x2="1950.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="2170.0" y1="98.0" x2="2170.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="2390.0" y1="98.0" x2="2390.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="2610.0" y1="98.0" x2="2610.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="2830.0" y1="98.0" x2="2830.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="3050.0" y1="98.0" x2="3050.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="3270.0" y1="98.0" x2="3270.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="3490.0" y1="98.0" x2="3490.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="3710.0" y1="98.0" x2="3710.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="3930.0" y1="98.0" x2="3930.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="4150.0" y1="98.0" x2="4150.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="4370.0" y1="98.0" x2="4370.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="4590.0" y1="98.0" x2="4590.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="4810.0" y1="98.0" x2="4810.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="5030.0" y1="98.0" x2="5030.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="5250.0" y1="98.0" x2="5250.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="5470.0" y1="98.0" x2="5470.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<line x1="5690.0" y1="98.0" x2="5690.0" y2="11682.0" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4"/>
+<rect x="185.0" y="123.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="185.0" y="177.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="185.0" y="231.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="285.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="339.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="393.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="447.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="501.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="555.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="609.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="663.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="717.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="771.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="825.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="879.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="933.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="987.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1505.0" y="1041.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="1095.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="1149.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="2165.0" y="1203.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="2385.0" y="1257.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="1311.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3485.0" y="1365.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="1419.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="1473.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="1527.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="1581.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="1635.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="1689.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="1743.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="1797.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="1851.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="1905.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="1959.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="2013.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="2067.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="2121.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3705.0" y="2175.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1505.0" y="2229.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="2385.0" y="2283.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="2605.0" y="2337.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="2391.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1505.0" y="2445.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="185.0" y="2499.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="2553.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1505.0" y="2607.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1505.0" y="2661.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="2715.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="2769.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="2823.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="2877.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="2931.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="2985.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="3039.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="3093.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="3147.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="3201.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="3255.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="3309.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="3363.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3417.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3471.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3525.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3579.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3633.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3687.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="3741.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3795.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3849.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3903.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="3957.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="4011.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="4065.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4119.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4173.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4227.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4281.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4335.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4389.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3265.0" y="4443.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4497.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3265.0" y="4551.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4605.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="3045.0" y="4659.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="2825.0" y="4713.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="4767.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="4821.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="4875.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="4929.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="4983.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5037.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="5091.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="5145.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5199.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5253.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5307.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5361.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5415.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5469.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="5523.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="5577.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5631.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="5685.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="5739.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="5793.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5847.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5901.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="5955.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="6009.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="6063.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="6117.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="6171.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="6225.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="6279.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="6333.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="6387.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="6441.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="6495.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="6549.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="6603.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="6657.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="6711.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="6765.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="6819.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="6873.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="6927.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="6981.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="7035.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="7089.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="7143.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="7197.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="7251.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="7305.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="7359.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="7413.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="7467.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="7521.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="7575.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="7629.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="7683.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="7737.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="7791.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="7845.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="7899.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="7953.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="8007.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="8061.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="8115.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="8169.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="8223.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="8277.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="8331.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="8385.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="8439.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="8493.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="845.0" y="8547.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="8601.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="8655.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="8709.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="8763.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="8817.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="8871.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="8925.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="8979.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="9033.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="9087.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="9141.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="9195.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="9249.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1065.0" y="9303.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="9357.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="9411.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="9465.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="9519.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="405.0" y="9573.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="9627.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="9681.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="9735.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4145.0" y="9789.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="625.0" y="9843.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4365.0" y="9897.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4585.0" y="9951.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="4805.0" y="10005.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1285.0" y="10059.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5685.0" y="10113.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="10167.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="10221.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="10275.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="10329.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1945.0" y="10383.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5685.0" y="10437.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5685.0" y="10491.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5685.0" y="10545.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5685.0" y="10599.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5685.0" y="10653.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="10707.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5025.0" y="10761.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5245.0" y="10815.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="10869.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5465.0" y="10923.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5465.0" y="10977.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5465.0" y="11031.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5025.0" y="11085.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5245.0" y="11139.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="11193.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5465.0" y="11247.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5465.0" y="11301.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5025.0" y="11355.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5245.0" y="11409.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="11463.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="5465.0" y="11517.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<rect x="1725.0" y="11571.5" width="10.0" height="26.0" fill="#ffffff" stroke="#92400e" stroke-width="0.9"/>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.handle" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.ensureValid" data-type="CALLS" d="M195.0 130.0 C231.0 125.0 231.0 159.3 195.0 154.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.handle" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.ensureValid" data-type="CALLS" x="235.0" y="134.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureValid</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-type="CALLS" d="M195.0 184.0 C231.0 179.0 231.0 213.3 195.0 208.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-type="CALLS" x="235.0" y="188.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: serialize</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.ensureValid" data-type="CALLS" d="M195.0 238.0 C231.0 233.0 231.0 267.3 195.0 262.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.ensureValid" data-type="CALLS" x="235.0" y="242.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureValid</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheContext.handle" data-type="CALLS" x1="190.0" y1="292.0" x2="405.0" y2="292.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheContext.handle" data-type="CALLS" x="300.0" y="283.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: handle</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.handle" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 346.0 C451.0 341.0 451.0 375.3 415.0 370.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.handle" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="350.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="190.0" y1="400.0" x2="625.0" y2="400.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="410.0" y="391.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x1="190.0" y1="454.0" x2="845.0" y2="454.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x="520.0" y="445.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: allocate</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x1="190.0" y1="508.0" x2="1065.0" y2="508.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x="630.0" y="499.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: set</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_serialize_ciphertext" data-type="CALLS" x1="190.0" y1="562.0" x2="1285.0" y2="562.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_serialize_ciphertext" data-type="CALLS" x="740.0" y="553.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: fhe_serialize_ciphertext</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_serialize_ciphertext" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="616.0" x2="4145.0" y2="616.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_serialize_ciphertext" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="607.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x1="190.0" y1="670.0" x2="1065.0" y2="670.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x="630.0" y="661.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x1="190.0" y1="724.0" x2="845.0" y2="724.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x="520.0" y="715.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">8: allocate</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x1="190.0" y1="778.0" x2="1065.0" y2="778.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x="630.0" y="769.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">9: set</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_serialize_ciphertext" data-type="CALLS" x1="190.0" y1="832.0" x2="1285.0" y2="832.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_serialize_ciphertext" data-type="CALLS" x="740.0" y="823.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">10: fhe_serialize_ciphertext</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x1="190.0" y1="886.0" x2="1065.0" y2="886.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x="630.0" y="877.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">11: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.toArray" data-type="CALLS" x1="190.0" y1="940.0" x2="1065.0" y2="940.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.toArray" data-type="CALLS" x="630.0" y="931.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">12: toArray</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.asSlice" data-type="CALLS" x1="190.0" y1="994.0" x2="1065.0" y2="994.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.foreign.MemorySegment.asSlice" data-type="CALLS" x="630.0" y="985.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">13: asSlice</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="context.scheme" data-type="CALLS" x1="190.0" y1="1048.0" x2="1505.0" y2="1048.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="context.scheme" data-type="CALLS" x="850.0" y="1039.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">14: scheme</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheContext.polyModulusDegree" data-type="CALLS" x1="190.0" y1="1102.0" x2="405.0" y2="1102.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="se.deversity.blindbean.fhe.FheContext.polyModulusDegree" data-type="CALLS" x="300.0" y="1093.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">15: polyModulusDegree</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.System.arraycopy" data-type="CALLS" x1="190.0" y1="1156.0" x2="1725.0" y2="1156.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.serialize" data-target="java.lang.System.arraycopy" data-type="CALLS" x="960.0" y="1147.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">16: arraycopy</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="Ciphertext.fromBytes" data-type="CALLS" x1="190.0" y1="1210.0" x2="2165.0" y2="1210.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="Ciphertext.fromBytes" data-type="CALLS" x="1180.0" y="1201.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fromBytes</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="KeyTag.wrap" data-type="CALLS" x1="190.0" y1="1264.0" x2="2385.0" y2="1264.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="KeyTag.wrap" data-type="CALLS" x="1290.0" y="1255.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: wrap</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheContext.keyTag" data-type="CALLS" x1="190.0" y1="1318.0" x2="405.0" y2="1318.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheContext.keyTag" data-type="CALLS" x="300.0" y="1309.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: keyTag</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.keyTag" data-target="se.deversity.blindbean.core.KeyTag.derive" data-type="CALLS" x1="410.0" y1="1372.0" x2="3485.0" y2="1372.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.keyTag" data-target="se.deversity.blindbean.core.KeyTag.derive" data-type="CALLS" x="1950.0" y="1363.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: derive</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.keyTag" data-target="se.deversity.blindbean.fhe.FheContext.exportState" data-type="CALLS" d="M415.0 1426.0 C451.0 1421.0 451.0 1455.3 415.0 1450.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.keyTag" data-target="se.deversity.blindbean.fhe.FheContext.exportState" data-type="CALLS" x="455.0" y="1430.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: exportState</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 1480.0 C451.0 1475.0 451.0 1509.3 415.0 1504.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="1484.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="410.0" y1="1534.0" x2="625.0" y2="1534.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="520.0" y="1525.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x1="410.0" y1="1588.0" x2="845.0" y2="1588.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x="630.0" y="1579.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: allocate</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x1="410.0" y1="1642.0" x2="1065.0" y2="1642.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x="740.0" y="1633.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: set</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_export_keys" data-type="CALLS" x1="410.0" y1="1696.0" x2="1285.0" y2="1696.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_export_keys" data-type="CALLS" x="850.0" y="1687.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: fhe_export_keys</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_export_keys" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="1750.0" x2="4145.0" y2="1750.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_export_keys" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="1741.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x1="410.0" y1="1804.0" x2="1065.0" y2="1804.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x="740.0" y="1795.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x1="410.0" y1="1858.0" x2="845.0" y2="1858.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x="630.0" y="1849.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: allocate</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x1="410.0" y1="1912.0" x2="1065.0" y2="1912.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.set" data-type="CALLS" x="740.0" y="1903.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">8: set</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_export_keys" data-type="CALLS" x1="410.0" y1="1966.0" x2="1285.0" y2="1966.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_export_keys" data-type="CALLS" x="850.0" y="1957.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">9: fhe_export_keys</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x1="410.0" y1="2020.0" x2="1065.0" y2="2020.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.get" data-type="CALLS" x="740.0" y="2011.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">10: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.toArray" data-type="CALLS" x1="410.0" y1="2074.0" x2="1065.0" y2="2074.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.toArray" data-type="CALLS" x="740.0" y="2065.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">11: toArray</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.asSlice" data-type="CALLS" x1="410.0" y1="2128.0" x2="1065.0" y2="2128.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.exportState" data-target="java.lang.foreign.MemorySegment.asSlice" data-type="CALLS" x="740.0" y="2119.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">12: asSlice</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.keyTag" data-target="java.lang.Object.clone" data-type="CALLS" x1="410.0" y1="2182.0" x2="3705.0" y2="2182.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.keyTag" data-target="java.lang.Object.clone" data-type="CALLS" x="2060.0" y="2173.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: clone</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="context.scheme" data-type="CALLS" x1="190.0" y1="2236.0" x2="1505.0" y2="2236.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.toBlindCiphertext" data-target="context.scheme" data-type="CALLS" x="850.0" y="2227.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: scheme</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="KeyTag.verifyAndUnwrap" data-type="CALLS" x1="190.0" y1="2290.0" x2="2385.0" y2="2290.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="KeyTag.verifyAndUnwrap" data-type="CALLS" x="1290.0" y="2281.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: verifyAndUnwrap</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="ct.getBytes" data-type="CALLS" x1="190.0" y1="2344.0" x2="2605.0" y2="2344.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="ct.getBytes" data-type="CALLS" x="1400.0" y="2335.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: getBytes</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheContext.keyTag" data-type="CALLS" x1="190.0" y1="2398.0" x2="405.0" y2="2398.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheContext.keyTag" data-type="CALLS" x="300.0" y="2389.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: keyTag</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="context.scheme" data-type="CALLS" x1="190.0" y1="2452.0" x2="1505.0" y2="2452.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="context.scheme" data-type="CALLS" x="850.0" y="2443.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: scheme</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-type="CALLS" d="M195.0 2506.0 C231.0 2501.0 231.0 2535.3 195.0 2530.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.fromBlindCiphertext" data-target="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-type="CALLS" x="235.0" y="2510.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: deserialize</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.String.format" data-type="CALLS" x1="190.0" y1="2560.0" x2="1945.0" y2="2560.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.String.format" data-type="CALLS" x="1070.0" y="2551.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: format</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="context.scheme" data-type="CALLS" x1="190.0" y1="2614.0" x2="1505.0" y2="2614.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="context.scheme" data-type="CALLS" x="850.0" y="2605.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: scheme</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="context.scheme" data-type="CALLS" x1="190.0" y1="2668.0" x2="1505.0" y2="2668.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="context.scheme" data-type="CALLS" x="850.0" y="2659.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: scheme</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.System.arraycopy" data-type="CALLS" x1="190.0" y1="2722.0" x2="1725.0" y2="2722.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.System.arraycopy" data-type="CALLS" x="960.0" y="2713.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: arraycopy</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="190.0" y1="2776.0" x2="625.0" y2="2776.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="410.0" y="2767.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x1="190.0" y1="2830.0" x2="845.0" y2="2830.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x="520.0" y="2821.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: allocateFrom</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_deserialize_ciphertext" data-type="CALLS" x1="190.0" y1="2884.0" x2="1285.0" y2="2884.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_deserialize_ciphertext" data-type="CALLS" x="740.0" y="2875.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: fhe_deserialize_ciphertext</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_deserialize_ciphertext" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="2938.0" x2="4145.0" y2="2938.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_deserialize_ciphertext" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="2929.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="se.deversity.blindbean.fhe.FheContext.handle" data-type="CALLS" x1="190.0" y1="2992.0" x2="405.0" y2="2992.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.deserialize" data-target="se.deversity.blindbean.fhe.FheContext.handle" data-type="CALLS" x="300.0" y="2983.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">8: handle</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.close" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_free_ciphertext" data-type="CALLS" x1="190.0" y1="3046.0" x2="1285.0" y2="3046.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheCiphertextNative.close" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_free_ciphertext" data-type="CALLS" x="740.0" y="3037.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: fhe_free_ciphertext</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_free_ciphertext" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="3100.0" x2="4145.0" y2="3100.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_free_ciphertext" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="3091.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.bfv" data-target="se.deversity.blindbean.fhe.FheContext.initNative" data-type="CALLS" d="M415.0 3154.0 C451.0 3149.0 451.0 3183.3 415.0 3178.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.bfv" data-target="se.deversity.blindbean.fhe.FheContext.initNative" data-type="CALLS" x="455.0" y="3158.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: initNative</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.initNative" data-target="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-type="CALLS" d="M415.0 3208.0 C451.0 3203.0 451.0 3237.3 415.0 3232.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.initNative" data-target="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-type="CALLS" x="455.0" y="3212.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: nativeLoadGuidance</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.System.getProperty" data-type="CALLS" x1="410.0" y1="3262.0" x2="1725.0" y2="3262.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.System.getProperty" data-type="CALLS" x="1070.0" y="3253.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: getProperty</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.System.getProperty" data-type="CALLS" x1="410.0" y1="3316.0" x2="1725.0" y2="3316.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.System.getProperty" data-type="CALLS" x="1070.0" y="3307.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: getProperty</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.System.getProperty" data-type="CALLS" x1="410.0" y1="3370.0" x2="1725.0" y2="3370.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.System.getProperty" data-type="CALLS" x="1070.0" y="3361.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: getProperty</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3424.0" x2="3045.0" y2="3424.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3415.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3478.0" x2="3045.0" y2="3478.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3469.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3532.0" x2="3045.0" y2="3532.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3523.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3586.0" x2="3045.0" y2="3586.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3577.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3640.0" x2="3045.0" y2="3640.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3631.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">8: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3694.0" x2="3045.0" y2="3694.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3685.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">9: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.String.isBlank" data-type="CALLS" x1="410.0" y1="3748.0" x2="1945.0" y2="3748.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.String.isBlank" data-type="CALLS" x="1180.0" y="3739.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">10: isBlank</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3802.0" x2="3045.0" y2="3802.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3793.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">11: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3856.0" x2="3045.0" y2="3856.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3847.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">12: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3910.0" x2="3045.0" y2="3910.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3901.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">13: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="3964.0" x2="3045.0" y2="3964.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="3955.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">14: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.String.contains" data-type="CALLS" x1="410.0" y1="4018.0" x2="1945.0" y2="4018.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.String.contains" data-type="CALLS" x="1180.0" y="4009.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">15: contains</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.String.toLowerCase" data-type="CALLS" x1="410.0" y1="4072.0" x2="1945.0" y2="4072.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.String.toLowerCase" data-type="CALLS" x="1180.0" y="4063.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">16: toLowerCase</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4126.0" x2="3045.0" y2="4126.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4117.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">17: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4180.0" x2="3045.0" y2="4180.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4171.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">18: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4234.0" x2="3045.0" y2="4234.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4225.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">19: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4288.0" x2="3045.0" y2="4288.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4279.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">20: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4342.0" x2="3045.0" y2="4342.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4333.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">21: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4396.0" x2="3045.0" y2="4396.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4387.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">22: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.Throwable.getMessage" data-type="CALLS" x1="410.0" y1="4450.0" x2="3265.0" y2="4450.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.Throwable.getMessage" data-type="CALLS" x="1840.0" y="4441.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">23: getMessage</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4504.0" x2="3045.0" y2="4504.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4495.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">24: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.Throwable.getMessage" data-type="CALLS" x1="410.0" y1="4558.0" x2="3265.0" y2="4558.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.Throwable.getMessage" data-type="CALLS" x="1840.0" y="4549.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">25: getMessage</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x1="410.0" y1="4612.0" x2="3045.0" y2="4612.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.append" data-type="CALLS" x="1730.0" y="4603.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">26: append</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.toString" data-type="CALLS" x1="410.0" y1="4666.0" x2="3045.0" y2="4666.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.nativeLoadGuidance" data-target="java.lang.StringBuilder.toString" data-type="CALLS" x="1730.0" y="4657.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">27: toString</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.initNative" data-target="java.util.function.Supplier.get" data-type="CALLS" x1="410.0" y1="4720.0" x2="2825.0" y2="4720.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.initNative" data-target="java.util.function.Supplier.get" data-type="CALLS" x="1620.0" y="4711.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.bfv" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_bfv" data-type="CALLS" x1="410.0" y1="4774.0" x2="1285.0" y2="4774.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.bfv" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_bfv" data-type="CALLS" x="850.0" y="4765.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_init_bfv</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_bfv" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="4828.0" x2="4145.0" y2="4828.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_bfv" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="4819.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.bfv" data-target="se.deversity.blindbean.fhe.FheContext.create" data-type="CALLS" d="M415.0 4882.0 C451.0 4877.0 451.0 4911.3 415.0 4906.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.bfv" data-target="se.deversity.blindbean.fhe.FheContext.create" data-type="CALLS" x="455.0" y="4886.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: create</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.create" data-target="java.lang.foreign.Arena.ofShared" data-type="CALLS" x1="410.0" y1="4936.0" x2="625.0" y2="4936.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.create" data-target="java.lang.foreign.Arena.ofShared" data-type="CALLS" x="520.0" y="4927.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ofShared</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.create" data-target="java.lang.foreign.Arena.close" data-type="CALLS" x1="410.0" y1="4990.0" x2="625.0" y2="4990.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.create" data-target="java.lang.foreign.Arena.close" data-type="CALLS" x="520.0" y="4981.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: close</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.ckks" data-target="se.deversity.blindbean.fhe.FheContext.initNative" data-type="CALLS" d="M415.0 5044.0 C451.0 5039.0 451.0 5073.3 415.0 5068.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.ckks" data-target="se.deversity.blindbean.fhe.FheContext.initNative" data-type="CALLS" x="455.0" y="5048.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: initNative</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.ckks" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_ckks" data-type="CALLS" x1="410.0" y1="5098.0" x2="1285.0" y2="5098.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.ckks" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_ckks" data-type="CALLS" x="850.0" y="5089.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_init_ckks</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_ckks" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="5152.0" x2="4145.0" y2="5152.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_init_ckks" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="5143.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.ckks" data-target="se.deversity.blindbean.fhe.FheContext.create" data-type="CALLS" d="M415.0 5206.0 C451.0 5201.0 451.0 5235.3 415.0 5230.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.ckks" data-target="se.deversity.blindbean.fhe.FheContext.create" data-type="CALLS" x="455.0" y="5210.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: create</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 5260.0 C451.0 5255.0 451.0 5289.3 415.0 5284.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="5264.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-type="CALLS" d="M415.0 5314.0 C451.0 5309.0 451.0 5343.3 415.0 5338.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-type="CALLS" x="455.0" y="5318.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: requireEncodable</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-target="se.deversity.blindbean.fhe.FheContext.maxSlotValue" data-type="CALLS" d="M415.0 5368.0 C451.0 5363.0 451.0 5397.3 415.0 5392.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-target="se.deversity.blindbean.fhe.FheContext.maxSlotValue" data-type="CALLS" x="455.0" y="5372.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: maxSlotValue</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.maxSlotValue" data-target="se.deversity.blindbean.fhe.FheContext.plainModulus" data-type="CALLS" d="M415.0 5422.0 C451.0 5417.0 451.0 5451.3 415.0 5446.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.maxSlotValue" data-target="se.deversity.blindbean.fhe.FheContext.plainModulus" data-type="CALLS" x="455.0" y="5426.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: plainModulus</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.plainModulus" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 5476.0 C451.0 5471.0 451.0 5505.3 415.0 5500.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.plainModulus" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="5480.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.plainModulus" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_plain_modulus" data-type="CALLS" x1="410.0" y1="5530.0" x2="1285.0" y2="5530.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.plainModulus" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_plain_modulus" data-type="CALLS" x="850.0" y="5521.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_plain_modulus</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_plain_modulus" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="5584.0" x2="4145.0" y2="5584.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_plain_modulus" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="5575.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-target="se.deversity.blindbean.fhe.FheContext.plainModulus" data-type="CALLS" d="M415.0 5638.0 C451.0 5633.0 451.0 5667.3 415.0 5662.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-target="se.deversity.blindbean.fhe.FheContext.plainModulus" data-type="CALLS" x="455.0" y="5642.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: plainModulus</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long" data-type="CALLS" x1="410.0" y1="5692.0" x2="1285.0" y2="5692.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long" data-type="CALLS" x="850.0" y="5683.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: fhe_encrypt_long</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="5746.0" x2="4145.0" y2="5746.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="5737.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="5800.0" x2="1065.0" y2="5800.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLong" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="5791.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: equals</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLong" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 5854.0 C451.0 5849.0 451.0 5883.3 415.0 5878.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLong" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="5858.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLong" data-target="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-type="CALLS" d="M415.0 5908.0 C451.0 5903.0 451.0 5937.3 415.0 5932.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLong" data-target="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-type="CALLS" x="455.0" y="5912.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: requireDecryptable</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-target="se.deversity.blindbean.fhe.FheContext.noiseGuardEnabled" data-type="CALLS" d="M415.0 5962.0 C451.0 5957.0 451.0 5991.3 415.0 5986.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-target="se.deversity.blindbean.fhe.FheContext.noiseGuardEnabled" data-type="CALLS" x="455.0" y="5966.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: noiseGuardEnabled</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.noiseGuardEnabled" data-target="java.lang.String.equalsIgnoreCase" data-type="CALLS" x1="410.0" y1="6016.0" x2="1945.0" y2="6016.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.noiseGuardEnabled" data-target="java.lang.String.equalsIgnoreCase" data-type="CALLS" x="1180.0" y="6007.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: equalsIgnoreCase</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.noiseGuardEnabled" data-target="java.lang.System.getProperty" data-type="CALLS" x1="410.0" y1="6070.0" x2="1725.0" y2="6070.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.noiseGuardEnabled" data-target="java.lang.System.getProperty" data-type="CALLS" x="1070.0" y="6061.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: getProperty</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_noise_budget" data-type="CALLS" x1="410.0" y1="6124.0" x2="1285.0" y2="6124.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_noise_budget" data-type="CALLS" x="850.0" y="6115.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_noise_budget</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_noise_budget" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="6178.0" x2="4145.0" y2="6178.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_noise_budget" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="6169.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLong" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long" data-type="CALLS" x1="410.0" y1="6232.0" x2="1285.0" y2="6232.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLong" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long" data-type="CALLS" x="850.0" y="6223.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: fhe_decrypt_long</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="6286.0" x2="4145.0" y2="6286.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="6277.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 6340.0 C451.0 6335.0 451.0 6369.3 415.0 6364.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="6344.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-type="CALLS" d="M415.0 6394.0 C451.0 6389.0 451.0 6423.3 415.0 6418.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.requireEncodable" data-type="CALLS" x="455.0" y="6398.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: requireEncodable</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="410.0" y1="6448.0" x2="625.0" y2="6448.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="520.0" y="6439.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x1="410.0" y1="6502.0" x2="845.0" y2="6502.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x="630.0" y="6493.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: allocateFrom</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long_array" data-type="CALLS" x1="410.0" y1="6556.0" x2="1285.0" y2="6556.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long_array" data-type="CALLS" x="850.0" y="6547.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: fhe_encrypt_long_array</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="6610.0" x2="4145.0" y2="6610.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_long_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="6601.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="6664.0" x2="1065.0" y2="6664.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptLongArray" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="6655.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: equals</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 6718.0 C451.0 6713.0 451.0 6747.3 415.0 6742.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="6722.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="410.0" y1="6772.0" x2="625.0" y2="6772.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="520.0" y="6763.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x1="410.0" y1="6826.0" x2="845.0" y2="6826.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x="630.0" y="6817.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: allocateFrom</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double_array" data-type="CALLS" x1="410.0" y1="6880.0" x2="1285.0" y2="6880.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double_array" data-type="CALLS" x="850.0" y="6871.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: fhe_encrypt_double_array</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="6934.0" x2="4145.0" y2="6934.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="6925.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="6988.0" x2="1065.0" y2="6988.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="6979.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: equals</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.slotCount" data-type="CALLS" d="M415.0 7042.0 C451.0 7037.0 451.0 7071.3 415.0 7066.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.slotCount" data-type="CALLS" x="455.0" y="7046.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: slotCount</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.slotCount" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 7096.0 C451.0 7091.0 451.0 7125.3 415.0 7120.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.slotCount" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="7100.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.slotCount" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_slot_count" data-type="CALLS" x1="410.0" y1="7150.0" x2="1285.0" y2="7150.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.slotCount" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_slot_count" data-type="CALLS" x="850.0" y="7141.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_slot_count</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_slot_count" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="7204.0" x2="4145.0" y2="7204.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_slot_count" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="7195.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 7258.0 C451.0 7253.0 451.0 7287.3 415.0 7282.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="7262.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="410.0" y1="7312.0" x2="625.0" y2="7312.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="520.0" y="7303.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: ofConfined</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.slotCount" data-type="CALLS" d="M415.0 7366.0 C451.0 7361.0 451.0 7395.3 415.0 7390.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheContext.slotCount" data-type="CALLS" x="455.0" y="7370.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: slotCount</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x1="410.0" y1="7420.0" x2="845.0" y2="7420.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x="630.0" y="7411.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: allocate</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double_array" data-type="CALLS" x1="410.0" y1="7474.0" x2="1285.0" y2="7474.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double_array" data-type="CALLS" x="850.0" y="7465.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: fhe_decrypt_double_array</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="7528.0" x2="4145.0" y2="7528.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="7519.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="java.lang.foreign.MemorySegment.copy" data-type="CALLS" x1="410.0" y1="7582.0" x2="1065.0" y2="7582.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDoubleArray" data-target="java.lang.foreign.MemorySegment.copy" data-type="CALLS" x="740.0" y="7573.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: copy</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 7636.0 C451.0 7631.0 451.0 7665.3 415.0 7660.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="7640.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-type="CALLS" d="M415.0 7690.0 C451.0 7685.0 451.0 7719.3 415.0 7714.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="se.deversity.blindbean.fhe.FheContext.requireDecryptable" data-type="CALLS" x="455.0" y="7694.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: requireDecryptable</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="410.0" y1="7744.0" x2="625.0" y2="7744.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="520.0" y="7735.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x1="410.0" y1="7798.0" x2="845.0" y2="7798.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.SegmentAllocator.allocate" data-type="CALLS" x="630.0" y="7789.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: allocate</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long_array" data-type="CALLS" x1="410.0" y1="7852.0" x2="1285.0" y2="7852.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long_array" data-type="CALLS" x="850.0" y="7843.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: fhe_decrypt_long_array</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="7906.0" x2="4145.0" y2="7906.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_long_array" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="7897.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.MemorySegment.toArray" data-type="CALLS" x1="410.0" y1="7960.0" x2="1065.0" y2="7960.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.MemorySegment.toArray" data-type="CALLS" x="740.0" y="7951.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: toArray</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.MemorySegment.asSlice" data-type="CALLS" x1="410.0" y1="8014.0" x2="1065.0" y2="8014.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptLongArray" data-target="java.lang.foreign.MemorySegment.asSlice" data-type="CALLS" x="740.0" y="8005.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: asSlice</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDouble" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 8068.0 C451.0 8063.0 451.0 8097.3 415.0 8092.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDouble" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="8072.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDouble" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double" data-type="CALLS" x1="410.0" y1="8122.0" x2="1285.0" y2="8122.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDouble" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double" data-type="CALLS" x="850.0" y="8113.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_encrypt_double</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="8176.0" x2="4145.0" y2="8176.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_encrypt_double" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="8167.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.encryptDouble" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="8230.0" x2="1065.0" y2="8230.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.encryptDouble" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="8221.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: equals</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDouble" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 8284.0 C451.0 8279.0 451.0 8313.3 415.0 8308.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDouble" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="8288.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.decryptDouble" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double" data-type="CALLS" x1="410.0" y1="8338.0" x2="1285.0" y2="8338.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.decryptDouble" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double" data-type="CALLS" x="850.0" y="8329.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_decrypt_double</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="8392.0" x2="4145.0" y2="8392.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_decrypt_double" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="8383.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 8446.0 C451.0 8441.0 451.0 8475.3 415.0 8470.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="8450.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x1="410.0" y1="8500.0" x2="625.0" y2="8500.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="java.lang.foreign.Arena.ofConfined" data-type="CALLS" x="520.0" y="8491.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: ofConfined</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x1="410.0" y1="8554.0" x2="845.0" y2="8554.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="java.lang.foreign.SegmentAllocator.allocateFrom" data-type="CALLS" x="630.0" y="8545.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: allocateFrom</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_import_keys" data-type="CALLS" x1="410.0" y1="8608.0" x2="1285.0" y2="8608.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.importState" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_import_keys" data-type="CALLS" x="850.0" y="8599.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: fhe_import_keys</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_import_keys" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="8662.0" x2="4145.0" y2="8662.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_import_keys" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="8653.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.add" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 8716.0 C451.0 8711.0 451.0 8745.3 415.0 8740.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.add" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="8720.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.add" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_add" data-type="CALLS" x1="410.0" y1="8770.0" x2="1285.0" y2="8770.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.add" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_add" data-type="CALLS" x="850.0" y="8761.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_add" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="8824.0" x2="4145.0" y2="8824.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_add" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="8815.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.add" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="8878.0" x2="1065.0" y2="8878.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.add" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="8869.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: equals</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.subtract" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 8932.0 C451.0 8927.0 451.0 8961.3 415.0 8956.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.subtract" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="8936.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.subtract" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_subtract" data-type="CALLS" x1="410.0" y1="8986.0" x2="1285.0" y2="8986.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.subtract" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_subtract" data-type="CALLS" x="850.0" y="8977.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_subtract</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_subtract" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="9040.0" x2="4145.0" y2="9040.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_subtract" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="9031.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.subtract" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="9094.0" x2="1065.0" y2="9094.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.subtract" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="9085.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: equals</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 9148.0 C451.0 9143.0 451.0 9177.3 415.0 9172.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="9152.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_multiply" data-type="CALLS" x1="410.0" y1="9202.0" x2="1285.0" y2="9202.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_multiply" data-type="CALLS" x="850.0" y="9193.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_multiply</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_multiply" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="9256.0" x2="4145.0" y2="9256.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_multiply" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="9247.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x1="410.0" y1="9310.0" x2="1065.0" y2="9310.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="java.lang.foreign.MemorySegment.equals" data-type="CALLS" x="740.0" y="9301.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: equals</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_relinearize" data-type="CALLS" x1="410.0" y1="9364.0" x2="1285.0" y2="9364.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_relinearize" data-type="CALLS" x="850.0" y="9355.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: fhe_relinearize</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_relinearize" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="9418.0" x2="4145.0" y2="9418.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_relinearize" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="9409.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_rescale" data-type="CALLS" x1="410.0" y1="9472.0" x2="1285.0" y2="9472.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.multiply" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_rescale" data-type="CALLS" x="850.0" y="9463.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: fhe_rescale</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_rescale" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="9526.0" x2="4145.0" y2="9526.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_rescale" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="9517.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.noiseBudget" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" d="M415.0 9580.0 C451.0 9575.0 451.0 9609.3 415.0 9604.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.noiseBudget" data-target="se.deversity.blindbean.fhe.FheContext.ensureOpen" data-type="CALLS" x="455.0" y="9584.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: ensureOpen</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.noiseBudget" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_noise_budget" data-type="CALLS" x1="410.0" y1="9634.0" x2="1285.0" y2="9634.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.noiseBudget" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_noise_budget" data-type="CALLS" x="850.0" y="9625.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: fhe_noise_budget</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.freeCiphertext" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_free_ciphertext" data-type="CALLS" x1="410.0" y1="9688.0" x2="1285.0" y2="9688.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.freeCiphertext" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_free_ciphertext" data-type="CALLS" x="850.0" y="9679.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: fhe_free_ciphertext</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.close" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_destroy_context" data-type="CALLS" x1="410.0" y1="9742.0" x2="1285.0" y2="9742.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.close" data-target="se.deversity.blindbean.fhe.FheNativeBridge.fhe_destroy_context" data-type="CALLS" x="850.0" y="9733.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: fhe_destroy_context</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_destroy_context" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x1="1290.0" y1="9796.0" x2="4145.0" y2="9796.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.fhe_destroy_context" data-target="java.lang.invoke.MethodHandle.invokeExact" data-type="CALLS" x="2720.0" y="9787.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: invokeExact</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheContext.close" data-target="java.lang.foreign.Arena.close" data-type="CALLS" x1="410.0" y1="9850.0" x2="625.0" y2="9850.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheContext.close" data-target="java.lang.foreign.Arena.close" data-type="CALLS" x="520.0" y="9841.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: close</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.downcall" data-target="java.lang.foreign.Linker.downcallHandle" data-type="CALLS" x1="1290.0" y1="9904.0" x2="4365.0" y2="9904.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.downcall" data-target="java.lang.foreign.Linker.downcallHandle" data-type="CALLS" x="2830.0" y="9895.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: downcallHandle</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.downcall" data-target="java.util.Optional.orElseThrow" data-type="CALLS" x1="1290.0" y1="9958.0" x2="4585.0" y2="9958.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.downcall" data-target="java.util.Optional.orElseThrow" data-type="CALLS" x="2940.0" y="9949.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: orElseThrow</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.downcall" data-target="java.lang.foreign.SymbolLookup.find" data-type="CALLS" x1="1290.0" y1="10012.0" x2="4805.0" y2="10012.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.downcall" data-target="java.lang.foreign.SymbolLookup.find" data-type="CALLS" x="3050.0" y="10003.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: find</text>
+<path class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-type="CALLS" d="M1295.0 10066.0 C1331.0 10061.0 1331.0 10095.3 1295.0 10090.3" fill="none" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-type="CALLS" x="1335.0" y="10070.0" text-anchor="start" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: nativeLibraryFileNames</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x1="1290.0" y1="10120.0" x2="5685.0" y2="10120.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x="3490.0" y="10111.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">1: add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.System.mapLibraryName" data-type="CALLS" x1="1290.0" y1="10174.0" x2="1725.0" y2="10174.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.System.mapLibraryName" data-type="CALLS" x="1510.0" y="10165.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: mapLibraryName</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.String.toLowerCase" data-type="CALLS" x1="1290.0" y1="10228.0" x2="1945.0" y2="10228.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.String.toLowerCase" data-type="CALLS" x="1620.0" y="10219.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: toLowerCase</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.System.getProperty" data-type="CALLS" x1="1290.0" y1="10282.0" x2="1725.0" y2="10282.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.System.getProperty" data-type="CALLS" x="1510.0" y="10273.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: getProperty</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.String.contains" data-type="CALLS" x1="1290.0" y1="10336.0" x2="1945.0" y2="10336.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.String.contains" data-type="CALLS" x="1620.0" y="10327.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: contains</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.String.contains" data-type="CALLS" x1="1290.0" y1="10390.0" x2="1945.0" y2="10390.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.lang.String.contains" data-type="CALLS" x="1620.0" y="10381.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: contains</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x1="1290.0" y1="10444.0" x2="5685.0" y2="10444.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x="3490.0" y="10435.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x1="1290.0" y1="10498.0" x2="5685.0" y2="10498.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x="3490.0" y="10489.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">8: add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x1="1290.0" y1="10552.0" x2="5685.0" y2="10552.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x="3490.0" y="10543.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">9: add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x1="1290.0" y1="10606.0" x2="5685.0" y2="10606.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x="3490.0" y="10597.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">10: add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x1="1290.0" y1="10660.0" x2="5685.0" y2="10660.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.nativeLibraryFileNames" data-target="java.util.Set.add" data-type="CALLS" x="3490.0" y="10651.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">11: add</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.getProperty" data-type="CALLS" x1="1290.0" y1="10714.0" x2="1725.0" y2="10714.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.getProperty" data-type="CALLS" x="1510.0" y="10705.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">2: getProperty</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Paths.get" data-type="CALLS" x1="1290.0" y1="10768.0" x2="5025.0" y2="10768.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Paths.get" data-type="CALLS" x="3160.0" y="10759.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">3: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Files.exists" data-type="CALLS" x1="1290.0" y1="10822.0" x2="5245.0" y2="10822.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Files.exists" data-type="CALLS" x="3270.0" y="10813.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">4: exists</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.load" data-type="CALLS" x1="1290.0" y1="10876.0" x2="1725.0" y2="10876.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.load" data-type="CALLS" x="1510.0" y="10867.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">5: load</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toString" data-type="CALLS" x1="1290.0" y1="10930.0" x2="5465.0" y2="10930.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toString" data-type="CALLS" x="3380.0" y="10921.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">6: toString</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toAbsolutePath" data-type="CALLS" x1="1290.0" y1="10984.0" x2="5465.0" y2="10984.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toAbsolutePath" data-type="CALLS" x="3380.0" y="10975.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">7: toAbsolutePath</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toAbsolutePath" data-type="CALLS" x1="1290.0" y1="11038.0" x2="5465.0" y2="11038.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toAbsolutePath" data-type="CALLS" x="3380.0" y="11029.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">8: toAbsolutePath</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Paths.get" data-type="CALLS" x1="1290.0" y1="11092.0" x2="5025.0" y2="11092.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Paths.get" data-type="CALLS" x="3160.0" y="11083.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">9: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Files.exists" data-type="CALLS" x1="1290.0" y1="11146.0" x2="5245.0" y2="11146.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Files.exists" data-type="CALLS" x="3270.0" y="11137.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">10: exists</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.load" data-type="CALLS" x1="1290.0" y1="11200.0" x2="1725.0" y2="11200.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.load" data-type="CALLS" x="1510.0" y="11191.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">11: load</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toString" data-type="CALLS" x1="1290.0" y1="11254.0" x2="5465.0" y2="11254.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toString" data-type="CALLS" x="3380.0" y="11245.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">12: toString</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toAbsolutePath" data-type="CALLS" x1="1290.0" y1="11308.0" x2="5465.0" y2="11308.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toAbsolutePath" data-type="CALLS" x="3380.0" y="11299.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">13: toAbsolutePath</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Paths.get" data-type="CALLS" x1="1290.0" y1="11362.0" x2="5025.0" y2="11362.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Paths.get" data-type="CALLS" x="3160.0" y="11353.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">14: get</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Files.exists" data-type="CALLS" x1="1290.0" y1="11416.0" x2="5245.0" y2="11416.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Files.exists" data-type="CALLS" x="3270.0" y="11407.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">15: exists</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.load" data-type="CALLS" x1="1290.0" y1="11470.0" x2="1725.0" y2="11470.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.load" data-type="CALLS" x="1510.0" y="11461.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">16: load</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toString" data-type="CALLS" x1="1290.0" y1="11524.0" x2="5465.0" y2="11524.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.nio.file.Path.toString" data-type="CALLS" x="3380.0" y="11515.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">17: toString</text>
+<line class="edge-line" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.loadLibrary" data-type="CALLS" x1="1290.0" y1="11578.0" x2="1725.0" y2="11578.0" stroke="#92400e" stroke-width="1.6" marker-end="url(#seq-marker-call)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.fhe.FheNativeBridge.loadNativeLibrary" data-target="java.lang.System.loadLibrary" data-type="CALLS" x="1510.0" y="11569.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">18: loadLibrary</text>
+<rect class="node-rect" x="105.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="190.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.fhe.FheCiphertextNative</text>
+<rect class="node-rect" x="325.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="410.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.fhe.FheContext</text>
+<rect class="node-rect" x="545.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="630.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.foreign.Arena</text>
+<rect class="node-rect" x="765.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="850.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.foreign.SegmentAllocator</text>
+<rect class="node-rect" x="985.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="1070.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.foreign.MemorySegment</text>
+<rect class="node-rect" x="1205.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="1290.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.fhe.FheNativeBridge</text>
+<rect class="node-rect" x="1425.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="1510.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">context</text>
+<rect class="node-rect" x="1645.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="1730.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.System</text>
+<rect class="node-rect" x="1865.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="1950.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.String</text>
+<rect class="node-rect" x="2085.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="2170.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Ciphertext</text>
+<rect class="node-rect" x="2305.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="2390.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">KeyTag</text>
+<rect class="node-rect" x="2525.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="2610.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">ct</text>
+<rect class="node-rect" x="2745.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="2830.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.util.function.Supplier</text>
+<rect class="node-rect" x="2965.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="3050.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.StringBuilder</text>
+<rect class="node-rect" x="3185.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="3270.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.Throwable</text>
+<rect class="node-rect" x="3405.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="3490.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.core.KeyTag</text>
+<rect class="node-rect" x="3625.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="3710.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.Object</text>
+<rect class="node-rect" x="3845.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="3930.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.fhe.FheException</text>
+<rect class="node-rect" x="4065.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="4150.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.invoke.MethodHandle</text>
+<rect class="node-rect" x="4285.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="4370.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.foreign.Linker</text>
+<rect class="node-rect" x="4505.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="4590.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.util.Optional</text>
+<rect class="node-rect" x="4725.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="4810.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.lang.foreign.SymbolLookup</text>
+<rect class="node-rect" x="4945.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="5030.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.nio.file.Paths</text>
+<rect class="node-rect" x="5165.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="5250.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.nio.file.Files</text>
+<rect class="node-rect" x="5385.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="5470.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.nio.file.Path</text>
+<rect class="node-rect" x="5605.0" y="40.0" width="170.0" height="58.0" rx="6" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+<text class="node-label" x="5690.0" y="69.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">java.util.Set</text>
+<a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
+  <text x="5864.0" y="11760.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+</a>
+<script type="text/javascript">
+<![CDATA[
+document.addEventListener('DOMContentLoaded', () => {
+  const svg = document.querySelector('svg');
+  if (!svg) return;
+  const nodes = Array.from(svg.querySelectorAll('g')).filter(g => g.querySelector('.node-rect'));
+  const edges = Array.from(svg.querySelectorAll('.edge-line, .edge-label'));
+  nodes.forEach(node => {
+    node.style.cursor = 'pointer';
+    node.addEventListener('mouseenter', () => {
+      const nodeId = node.id;
+      nodes.forEach(n => {
+        if (n.id !== nodeId) {
+          n.style.opacity = '0.15';
+          n.style.transition = 'opacity 0.2s ease';
+        }
+      });
+      const connectedNodeIds = new Set([nodeId]);
+      edges.forEach(edge => {
+        const source = edge.getAttribute('data-source');
+        const target = edge.getAttribute('data-target');
+        const isConnected = (source === nodeId || target === nodeId || 
+                             (source && source.startsWith(nodeId + '.')) || 
+                             (target && target.startsWith(nodeId + '.')) ||
+                             (nodeId && nodeId.startsWith(source + '.')) ||
+                             (nodeId && nodeId.startsWith(target + '.')));
+        if (isConnected) {
+          if (source) connectedNodeIds.add(source);
+          if (target) connectedNodeIds.add(target);
+          const dotSrc = source ? source.lastIndexOf('.') : -1;
+          if (dotSrc > 0) connectedNodeIds.add(source.substring(0, dotSrc));
+          const dotTgt = target ? target.lastIndexOf('.') : -1;
+          if (dotTgt > 0) connectedNodeIds.add(target.substring(0, dotTgt));
+          edge.style.opacity = '1';
+          if (edge.classList.contains('edge-line')) {
+            edge.style.strokeWidth = '2.8px';
+          }
+          edge.style.fontWeight = 'bold';
+          edge.style.transition = 'opacity 0.2s ease, stroke-width 0.2s ease';
+        } else {
+          edge.style.opacity = '0.08';
+          edge.style.transition = 'opacity 0.2s ease';
+        }
+      });
+      nodes.forEach(n => {
+        if (connectedNodeIds.has(n.id)) {
+          n.style.opacity = '1';
+        }
+      });
+    });
+    node.addEventListener('mouseleave', () => {
+      nodes.forEach(n => {
+        n.style.opacity = '1';
+      });
+      edges.forEach(edge => {
+        edge.style.opacity = '1';
+        edge.style.strokeWidth = '';
+        edge.style.fontWeight = '';
+      });
+    });
+  });
+});
+]]>
+</script>
+</svg>

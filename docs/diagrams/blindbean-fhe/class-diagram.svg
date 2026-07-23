@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="882" viewBox="0 0 960 882">
+<defs>
+<style>
+svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; }
+.node-rect { transition: filter 0.2s ease, stroke-width 0.2s ease, stroke 0.2s ease; }
+.node-rect:hover { stroke-width: 2.2 !important; filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.12)) !important; }
+.edge-line { stroke-linecap: round; stroke-linejoin: round; transition: stroke-width 0.2s ease; }
+.edge-line:hover { stroke-width: 2.5 !important; }
+.edge-label { paint-order: stroke; stroke: #f9fafb; stroke-width: 3; font-weight: 500; }
+.diagram-attribution { fill: #9ca3af; text-decoration: none; transition: fill 0.2s ease; }
+.diagram-attribution:hover { fill: #4b5563; text-decoration: underline; }
+.group-rect { transition: stroke-width 0.2s ease; }
+.node-label { pointer-events: none; }
+</style>
+<filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+</filter>
+<linearGradient id="grad-CLASS" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#ffffff"/>
+  <stop offset="100%" stop-color="#f3f4f6"/>
+</linearGradient>
+<linearGradient id="grad-INTERFACE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#eff6ff"/>
+  <stop offset="100%" stop-color="#dbeafe"/>
+</linearGradient>
+<linearGradient id="grad-MODULE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#faf5ff"/>
+  <stop offset="100%" stop-color="#ede9fe"/>
+</linearGradient>
+<linearGradient id="grad-METHOD" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#fffbeb"/>
+  <stop offset="100%" stop-color="#fef3c7"/>
+</linearGradient>
+<linearGradient id="grad-PACKAGE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#ecfdf5"/>
+  <stop offset="100%" stop-color="#d1fae5"/>
+</linearGradient>
+<linearGradient id="grad-EXCEPTION" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#fef2f2"/>
+  <stop offset="100%" stop-color="#fee2e2"/>
+</linearGradient>
+<linearGradient id="grad-STATE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#f0f9ff"/>
+  <stop offset="100%" stop-color="#e0f2fe"/>
+</linearGradient>
+<pattern id="dotGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+  <circle cx="2" cy="2" r="1" fill="#e5e7eb"/>
+</pattern>
+<marker id="marker-hollow-1d4ed8" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
+  <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" stroke="#1d4ed8" stroke-width="1"/>
+</marker>
+<marker id="marker-open-374151" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+  <path d="M0,0 L8,4 L0,8" fill="none" stroke="#374151" stroke-width="1.2"/>
+</marker>
+<marker id="marker-hollow-374151" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
+  <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" stroke="#374151" stroke-width="1"/>
+</marker>
+</defs>
+<rect width="960" height="882" fill="#f9fafb"/>
+<rect width="960" height="882" fill="url(#dotGrid)"/>
+<rect class="group-rect" x="10.0" y="280.0" width="408.0" height="398.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
+<text x="16.0" y="293.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.fhe</text>
+<path class="edge-line" data-source="FheCiphertextNative" data-target="AutoCloseable" data-type="IMPLEMENTS" d="M114.0 384.0 Q132.4 240.0 102.0 98.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
+<text class="edge-label" data-source="FheCiphertextNative" data-target="AutoCloseable" data-type="IMPLEMENTS" x="120.2" y="234.5" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
+<path class="edge-line" data-source="FheCiphertextNative" data-target="MemorySegment" data-type="HAS" d="M114.0 384.0 Q230.6 255.9 302.0 98.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheCiphertextNative" data-target="MemorySegment" data-type="HAS" x="219.3" y="242.4" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">handle</text>
+<path class="edge-line" data-source="FheCiphertextNative" data-target="FheContext" data-type="HAS" d="M204.0 524.0 Q214.0 527.6 224.0 524.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheCiphertextNative" data-target="FheContext" data-type="HAS" x="214.0" y="519.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">context</text>
+<path class="edge-line" data-source="FheContext" data-target="AutoCloseable" data-type="IMPLEMENTS" d="M314.0 384.0 Q230.2 224.5 102.0 98.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
+<text class="edge-label" data-source="FheContext" data-target="AutoCloseable" data-type="IMPLEMENTS" x="219.1" y="226.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
+<path class="edge-line" data-source="FheContext" data-target="MemorySegment" data-type="HAS" d="M314.0 384.0 Q332.4 240.0 302.0 98.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheContext" data-target="MemorySegment" data-type="HAS" x="320.2" y="234.5" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">handle</text>
+<path class="edge-line" data-source="FheContext" data-target="Scheme" data-type="HAS" d="M314.0 384.0 Q430.6 255.9 502.0 98.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheContext" data-target="Scheme" data-type="HAS" x="419.3" y="242.4" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">scheme</text>
+<path class="edge-line" data-source="FheContext" data-target="Arena" data-type="HAS" d="M314.0 384.0 Q226.1 266.5 102.0 188.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheContext" data-target="Arena" data-type="HAS" x="217.0" y="270.2" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">arena</text>
+<path class="edge-line" data-source="FheException" data-target="RuntimeException" data-type="EXTENDS" d="M114.0 294.0 Q223.5 268.5 302.0 188.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-hollow-374151)"/>
+<text class="edge-label" data-source="FheException" data-target="RuntimeException" data-type="EXTENDS" x="215.7" y="248.7" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">extends</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="Linker" data-type="HAS" d="M314.0 294.0 Q420.3 262.8 502.0 188.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="Linker" data-type="HAS" x="414.1" y="245.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">LINKER</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="SymbolLookup" data-type="HAS" d="M224.0 434.0 Q235.4 330.1 192.0 235.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="SymbolLookup" data-type="HAS" x="221.7" y="326.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">SYMBOLS</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_INIT_BFV</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_INIT_CKKS</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_DESTROY_CONTEXT</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_ENCRYPT_LONG</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_DECRYPT_LONG</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_ENCRYPT_LONG_ARRAY</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_DECRYPT_LONG_ARRAY</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_ENCRYPT_DOUBLE</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_DECRYPT_DOUBLE</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_ENCRYPT_DOUBLE_ARRAY</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_DECRYPT_DOUBLE_ARRAY</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_PLAIN_MODULUS</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_SLOT_COUNT</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_ADD</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_SUBTRACT</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_MULTIPLY</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_RELINEARIZE</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_RESCALE</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_NOISE_BUDGET</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_SERIALIZE</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_DESERIALIZE</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_FREE_CIPHERTEXT</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_EXPORT_KEYS</text>
+<path class="edge-line" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" d="M314.0 294.0 Q310.9 283.8 302.0 278.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheNativeBridge" data-target="MethodHandle" data-type="HAS" x="309.4" y="278.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">MH_IMPORT_KEYS</text>
+<g id="FheCiphertextNative">
+  <title>FheCiphertextNative [CLASS]</title>
+  <rect class="node-rect" x="24.0" y="384.0" width="180.0" height="280.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="114.0" y="406.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">FheCiphertextNative</text>
+  <line x1="24.0" y1="428.0" x2="204.0" y2="428.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="32.0" y="441.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAGIC_0: byte</text>
+  <text x="32.0" y="456.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAGIC_1: byte</text>
+  <text x="32.0" y="471.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">VERSION: byte</text>
+  <text x="32.0" y="486.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">HEADER_LEN: int</text>
+  <text x="32.0" y="501.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle: MemorySegment</text>
+  <text x="32.0" y="516.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">context: FheContext</text>
+  <text x="32.0" y="531.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
+  <line x1="24.0" y1="545.0" x2="204.0" y2="545.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="32.0" y="558.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle(): MemorySegment</text>
+  <text x="32.0" y="573.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialize(): byte[]</text>
+  <text x="32.0" y="588.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">deserialize(FheContext, byte[])…</text>
+  <text x="32.0" y="603.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">toBlindCiphertext(): Ciphertext</text>
+  <text x="32.0" y="618.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromBlindCiphertext(FheContext,…</text>
+  <text x="32.0" y="633.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">ensureValid(): void</text>
+  <text x="32.0" y="648.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+1 more)</text>
+</g>
+<g id="AutoCloseable">
+  <title>AutoCloseable [INTERFACE]</title>
+  <rect class="node-rect" x="12.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
+  <text class="node-label" x="102.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">AutoCloseable</text>
+</g>
+<g id="MemorySegment">
+  <title>MemorySegment [CLASS]</title>
+  <rect class="node-rect" x="212.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="55.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">MemorySegment</text>
+</g>
+<g id="FheContext">
+  <title>FheContext [CLASS]</title>
+  <rect class="node-rect" x="224.0" y="384.0" width="180.0" height="280.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="314.0" y="406.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">FheContext</text>
+  <line x1="224.0" y1="428.0" x2="404.0" y2="428.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="232.0" y="441.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle: MemorySegment</text>
+  <text x="232.0" y="456.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">scheme: Scheme</text>
+  <text x="232.0" y="471.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">arena: Arena</text>
+  <text x="232.0" y="486.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree: int</text>
+  <text x="232.0" y="501.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">scale: double</text>
+  <text x="232.0" y="516.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">closed: boolean</text>
+  <text x="232.0" y="531.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+3 more)</text>
+  <line x1="224.0" y1="545.0" x2="404.0" y2="545.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="232.0" y="558.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">bfv(int): FheContext</text>
+  <text x="232.0" y="573.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">ckks(int, double): FheContext</text>
+  <text x="232.0" y="588.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">create(MemorySegment, Scheme, i…</text>
+  <text x="232.0" y="603.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">initNative(java.util.function.S…</text>
+  <text x="232.0" y="618.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">nativeLoadGuidance(Throwable): …</text>
+  <text x="232.0" y="633.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree(): int</text>
+  <text x="232.0" y="648.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+28 more)</text>
+</g>
+<g id="Scheme">
+  <title>Scheme [CLASS]</title>
+  <rect class="node-rect" x="412.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="55.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Scheme</text>
+</g>
+<g id="Arena">
+  <title>Arena [CLASS]</title>
+  <rect class="node-rect" x="12.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="145.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Arena</text>
+</g>
+<g id="FheException">
+  <title>FheException [CLASS]</title>
+  <rect class="node-rect" x="24.0" y="294.0" width="180.0" height="100.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="114.0" y="316.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">FheException</text>
+  <line x1="24.0" y1="338.0" x2="204.0" y2="338.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="32.0" y="351.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">errorCode: int</text>
+  <line x1="24.0" y1="365.0" x2="204.0" y2="365.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="32.0" y="378.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getErrorCode(): int</text>
+</g>
+<g id="RuntimeException">
+  <title>RuntimeException [CLASS]</title>
+  <rect class="node-rect" x="212.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="145.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">RuntimeException</text>
+</g>
+<g id="FheNativeBridge">
+  <title>FheNativeBridge [CLASS]</title>
+  <rect class="node-rect" x="224.0" y="294.0" width="180.0" height="280.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="314.0" y="316.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">FheNativeBridge</text>
+  <line x1="224.0" y1="338.0" x2="404.0" y2="338.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="232.0" y="351.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">LINKER: Linker</text>
+  <text x="232.0" y="366.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">SYMBOLS: SymbolLookup</text>
+  <text x="232.0" y="381.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_INIT_BFV: MethodHandle</text>
+  <text x="232.0" y="396.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_INIT_CKKS: MethodHandle</text>
+  <text x="232.0" y="411.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_DESTROY_CONTEXT: MethodHandle</text>
+  <text x="232.0" y="426.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_ENCRYPT_LONG: MethodHandle</text>
+  <text x="232.0" y="441.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+20 more)</text>
+  <line x1="224.0" y1="455.0" x2="404.0" y2="455.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="232.0" y="468.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_init_bfv(int): MemorySegment</text>
+  <text x="232.0" y="483.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_init_ckks(int, double): Mem…</text>
+  <text x="232.0" y="498.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_destroy_context(MemorySegme…</text>
+  <text x="232.0" y="513.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_encrypt_long(MemorySegment,…</text>
+  <text x="232.0" y="528.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_decrypt_long(MemorySegment,…</text>
+  <text x="232.0" y="543.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_encrypt_long_array(MemorySe…</text>
+  <text x="232.0" y="558.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+21 more)</text>
+</g>
+<g id="Linker">
+  <title>Linker [CLASS]</title>
+  <rect class="node-rect" x="412.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="145.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Linker</text>
+</g>
+<g id="SymbolLookup">
+  <title>SymbolLookup [CLASS]</title>
+  <rect class="node-rect" x="12.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="235.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">SymbolLookup</text>
+</g>
+<g id="MethodHandle">
+  <title>MethodHandle [CLASS]</title>
+  <rect class="node-rect" x="212.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="235.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">MethodHandle</text>
+</g>
+<rect x="724.0" y="724.0" width="220.0" height="124.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
+<text x="740.0" y="744.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
+<line x1="740.0" y1="768.0" x2="776.0" y2="768.0" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
+<text x="784.0" y="772.0" font-family="sans-serif" font-size="11" fill="#374151">implements</text>
+<line x1="740.0" y1="792.0" x2="776.0" y2="792.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-open-374151)"/>
+<text x="784.0" y="796.0" font-family="sans-serif" font-size="11" fill="#374151">has</text>
+<line x1="740.0" y1="816.0" x2="776.0" y2="816.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-hollow-374151)"/>
+<text x="784.0" y="820.0" font-family="sans-serif" font-size="11" fill="#374151">extends</text>
+<script type="text/javascript">
+<![CDATA[
+document.addEventListener('DOMContentLoaded', () => {
+  const svg = document.querySelector('svg');
+  if (!svg) return;
+  const nodes = Array.from(svg.querySelectorAll('g')).filter(g => g.querySelector('.node-rect'));
+  const edges = Array.from(svg.querySelectorAll('.edge-line, .edge-label'));
+  nodes.forEach(node => {
+    node.style.cursor = 'pointer';
+    node.addEventListener('mouseenter', () => {
+      const nodeId = node.id;
+      nodes.forEach(n => {
+        if (n.id !== nodeId) {
+          n.style.opacity = '0.15';
+          n.style.transition = 'opacity 0.2s ease';
+        }
+      });
+      const connectedNodeIds = new Set([nodeId]);
+      edges.forEach(edge => {
+        const source = edge.getAttribute('data-source');
+        const target = edge.getAttribute('data-target');
+        const isConnected = (source === nodeId || target === nodeId || 
+                             (source && source.startsWith(nodeId + '.')) || 
+                             (target && target.startsWith(nodeId + '.')) ||
+                             (nodeId && nodeId.startsWith(source + '.')) ||
+                             (nodeId && nodeId.startsWith(target + '.')));
+        if (isConnected) {
+          if (source) connectedNodeIds.add(source);
+          if (target) connectedNodeIds.add(target);
+          const dotSrc = source ? source.lastIndexOf('.') : -1;
+          if (dotSrc > 0) connectedNodeIds.add(source.substring(0, dotSrc));
+          const dotTgt = target ? target.lastIndexOf('.') : -1;
+          if (dotTgt > 0) connectedNodeIds.add(target.substring(0, dotTgt));
+          edge.style.opacity = '1';
+          if (edge.classList.contains('edge-line')) {
+            edge.style.strokeWidth = '2.8px';
+          }
+          edge.style.fontWeight = 'bold';
+          edge.style.transition = 'opacity 0.2s ease, stroke-width 0.2s ease';
+        } else {
+          edge.style.opacity = '0.08';
+          edge.style.transition = 'opacity 0.2s ease';
+        }
+      });
+      nodes.forEach(n => {
+        if (connectedNodeIds.has(n.id)) {
+          n.style.opacity = '1';
+        }
+      });
+    });
+    node.addEventListener('mouseleave', () => {
+      nodes.forEach(n => {
+        n.style.opacity = '1';
+      });
+      edges.forEach(edge => {
+        edge.style.opacity = '1';
+        edge.style.strokeWidth = '';
+        edge.style.fontWeight = '';
+      });
+    });
+  });
+});
+]]>
+</script>
+<a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
+  <text x="944.0" y="866.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+</a>
+</svg>

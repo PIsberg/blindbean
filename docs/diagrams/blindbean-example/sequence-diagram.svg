@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1452" height="912" viewBox="0 0 1452 912">
+<defs>
+<style>
+svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; }
+.node-rect { transition: filter 0.2s ease, stroke-width 0.2s ease, stroke 0.2s ease; }
+.node-rect:hover { stroke-width: 2.2 !important; filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.12)) !important; }
+.edge-line { stroke-linecap: round; stroke-linejoin: round; transition: stroke-width 0.2s ease; }
+.edge-line:hover { stroke-width: 2.5 !important; }
+.edge-label { paint-order: stroke; stroke: #f9fafb; stroke-width: 3; font-weight: 500; }
+.diagram-attribution { fill: #9ca3af; text-decoration: none; transition: fill 0.2s ease; }
+.diagram-attribution:hover { fill: #4b5563; text-decoration: underline; }
+.group-rect { transition: stroke-width 0.2s ease; }
+.node-label { pointer-events: none; }
+</style>
+<filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+</filter>
+<linearGradient id="grad-CLASS" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#ffffff"/>
+  <stop offset="100%" stop-color="#f3f4f6"/>
+</linearGradient>
+<linearGradient id="grad-INTERFACE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#eff6ff"/>
+  <stop offset="100%" stop-color="#dbeafe"/>
+</linearGradient>
+<linearGradient id="grad-MODULE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#faf5ff"/>
+  <stop offset="100%" stop-color="#ede9fe"/>
+</linearGradient>
+<linearGradient id="grad-METHOD" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#fffbeb"/>
+  <stop offset="100%" stop-color="#fef3c7"/>
+</linearGradient>
+<linearGradient id="grad-PACKAGE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#ecfdf5"/>
+  <stop offset="100%" stop-color="#d1fae5"/>
+</linearGradient>
+<linearGradient id="grad-EXCEPTION" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#fef2f2"/>
+  <stop offset="100%" stop-color="#fee2e2"/>
+</linearGradient>
+<linearGradient id="grad-STATE" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0%" stop-color="#f0f9ff"/>
+  <stop offset="100%" stop-color="#e0f2fe"/>
+</linearGradient>
+<pattern id="dotGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+  <circle cx="2" cy="2" r="1" fill="#e5e7eb"/>
+</pattern>
+</defs>
+<rect width="1452" height="912" fill="#f9fafb"/>
+<rect width="1452" height="912" fill="url(#dotGrid)"/>
+<g id="com.example.entity.Document">
+  <title>com.example.entity.Document [CLASS]</title>
+  <rect class="node-rect" x="12.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="55.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.Document</text>
+</g>
+<g id="com.example.entity.Document.getText">
+  <title>getText [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getText</text>
+</g>
+<g id="com.example.entity.Document.setText">
+  <title>setText [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setText</text>
+</g>
+<g id="com.example.entity.Document.getVerified">
+  <title>getVerified [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getVerified</text>
+</g>
+<g id="com.example.entity.Document.setVerified">
+  <title>setVerified [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setVerified</text>
+</g>
+<g id="com.example.entity.NumericEntity">
+  <title>com.example.entity.NumericEntity [CLASS]</title>
+  <rect class="node-rect" x="1012.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="55.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.NumericEntity</text>
+</g>
+<g id="com.example.entity.NumericEntity.getByteVal">
+  <title>getByteVal [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getByteVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.setByteVal">
+  <title>setByteVal [METHOD]</title>
+  <rect class="node-rect" x="12.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="102.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setByteVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.getShortVal">
+  <title>getShortVal [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getShortVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.setShortVal">
+  <title>setShortVal [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setShortVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.getIntVal">
+  <title>getIntVal [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getIntVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.setIntVal">
+  <title>setIntVal [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setIntVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.getLongVal">
+  <title>getLongVal [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getLongVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.setLongVal">
+  <title>setLongVal [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setLongVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.getFloatVal">
+  <title>getFloatVal [METHOD]</title>
+  <rect class="node-rect" x="12.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="102.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getFloatVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.setFloatVal">
+  <title>setFloatVal [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setFloatVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.getDoubleVal">
+  <title>getDoubleVal [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getDoubleVal</text>
+</g>
+<g id="com.example.entity.NumericEntity.setDoubleVal">
+  <title>setDoubleVal [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setDoubleVal</text>
+</g>
+<g id="com.example.entity.Order">
+  <title>com.example.entity.Order [CLASS]</title>
+  <rect class="node-rect" x="812.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="235.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.Order</text>
+</g>
+<g id="com.example.entity.Order.getTotal">
+  <title>getTotal [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getTotal</text>
+</g>
+<g id="com.example.entity.Order.setTotal">
+  <title>setTotal [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="192.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setTotal</text>
+</g>
+<g id="com.example.entity.Order.getCustomer">
+  <title>getCustomer [METHOD]</title>
+  <rect class="node-rect" x="12.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="102.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getCustomer</text>
+</g>
+<g id="com.example.entity.Order.setCustomer">
+  <title>setCustomer [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setCustomer</text>
+</g>
+<g id="com.example.entity.Portfolio">
+  <title>com.example.entity.Portfolio [CLASS]</title>
+  <rect class="node-rect" x="412.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="325.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.Portfolio</text>
+</g>
+<g id="com.example.entity.Portfolio.getCashBalance">
+  <title>getCashBalance [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getCashBalance</text>
+</g>
+<g id="com.example.entity.Portfolio.setCashBalance">
+  <title>setCashBalance [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setCashBalance</text>
+</g>
+<g id="com.example.entity.Portfolio.getEquityValue">
+  <title>getEquityValue [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getEquityValue</text>
+</g>
+<g id="com.example.entity.Portfolio.setEquityValue">
+  <title>setEquityValue [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setEquityValue</text>
+</g>
+<g id="com.example.entity.Portfolio.getBondValue">
+  <title>getBondValue [METHOD]</title>
+  <rect class="node-rect" x="12.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="402.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="102.0" y="427.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getBondValue</text>
+</g>
+<g id="com.example.entity.Portfolio.setBondValue">
+  <title>setBondValue [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="402.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="427.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setBondValue</text>
+</g>
+<g id="com.example.entity.Portfolio.getRealEstateValue">
+  <title>getRealEstateValue [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="402.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="427.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getRealEstateValue</text>
+</g>
+<g id="com.example.entity.Portfolio.setRealEstateValue">
+  <title>setRealEstateValue [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="402.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="427.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setRealEstateValue</text>
+</g>
+<g id="com.example.entity.SensorData">
+  <title>com.example.entity.SensorData [CLASS]</title>
+  <rect class="node-rect" x="812.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="415.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.SensorData</text>
+</g>
+<g id="com.example.entity.SensorData.getBatchedReadings">
+  <title>getBatchedReadings [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="402.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="427.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getBatchedReadings</text>
+</g>
+<g id="com.example.entity.SensorData.setBatchedReadings">
+  <title>setBatchedReadings [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="372.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="402.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="427.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setBatchedReadings</text>
+</g>
+<g id="com.example.entity.TypeZoo">
+  <title>com.example.entity.TypeZoo [CLASS]</title>
+  <rect class="node-rect" x="12.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="505.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.TypeZoo</text>
+</g>
+<g id="com.example.entity.TypeZoo.getPrice">
+  <title>getPrice [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="492.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="517.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getPrice</text>
+</g>
+<g id="com.example.entity.TypeZoo.setPrice">
+  <title>setPrice [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="492.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="517.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setPrice</text>
+</g>
+<g id="com.example.entity.TypeZoo.getBlob">
+  <title>getBlob [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="492.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="517.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getBlob</text>
+</g>
+<g id="com.example.entity.TypeZoo.setBlob">
+  <title>setBlob [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="492.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="517.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setBlob</text>
+</g>
+<g id="com.example.entity.TypeZoo.getSeenAt">
+  <title>getSeenAt [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="492.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="517.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getSeenAt</text>
+</g>
+<g id="com.example.entity.TypeZoo.setSeenAt">
+  <title>setSeenAt [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="462.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="492.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="517.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setSeenAt</text>
+</g>
+<g id="com.example.entity.TypeZoo.getBornOn">
+  <title>getBornOn [METHOD]</title>
+  <rect class="node-rect" x="12.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="102.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getBornOn</text>
+</g>
+<g id="com.example.entity.TypeZoo.setBornOn">
+  <title>setBornOn [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setBornOn</text>
+</g>
+<g id="com.example.entity.TypeZoo.getUptime">
+  <title>getUptime [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getUptime</text>
+</g>
+<g id="com.example.entity.TypeZoo.setUptime">
+  <title>setUptime [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setUptime</text>
+</g>
+<g id="com.example.entity.TypeZoo.getCounters">
+  <title>getCounters [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getCounters</text>
+</g>
+<g id="com.example.entity.TypeZoo.setCounters">
+  <title>setCounters [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setCounters</text>
+</g>
+<g id="com.example.entity.TypeZoo.getFlags">
+  <title>getFlags [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="552.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="582.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="607.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getFlags</text>
+</g>
+<g id="com.example.entity.TypeZoo.setFlags">
+  <title>setFlags [METHOD]</title>
+  <rect class="node-rect" x="12.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="102.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setFlags</text>
+</g>
+<g id="com.example.entity.TypeZoo.getSignal">
+  <title>getSignal [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getSignal</text>
+</g>
+<g id="com.example.entity.TypeZoo.setSignal">
+  <title>setSignal [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setSignal</text>
+</g>
+<g id="com.example.entity.TypeZoo.getWeights">
+  <title>getWeights [METHOD]</title>
+  <rect class="node-rect" x="612.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="702.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getWeights</text>
+</g>
+<g id="com.example.entity.TypeZoo.setWeights">
+  <title>setWeights [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setWeights</text>
+</g>
+<g id="com.example.entity.TypeZoo.getOptionalCount">
+  <title>getOptionalCount [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getOptionalCount</text>
+</g>
+<g id="com.example.entity.TypeZoo.setOptionalCount">
+  <title>setOptionalCount [METHOD]</title>
+  <rect class="node-rect" x="1212.0" y="642.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1302.0" y="672.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1302.0" y="697.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setOptionalCount</text>
+</g>
+<g id="com.example.entity.UserAccount">
+  <title>com.example.entity.UserAccount [CLASS]</title>
+  <rect class="node-rect" x="12.0" y="732.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="102.0" y="775.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.entity.UserAccount</text>
+</g>
+<g id="com.example.entity.UserAccount.getBalance">
+  <title>getBalance [METHOD]</title>
+  <rect class="node-rect" x="212.0" y="732.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="302.0" y="762.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="302.0" y="787.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getBalance</text>
+</g>
+<g id="com.example.entity.UserAccount.setBalance">
+  <title>setBalance [METHOD]</title>
+  <rect class="node-rect" x="412.0" y="732.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="502.0" y="762.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="502.0" y="787.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setBalance</text>
+</g>
+<g id="com.example.Wallet">
+  <title>com.example.Wallet [CLASS]</title>
+  <rect class="node-rect" x="612.0" y="732.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="702.0" y="775.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">com.example.Wallet</text>
+</g>
+<g id="com.example.Wallet.getFunds">
+  <title>getFunds [METHOD]</title>
+  <rect class="node-rect" x="812.0" y="732.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="902.0" y="762.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="902.0" y="787.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">getFunds</text>
+</g>
+<g id="com.example.Wallet.setFunds">
+  <title>setFunds [METHOD]</title>
+  <rect class="node-rect" x="1012.0" y="732.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-METHOD)" stroke="#92400e" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1102.0" y="762.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#92400e" font-style="italic">«method»</text>
+  <text class="node-label" x="1102.0" y="787.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">setFunds</text>
+</g>
+<script type="text/javascript">
+<![CDATA[
+document.addEventListener('DOMContentLoaded', () => {
+  const svg = document.querySelector('svg');
+  if (!svg) return;
+  const nodes = Array.from(svg.querySelectorAll('g')).filter(g => g.querySelector('.node-rect'));
+  const edges = Array.from(svg.querySelectorAll('.edge-line, .edge-label'));
+  nodes.forEach(node => {
+    node.style.cursor = 'pointer';
+    node.addEventListener('mouseenter', () => {
+      const nodeId = node.id;
+      nodes.forEach(n => {
+        if (n.id !== nodeId) {
+          n.style.opacity = '0.15';
+          n.style.transition = 'opacity 0.2s ease';
+        }
+      });
+      const connectedNodeIds = new Set([nodeId]);
+      edges.forEach(edge => {
+        const source = edge.getAttribute('data-source');
+        const target = edge.getAttribute('data-target');
+        const isConnected = (source === nodeId || target === nodeId || 
+                             (source && source.startsWith(nodeId + '.')) || 
+                             (target && target.startsWith(nodeId + '.')) ||
+                             (nodeId && nodeId.startsWith(source + '.')) ||
+                             (nodeId && nodeId.startsWith(target + '.')));
+        if (isConnected) {
+          if (source) connectedNodeIds.add(source);
+          if (target) connectedNodeIds.add(target);
+          const dotSrc = source ? source.lastIndexOf('.') : -1;
+          if (dotSrc > 0) connectedNodeIds.add(source.substring(0, dotSrc));
+          const dotTgt = target ? target.lastIndexOf('.') : -1;
+          if (dotTgt > 0) connectedNodeIds.add(target.substring(0, dotTgt));
+          edge.style.opacity = '1';
+          if (edge.classList.contains('edge-line')) {
+            edge.style.strokeWidth = '2.8px';
+          }
+          edge.style.fontWeight = 'bold';
+          edge.style.transition = 'opacity 0.2s ease, stroke-width 0.2s ease';
+        } else {
+          edge.style.opacity = '0.08';
+          edge.style.transition = 'opacity 0.2s ease';
+        }
+      });
+      nodes.forEach(n => {
+        if (connectedNodeIds.has(n.id)) {
+          n.style.opacity = '1';
+        }
+      });
+    });
+    node.addEventListener('mouseleave', () => {
+      nodes.forEach(n => {
+        n.style.opacity = '1';
+      });
+      edges.forEach(edge => {
+        edge.style.opacity = '1';
+        edge.style.strokeWidth = '';
+        edge.style.fontWeight = '';
+      });
+    });
+  });
+});
+]]>
+</script>
+<a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
+  <text x="1436.0" y="896.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+</a>
+</svg>
