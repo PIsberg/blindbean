@@ -34,7 +34,7 @@
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-runtime</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-junit</artifactId></dependency>
         <dependency>
-            <groupId>com.karta</groupId>
+            <groupId>se.deversity.codekarta</groupId>
             <artifactId>code-karta-core</artifactId>
         </dependency>
         <!-- processor is compile-time; consumers add it to their processor path, not runtime cp,

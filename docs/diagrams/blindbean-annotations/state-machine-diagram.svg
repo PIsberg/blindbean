@@ -53,21 +53,21 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 <rect width="960" height="594" fill="url(#dotGrid)"/>
 <g id="PAILLIER">
   <title>PAILLIER [STATE]</title>
-  <rect class="node-rect" x="12.0" y="12.0" width="180.0" height="86.0" rx="28.0" fill="url(#grad-STATE)" stroke="#0369a1" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="102.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0369a1" font-style="italic">«state»</text>
-  <text class="node-label" x="102.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">PAILLIER</text>
+  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="86.0" rx="28.0" fill="url(#grad-STATE)" stroke="#0369a1" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0369a1" font-style="italic">«state»</text>
+  <text class="node-label" x="410.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">PAILLIER</text>
 </g>
 <g id="BFV">
   <title>BFV [STATE]</title>
-  <rect class="node-rect" x="12.0" y="102.0" width="180.0" height="86.0" rx="28.0" fill="url(#grad-STATE)" stroke="#0369a1" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="102.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0369a1" font-style="italic">«state»</text>
-  <text class="node-label" x="102.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BFV</text>
+  <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="86.0" rx="28.0" fill="url(#grad-STATE)" stroke="#0369a1" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0369a1" font-style="italic">«state»</text>
+  <text class="node-label" x="150.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BFV</text>
 </g>
 <g id="CKKS">
   <title>CKKS [STATE]</title>
-  <rect class="node-rect" x="12.0" y="192.0" width="180.0" height="86.0" rx="28.0" fill="url(#grad-STATE)" stroke="#0369a1" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="102.0" y="222.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0369a1" font-style="italic">«state»</text>
-  <text class="node-label" x="102.0" y="247.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">CKKS</text>
+  <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="86.0" rx="28.0" fill="url(#grad-STATE)" stroke="#0369a1" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="670.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0369a1" font-style="italic">«state»</text>
+  <text class="node-label" x="670.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">CKKS</text>
 </g>
 <script type="text/javascript">
 <![CDATA[

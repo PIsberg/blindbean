@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1452" height="694" viewBox="0 0 1452 694">
+<svg xmlns="http://www.w3.org/2000/svg" width="1860" height="694" viewBox="0 0 1860 694">
 <defs>
 <style>
 svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -55,76 +55,76 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
   <path d="M0,0 L8,4 L0,8" fill="none" stroke="#065f46" stroke-width="1.2"/>
 </marker>
 </defs>
-<rect width="1452" height="694" fill="#f9fafb"/>
-<rect width="1452" height="694" fill="url(#dotGrid)"/>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.fhe" data-type="REQUIRES" d="M259.5 55.0 Q629.8 156.9 1012.0 195.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.fhe" data-type="REQUIRES" x="632.8" y="135.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="jdk.incubator.vector" data-type="REQUIRES" d="M259.5 55.0 Q730.8 158.4 1212.0 195.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="jdk.incubator.vector" data-type="REQUIRES" x="733.3" y="135.7" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" d="M169.5 98.0 Q126.0 112.9 102.0 152.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" x="130.9" y="112.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="org.jspecify" data-type="REQUIRES" d="M169.5 98.0 Q226.0 148.9 302.0 152.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="org.jspecify" data-type="REQUIRES" x="230.9" y="130.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.math" data-type="EXPORTS" d="M259.5 55.0 Q425.6 150.6 612.0 195.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.math" data-type="EXPORTS" x="430.7" y="131.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.context" data-type="EXPORTS" d="M259.5 55.0 Q528.2 154.6 812.0 195.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.context" data-type="EXPORTS" x="532.0" y="133.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
-<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.async" data-type="EXPORTS" d="M259.5 55.0 Q320.2 141.9 412.0 195.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.async" data-type="EXPORTS" x="328.0" y="127.5" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
+<rect width="1860" height="694" fill="#f9fafb"/>
+<rect width="1860" height="694" fill="url(#dotGrid)"/>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.fhe" data-type="REQUIRES" d="M240.0 103.0 Q662.8 230.5 1100.0 293.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.fhe" data-type="REQUIRES" x="666.4" y="208.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="jdk.incubator.vector" data-type="REQUIRES" d="M150.0 146.0 Q131.3 198.0 150.0 250.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="jdk.incubator.vector" data-type="REQUIRES" x="140.6" y="192.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" d="M240.0 103.0 Q530.5 227.9 840.0 293.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" x="535.3" y="206.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="org.jspecify" data-type="REQUIRES" d="M240.0 103.0 Q794.2 232.1 1360.0 293.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="org.jspecify" data-type="REQUIRES" x="797.1" y="209.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.math" data-type="EXPORTS" d="M240.0 103.0 Q256.4 207.9 320.0 293.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.math" data-type="EXPORTS" x="268.2" y="197.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.context" data-type="EXPORTS" d="M240.0 103.0 Q925.2 233.1 1620.0 293.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.context" data-type="EXPORTS" x="927.6" y="209.6" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
+<path class="edge-line" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.async" data-type="EXPORTS" d="M240.0 103.0 Q396.3 222.6 580.0 293.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.runtime" data-target="se.deversity.blindbean.async" data-type="EXPORTS" x="403.1" y="204.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
 <g id="se.deversity.blindbean.runtime">
   <title>se.deversity.blindbean.runtime [MODULE]</title>
-  <rect class="node-rect" x="79.5" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="169.5" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="169.5" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.runtime</text>
+  <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="150.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.runtime</text>
 </g>
 <g id="se.deversity.blindbean.fhe">
   <title>se.deversity.blindbean.fhe [MODULE]</title>
-  <rect class="node-rect" x="1012.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1102.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="1102.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.fhe</text>
+  <rect class="node-rect" x="1100.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1190.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="1190.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.fhe</text>
 </g>
 <g id="jdk.incubator.vector">
   <title>jdk.incubator.vector [MODULE]</title>
-  <rect class="node-rect" x="1212.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1302.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="1302.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">jdk.incubator.vector</text>
+  <rect class="node-rect" x="60.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="150.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">jdk.incubator.vector</text>
 </g>
 <g id="se.deversity.vibetags.annotations">
   <title>se.deversity.vibetags.annotations [MODULE]</title>
-  <rect class="node-rect" x="12.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="102.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="102.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.vibetags.annotations</text>
+  <rect class="node-rect" x="840.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="930.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="930.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.vibetags.annotations</text>
 </g>
 <g id="org.jspecify">
   <title>org.jspecify [MODULE]</title>
-  <rect class="node-rect" x="212.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="302.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="302.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">org.jspecify</text>
+  <rect class="node-rect" x="1360.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1450.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="1450.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">org.jspecify</text>
 </g>
 <g id="se.deversity.blindbean.math">
   <title>se.deversity.blindbean.math [PACKAGE]</title>
-  <rect class="node-rect" x="612.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-PACKAGE)" stroke="#065f46" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="702.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">«pkg»</text>
-  <text class="node-label" x="702.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.math</text>
+  <rect class="node-rect" x="320.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-PACKAGE)" stroke="#065f46" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">«pkg»</text>
+  <text class="node-label" x="410.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.math</text>
 </g>
 <g id="se.deversity.blindbean.context">
   <title>se.deversity.blindbean.context [PACKAGE]</title>
-  <rect class="node-rect" x="812.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-PACKAGE)" stroke="#065f46" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="902.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">«pkg»</text>
-  <text class="node-label" x="902.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.context</text>
+  <rect class="node-rect" x="1620.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-PACKAGE)" stroke="#065f46" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1710.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">«pkg»</text>
+  <text class="node-label" x="1710.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.context</text>
 </g>
 <g id="se.deversity.blindbean.async">
   <title>se.deversity.blindbean.async [PACKAGE]</title>
-  <rect class="node-rect" x="412.0" y="152.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-PACKAGE)" stroke="#065f46" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="502.0" y="182.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">«pkg»</text>
-  <text class="node-label" x="502.0" y="207.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.async</text>
+  <rect class="node-rect" x="580.0" y="250.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-PACKAGE)" stroke="#065f46" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="670.0" y="280.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">«pkg»</text>
+  <text class="node-label" x="670.0" y="305.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.async</text>
 </g>
-<rect x="1216.0" y="560.0" width="220.0" height="100.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
-<text x="1232.0" y="580.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
-<line x1="1232.0" y1="604.0" x2="1268.0" y2="604.0" stroke="#6d28d9" stroke-width="2" marker-end="url(#marker-filled-6d28d9)"/>
-<text x="1276.0" y="608.0" font-family="sans-serif" font-size="11" fill="#374151">requires</text>
-<line x1="1232.0" y1="628.0" x2="1268.0" y2="628.0" stroke="#065f46" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
-<text x="1276.0" y="632.0" font-family="sans-serif" font-size="11" fill="#374151">exports</text>
+<rect x="1624.0" y="560.0" width="220.0" height="100.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
+<text x="1640.0" y="580.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
+<line x1="1640.0" y1="604.0" x2="1676.0" y2="604.0" stroke="#6d28d9" stroke-width="2" marker-end="url(#marker-filled-6d28d9)"/>
+<text x="1684.0" y="608.0" font-family="sans-serif" font-size="11" fill="#374151">requires</text>
+<line x1="1640.0" y1="628.0" x2="1676.0" y2="628.0" stroke="#065f46" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
+<text x="1684.0" y="632.0" font-family="sans-serif" font-size="11" fill="#374151">exports</text>
 <script type="text/javascript">
 <![CDATA[
 document.addEventListener('DOMContentLoaded', () => {
@@ -190,6 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ]]>
 </script>
 <a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
-  <text x="1436.0" y="678.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+  <text x="1844.0" y="678.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
 </a>
 </svg>

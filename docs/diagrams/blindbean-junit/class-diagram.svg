@@ -54,37 +54,37 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 </defs>
 <rect width="960" height="670" fill="#f9fafb"/>
 <rect width="960" height="670" fill="url(#dotGrid)"/>
-<rect class="group-rect" x="10.0" y="100.0" width="208.0" height="204.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
-<text x="16.0" y="113.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.junit</text>
-<path class="edge-line" data-source="BlindBeanExtension" data-target="BeforeEachCallback" data-type="IMPLEMENTS" d="M114.0 114.0 Q110.9 103.8 102.0 98.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
-<text class="edge-label" data-source="BlindBeanExtension" data-target="BeforeEachCallback" data-type="IMPLEMENTS" x="109.4" y="98.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
-<path class="edge-line" data-source="BlindBeanExtension" data-target="AfterEachCallback" data-type="IMPLEMENTS" d="M204.0 165.0 Q227.8 111.4 212.0 55.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
-<text class="edge-label" data-source="BlindBeanExtension" data-target="AfterEachCallback" data-type="IMPLEMENTS" x="217.9" y="104.7" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
+<rect class="group-rect" x="46.0" y="46.0" width="468.0" height="130.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
+<text x="52.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.junit</text>
+<path class="edge-line" data-source="BlindBeanExtension" data-target="BeforeEachCallback" data-type="IMPLEMENTS" d="M410.0 162.0 Q388.4 222.0 410.0 282.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
+<text class="edge-label" data-source="BlindBeanExtension" data-target="BeforeEachCallback" data-type="IMPLEMENTS" x="399.2" y="216.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
+<path class="edge-line" data-source="BlindBeanExtension" data-target="AfterEachCallback" data-type="IMPLEMENTS" d="M320.0 111.0 Q254.6 208.5 240.0 325.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
+<text class="edge-label" data-source="BlindBeanExtension" data-target="AfterEachCallback" data-type="IMPLEMENTS" x="267.3" y="207.2" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
 <g id="BlindBeanExtension">
   <title>BlindBeanExtension [CLASS]</title>
-  <rect class="node-rect" x="24.0" y="114.0" width="180.0" height="102.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="114.0" y="136.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindBeanExtension</text>
-  <line x1="24.0" y1="158.0" x2="204.0" y2="158.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="32.0" y="171.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">beforeEach(ExtensionContext): v…</text>
-  <text x="32.0" y="186.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">afterEach(ExtensionContext): vo…</text>
-  <text x="32.0" y="201.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">findConfig(ExtensionContext): O…</text>
+  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="102.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindBeanExtension</text>
+  <line x1="320.0" y1="104.0" x2="500.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="328.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">beforeEach(ExtensionContext): v…</text>
+  <text x="328.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">afterEach(ExtensionContext): vo…</text>
+  <text x="328.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">findConfig(ExtensionContext): O…</text>
 </g>
 <g id="BeforeEachCallback">
   <title>BeforeEachCallback [INTERFACE]</title>
-  <rect class="node-rect" x="12.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="102.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
-  <text class="node-label" x="102.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BeforeEachCallback</text>
+  <rect class="node-rect" x="320.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
+  <text class="node-label" x="410.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BeforeEachCallback</text>
 </g>
 <g id="AfterEachCallback">
   <title>AfterEachCallback [INTERFACE]</title>
-  <rect class="node-rect" x="212.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="302.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
-  <text class="node-label" x="302.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">AfterEachCallback</text>
+  <rect class="node-rect" x="60.0" y="282.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="312.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
+  <text class="node-label" x="150.0" y="337.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">AfterEachCallback</text>
 </g>
 <g id="BlindBeanTest">
   <title>BlindBeanTest [CLASS]</title>
-  <rect class="node-rect" x="24.0" y="204.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="114.0" y="247.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindBeanTest</text>
+  <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindBeanTest</text>
 </g>
 <rect x="724.0" y="560.0" width="220.0" height="76.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
 <text x="740.0" y="580.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>

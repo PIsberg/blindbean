@@ -57,29 +57,29 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 </defs>
 <rect width="960" height="694" fill="#f9fafb"/>
 <rect width="960" height="694" fill="url(#dotGrid)"/>
-<path class="edge-line" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" d="M132.0 98.0 Q116.3 94.6 102.0 102.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" x="116.6" y="91.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
-<path class="edge-line" data-source="se.deversity.blindbean.annotations" data-target="org.jspecify" data-type="REQUIRES" d="M222.0 55.0 Q200.8 98.2 212.0 145.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.annotations" data-target="org.jspecify" data-type="REQUIRES" x="208.9" y="93.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
-<path class="edge-line" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.blindbean.annotations" data-type="EXPORTS" d="M132.0 12.0 Q116.5 55.0 132.0 98.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
-<text class="edge-label" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.blindbean.annotations" data-type="EXPORTS" x="124.3" y="49.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
+<path class="edge-line" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" d="M320.0 103.0 Q280.0 90.7 240.0 103.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.vibetags.annotations" data-type="REQUIRES" x="280.0" y="90.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
+<path class="edge-line" data-source="se.deversity.blindbean.annotations" data-target="org.jspecify" data-type="REQUIRES" d="M500.0 103.0 Q540.0 115.3 580.0 103.0" fill="none" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#marker-filled-6d28d9)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.annotations" data-target="org.jspecify" data-type="REQUIRES" x="540.0" y="103.2" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">requires</text>
+<path class="edge-line" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.blindbean.annotations" data-type="EXPORTS" d="M410.0 60.0 Q394.5 103.0 410.0 146.0" fill="none" stroke="#065f46" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#marker-open-065f46)"/>
+<text class="edge-label" data-source="se.deversity.blindbean.annotations" data-target="se.deversity.blindbean.annotations" data-type="EXPORTS" x="402.3" y="97.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#065f46" font-style="italic">exports</text>
 <g id="se.deversity.blindbean.annotations">
   <title>se.deversity.blindbean.annotations [MODULE]</title>
-  <rect class="node-rect" x="42.0" y="12.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="132.0" y="42.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="132.0" y="67.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.annotations</text>
+  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="410.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.blindbean.annotations</text>
 </g>
 <g id="se.deversity.vibetags.annotations">
   <title>se.deversity.vibetags.annotations [MODULE]</title>
-  <rect class="node-rect" x="12.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="102.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="102.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.vibetags.annotations</text>
+  <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="150.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">se.deversity.vibetags.annotations</text>
 </g>
 <g id="org.jspecify">
   <title>org.jspecify [MODULE]</title>
-  <rect class="node-rect" x="212.0" y="102.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="302.0" y="132.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
-  <text class="node-label" x="302.0" y="157.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">org.jspecify</text>
+  <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-MODULE)" stroke="#6d28d9" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="670.0" y="90.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6d28d9" font-style="italic">«mod»</text>
+  <text class="node-label" x="670.0" y="115.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">org.jspecify</text>
 </g>
 <rect x="724.0" y="560.0" width="220.0" height="100.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
 <text x="740.0" y="580.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
