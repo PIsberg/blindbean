@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="670" viewBox="0 0 960 670">
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="594" viewBox="0 0 960 594">
 <defs>
 <style>
 svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -48,38 +48,24 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 <pattern id="dotGrid" width="24" height="24" patternUnits="userSpaceOnUse">
   <circle cx="2" cy="2" r="1" fill="#e5e7eb"/>
 </pattern>
-<marker id="marker-hollow-374151" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
-  <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" stroke="#374151" stroke-width="1"/>
-</marker>
 </defs>
-<rect width="960" height="670" fill="#f9fafb"/>
-<rect width="960" height="670" fill="url(#dotGrid)"/>
+<rect width="960" height="594" fill="#f9fafb"/>
+<rect width="960" height="594" fill="url(#dotGrid)"/>
 <rect class="group-rect" x="46.0" y="46.0" width="208.0" height="190.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
 <text x="52.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.processor</text>
-<path class="edge-line" data-source="HomomorphicProcessor" data-target="AbstractProcessor" data-type="EXTENDS" d="M150.0 222.0 Q130.3 282.0 150.0 342.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-hollow-374151)"/>
-<text class="edge-label" data-source="HomomorphicProcessor" data-target="AbstractProcessor" data-type="EXTENDS" x="140.2" y="276.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">extends</text>
 <g id="HomomorphicProcessor">
   <title>HomomorphicProcessor [CLASS]</title>
   <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="162.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">HomomorphicProcessor</text>
+  <text class="node-label" x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">HomomorphicProcessor</text>
   <line x1="60.0" y1="104.0" x2="240.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="68.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isBigDecimal(String): boolean</text>
-  <text x="68.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isByteArray(String): boolean</text>
-  <text x="68.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isTemporalPoint(String): boolean</text>
+  <text x="68.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isBigDecimal(String): bool…</text>
+  <text x="68.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isByteArray(String): boole…</text>
+  <text x="68.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isTemporalPoint(String): b…</text>
   <text x="68.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isDuration(String): boolean</text>
   <text x="68.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isTemporal(String): boolean</text>
   <text x="68.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">isBfvArray(String): boolean</text>
   <text x="68.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+45 more)</text>
 </g>
-<g id="AbstractProcessor">
-  <title>AbstractProcessor [CLASS]</title>
-  <rect class="node-rect" x="60.0" y="342.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="150.0" y="385.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">AbstractProcessor</text>
-</g>
-<rect x="724.0" y="560.0" width="220.0" height="76.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
-<text x="740.0" y="580.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
-<line x1="740.0" y1="604.0" x2="776.0" y2="604.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-hollow-374151)"/>
-<text x="784.0" y="608.0" font-family="sans-serif" font-size="11" fill="#374151">extends</text>
 <script type="text/javascript">
 <![CDATA[
 document.addEventListener('DOMContentLoaded', () => {
@@ -145,6 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ]]>
 </script>
 <a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
-  <text x="944.0" y="654.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+  <text x="944.0" y="578.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
 </a>
 </svg>

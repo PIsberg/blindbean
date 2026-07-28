@@ -56,22 +56,22 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 <g id="BlindEntity">
   <title>BlindEntity [CLASS]</title>
   <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="670.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindEntity</text>
+  <text class="node-label" x="670.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindEntity</text>
 </g>
 <g id="BlindNested">
   <title>BlindNested [CLASS]</title>
   <rect class="node-rect" x="840.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="930.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindNested</text>
+  <text class="node-label" x="930.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindNested</text>
 </g>
 <g id="Homomorphic">
   <title>Homomorphic [CLASS]</title>
   <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="410.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Homomorphic</text>
+  <text class="node-label" x="410.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">Homomorphic</text>
 </g>
 <g id="Scheme">
   <title>Scheme [CLASS]</title>
   <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="150.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Scheme</text>
+  <text class="node-label" x="150.0" y="103.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">Scheme</text>
 </g>
 <script type="text/javascript">
 <![CDATA[

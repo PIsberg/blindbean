@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2640" height="1104" viewBox="0 0 2640 1104">
+<svg xmlns="http://www.w3.org/2000/svg" width="1860" height="1190" viewBox="0 0 1860 1190">
 <defs>
 <style>
 svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -51,269 +51,168 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 <marker id="marker-open-374151" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
   <path d="M0,0 L8,4 L0,8" fill="none" stroke="#374151" stroke-width="1.2"/>
 </marker>
-<marker id="marker-hollow-374151" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
-  <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" stroke="#374151" stroke-width="1"/>
-</marker>
-<marker id="marker-hollow-1d4ed8" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
-  <path d="M0,0 L10,5 L0,10 Z" fill="#ffffff" stroke="#1d4ed8" stroke-width="1"/>
-</marker>
 </defs>
-<rect width="2640" height="1104" fill="#f9fafb"/>
-<rect width="2640" height="1104" fill="url(#dotGrid)"/>
+<rect width="1860" height="1190" fill="#f9fafb"/>
+<rect width="1860" height="1190" fill="url(#dotGrid)"/>
 <rect class="group-rect" x="46.0" y="46.0" width="728.0" height="248.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
 <text x="52.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.async</text>
-<rect class="group-rect" x="306.0" y="46.0" width="1248.0" height="293.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
-<text x="312.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.context</text>
-<rect class="group-rect" x="826.0" y="46.0" width="1248.0" height="648.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
-<text x="832.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.math</text>
-<path class="edge-line" data-source="BlindAsync" data-target="State" data-type="HAS" d="M240.0 170.0 Q922.0 363.7 1620.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="BlindAsync" data-target="State" data-type="HAS" x="926.0" y="340.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">state</text>
-<path class="edge-line" data-source="BlindAsyncException" data-target="RuntimeException" data-type="EXTENDS" d="M760.0 110.0 Q906.5 320.2 1100.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-hollow-374151)"/>
-<text class="edge-label" data-source="BlindAsyncException" data-target="RuntimeException" data-type="EXTENDS" x="918.2" y="303.6" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">extends</text>
-<path class="edge-line" data-source="BlindContext" data-target="ThreadLocal" data-type="HAS" d="M500.0 177.5 Q918.6 364.4 1360.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="BlindContext" data-target="ThreadLocal" data-type="HAS" x="924.3" y="342.6" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">paillierInstance</text>
-<path class="edge-line" data-source="BlindContext" data-target="ThreadLocal" data-type="HAS" d="M500.0 177.5 Q918.6 364.4 1360.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="BlindContext" data-target="ThreadLocal" data-type="HAS" x="924.3" y="342.6" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">fheInstance</text>
-<path class="edge-line" data-source="BlindRotation" data-target="AutoCloseable" data-type="IMPLEMENTS" d="M1100.0 177.5 Q785.2 304.2 500.0 488.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
-<text class="edge-label" data-source="BlindRotation" data-target="AutoCloseable" data-type="IMPLEMENTS" x="792.6" y="312.5" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
-<path class="edge-line" data-source="BlindRotation" data-target="Engine" data-type="HAS" d="M1280.0 177.5 Q1698.6 364.4 2140.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="BlindRotation" data-target="Engine" data-type="HAS" x="1704.3" y="342.6" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">engine</text>
-<path class="edge-line" data-source="BlindRotation" data-target="AtomicLong" data-type="HAS" d="M1190.0 295.0 Q1045.2 344.3 930.0 445.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="BlindRotation" data-target="AtomicLong" data-type="HAS" x="1052.6" y="351.2" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">rotated</text>
-<path class="edge-line" data-source="KeyBundle" data-target="Serializable" data-type="IMPLEMENTS" d="M1360.0 192.5 Q782.1 486.9 240.0 843.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
-<text class="edge-label" data-source="KeyBundle" data-target="Serializable" data-type="IMPLEMENTS" x="791.1" y="496.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
-<path class="edge-line" data-source="KeyBundle" data-target="PaillierKeyPair" data-type="HAS" d="M1540.0 192.5 Q1686.8 398.8 1880.0 562.5" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="KeyBundle" data-target="PaillierKeyPair" data-type="HAS" x="1698.4" y="382.2" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">paillierKeyPair</text>
-<path class="edge-line" data-source="KeyBundle" data-target="Scheme" data-type="HAS" d="M1360.0 192.5 Q791.1 306.6 240.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="KeyBundle" data-target="Scheme" data-type="HAS" x="795.6" y="317.4" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">fheScheme</text>
-<path class="edge-line" data-source="PaillierKeyPair" data-target="Serializable" data-type="IMPLEMENTS" d="M1880.0 562.5 Q1053.9 667.1 240.0 843.0" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
-<text class="edge-label" data-source="PaillierKeyPair" data-target="Serializable" data-type="IMPLEMENTS" x="1057.0" y="678.9" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">implements</text>
-<path class="edge-line" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" d="M1880.0 562.5 Q1182.9 667.9 500.0 843.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" x="1186.5" y="679.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">n</text>
-<path class="edge-line" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" d="M1880.0 562.5 Q1182.9 667.9 500.0 843.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" x="1186.5" y="679.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">n2</text>
-<path class="edge-line" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" d="M1880.0 562.5 Q1182.9 667.9 500.0 843.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" x="1186.5" y="679.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">g</text>
-<path class="edge-line" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" d="M1880.0 562.5 Q1182.9 667.9 500.0 843.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" x="1186.5" y="679.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">lambda</text>
-<path class="edge-line" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" d="M1880.0 562.5 Q1182.9 667.9 500.0 843.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierKeyPair" data-target="BigInteger" data-type="HAS" x="1186.5" y="679.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">mu</text>
-<path class="edge-line" data-source="PaillierMath" data-target="SecureRandom" data-type="HAS" d="M1880.0 170.0 Q1310.5 295.5 760.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierMath" data-target="SecureRandom" data-type="HAS" x="1315.2" y="306.3" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">random</text>
-<path class="edge-line" data-source="PaillierMath" data-target="PaillierKeyPair" data-type="HAS" d="M1970.0 280.0 Q1953.2 362.5 1970.0 445.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierMath" data-target="PaillierKeyPair" data-type="HAS" x="1961.6" y="356.5" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">keyPair</text>
-<path class="edge-line" data-source="PaillierVectorized" data-target="VectorSpecies" data-type="HAS" d="M1800.0 147.5 Q2084.0 345.9 2400.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierVectorized" data-target="VectorSpecies" data-type="HAS" x="2092.0" y="325.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">SPECIES</text>
-<path class="edge-line" data-source="PaillierVectorized" data-target="VectorSpecies" data-type="HAS" d="M1800.0 147.5 Q2084.0 345.9 2400.0 488.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="PaillierVectorized" data-target="VectorSpecies" data-type="HAS" x="2092.0" y="325.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">DSPECIES</text>
+<rect class="group-rect" x="826.0" y="46.0" width="988.0" height="293.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
+<text x="832.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.context</text>
+<rect class="group-rect" x="46.0" y="46.0" width="1508.0" height="988.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
+<text x="52.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.math</text>
+<path class="edge-line" data-source="BlindContext" data-target="PaillierMath" data-type="HAS" d="M1620.0 177.5 Q920.6 331.9 240.0 555.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="BlindContext" data-target="PaillierMath" data-type="HAS" x="925.3" y="343.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">paillierInstance</text>
+<path class="edge-line" data-source="KeyBundle" data-target="PaillierKeyPair" data-type="HAS" d="M1100.0 192.5 Q647.4 520.2 240.0 902.5" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="KeyBundle" data-target="PaillierKeyPair" data-type="HAS" x="658.7" y="527.8" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">paillierKeyPair</text>
+<path class="edge-line" data-source="PaillierMath" data-target="PaillierKeyPair" data-type="HAS" d="M150.0 665.0 Q136.2 725.0 150.0 785.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="PaillierMath" data-target="PaillierKeyPair" data-type="HAS" x="143.1" y="719.0" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">keyPair</text>
 <g id="BlindAsync">
   <title>BlindAsync [CLASS]</title>
-  <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="220.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindAsync</text>
-  <line x1="60.0" y1="104.0" x2="240.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="68.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAX_ATTEMPTS: int</text>
-  <text x="68.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">state: State</text>
-  <text x="68.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">shutdownHookRegistered: boolean</text>
-  <text x="68.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">INIT_LOCK: Object</text>
-  <line x1="60.0" y1="176.0" x2="240.0" y2="176.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="68.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">state(): State</text>
-  <text x="68.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">runAsync(Runnable): Completable…</text>
-  <text x="68.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">supplyAsync(Supplier&lt;T&gt;): Compl…</text>
-  <text x="68.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">dispatchRun(Runnable, BlindCont…</text>
-  <text x="68.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">dispatchSupply(Supplier&lt;T&gt;, Bli…</text>
-  <text x="68.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">shutdown(): void</text>
-</g>
-<g id="State">
-  <title>State [CLASS]</title>
-  <rect class="node-rect" x="1620.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1710.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">State</text>
+  <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="220.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="670.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindAsync</text>
+  <line x1="580.0" y1="104.0" x2="760.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="588.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAX_ATTEMPTS: int</text>
+  <text x="588.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">state: State</text>
+  <text x="588.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">shutdownHookRegistered: bo…</text>
+  <text x="588.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">INIT_LOCK: Object</text>
+  <line x1="580.0" y1="176.0" x2="760.0" y2="176.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="588.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">state(): State</text>
+  <text x="588.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">runAsync(Runnable): Comple…</text>
+  <text x="588.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">supplyAsync(Supplier&lt;T&gt;): …</text>
+  <text x="588.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">dispatchRun(Runnable, Blin…</text>
+  <text x="588.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">dispatchSupply(Supplier&lt;T&gt;…</text>
+  <text x="588.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">shutdown(): void</text>
 </g>
 <g id="BlindAsyncException">
   <title>BlindAsyncException [CLASS]</title>
-  <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="100.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="670.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindAsyncException</text>
-  <line x1="580.0" y1="104.0" x2="760.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="588.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">attempts: int</text>
-  <line x1="580.0" y1="131.0" x2="760.0" y2="131.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="588.0" y="144.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getAttempts(): int</text>
-</g>
-<g id="RuntimeException">
-  <title>RuntimeException [CLASS]</title>
-  <rect class="node-rect" x="1100.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1190.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">RuntimeException</text>
+  <rect class="node-rect" x="60.0" y="60.0" width="180.0" height="100.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindAsyncException</text>
+  <line x1="60.0" y1="104.0" x2="240.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="68.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">attempts: int</text>
+  <line x1="60.0" y1="131.0" x2="240.0" y2="131.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="68.0" y="144.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getAttempts(): int</text>
 </g>
 <g id="BlindContext">
   <title>BlindContext [CLASS]</title>
-  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="235.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="410.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindContext</text>
-  <line x1="320.0" y1="104.0" x2="500.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="328.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">paillierInstance: ThreadLocal&lt;P…</text>
-  <text x="328.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheInstance: ThreadLocal&lt;FheCon…</text>
-  <text x="328.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">DEFAULT_PAILLIER_BITS: int</text>
-  <text x="328.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">KEY_BUNDLE_FILTER: java.io.Obje…</text>
-  <line x1="320.0" y1="176.0" x2="500.0" y2="176.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="328.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">init(): void</text>
-  <text x="328.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">init(PaillierKeyPair): void</text>
-  <text x="328.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getPaillier(): PaillierMath</text>
-  <text x="328.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">initBfv(int): void</text>
-  <text x="328.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">initCkks(int, double): void</text>
-  <text x="328.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getFheContext(): FheContext</text>
-  <text x="328.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+6 more)</text>
-</g>
-<g id="ThreadLocal">
-  <title>ThreadLocal [CLASS]</title>
-  <rect class="node-rect" x="1360.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1450.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">ThreadLocal</text>
-</g>
-<g id="BlindRotation">
-  <title>BlindRotation [CLASS]</title>
-  <rect class="node-rect" x="1100.0" y="60.0" width="180.0" height="235.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1190.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindRotation</text>
-  <line x1="1100.0" y1="104.0" x2="1280.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1108.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">engine: Engine</text>
-  <text x="1108.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">rotated: AtomicLong</text>
-  <text x="1108.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">closed: boolean</text>
-  <text x="1108.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">committed: boolean</text>
-  <line x1="1100.0" y1="176.0" x2="1280.0" y2="176.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1108.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromCurrent(PaillierKeyPair): B…</text>
-  <text x="1108.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">paillier(PaillierKeyPair, Paill…</text>
-  <text x="1108.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromCurrentFhe(): BlindRotation</text>
-  <text x="1108.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe(FheContext, FheContext): Bl…</text>
-  <text x="1108.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">sameKeys(String): String</text>
-  <text x="1108.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">rotate(Ciphertext): Ciphertext</text>
-  <text x="1108.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+7 more)</text>
-</g>
-<g id="AutoCloseable">
-  <title>AutoCloseable [INTERFACE]</title>
-  <rect class="node-rect" x="320.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="410.0" y="475.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
-  <text class="node-label" x="410.0" y="500.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">AutoCloseable</text>
-</g>
-<g id="Engine">
-  <title>Engine [CLASS]</title>
-  <rect class="node-rect" x="2140.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="2230.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Engine</text>
-</g>
-<g id="AtomicLong">
-  <title>AtomicLong [CLASS]</title>
-  <rect class="node-rect" x="840.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="930.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">AtomicLong</text>
-</g>
-<g id="KeyBundle">
-  <title>KeyBundle [CLASS]</title>
-  <rect class="node-rect" x="1360.0" y="60.0" width="180.0" height="265.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1450.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">KeyBundle</text>
-  <line x1="1360.0" y1="104.0" x2="1540.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1368.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialVersionUID: long</text>
-  <text x="1368.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">CURRENT_FORMAT_VERSION: short</text>
-  <text x="1368.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">formatVersion: short</text>
-  <text x="1368.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">paillierKeyPair: PaillierKeyPair</text>
-  <text x="1368.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheScheme: Scheme</text>
-  <text x="1368.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree: int</text>
-  <text x="1368.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
-  <line x1="1360.0" y1="221.0" x2="1540.0" y2="221.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1368.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getFormatVersion(): short</text>
-  <text x="1368.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getPaillierKeyPair(): PaillierK…</text>
-  <text x="1368.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getFheScheme(): Scheme</text>
-  <text x="1368.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getPolyModulusDegree(): int</text>
-  <text x="1368.0" y="294.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getScale(): double</text>
-  <text x="1368.0" y="309.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getNativeFhePayload(): byte[]</text>
-</g>
-<g id="Serializable">
-  <title>Serializable [INTERFACE]</title>
-  <rect class="node-rect" x="60.0" y="800.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-INTERFACE)" stroke="#1d4ed8" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="150.0" y="830.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1d4ed8" font-style="italic">«interface»</text>
-  <text class="node-label" x="150.0" y="855.9" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Serializable</text>
-</g>
-<g id="PaillierKeyPair">
-  <title>PaillierKeyPair [CLASS]</title>
-  <rect class="node-rect" x="1880.0" y="445.0" width="180.0" height="235.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1970.0" y="467.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">PaillierKeyPair</text>
-  <line x1="1880.0" y1="489.0" x2="2060.0" y2="489.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1888.0" y="502.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialVersionUID: long</text>
-  <text x="1888.0" y="517.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">n: BigInteger</text>
-  <text x="1888.0" y="532.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">n2: BigInteger</text>
-  <text x="1888.0" y="547.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">g: BigInteger</text>
-  <text x="1888.0" y="562.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">lambda: BigInteger</text>
-  <text x="1888.0" y="577.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">mu: BigInteger</text>
-  <line x1="1880.0" y1="591.0" x2="2060.0" y2="591.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1888.0" y="604.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getN(): BigInteger</text>
-  <text x="1888.0" y="619.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getN2(): BigInteger</text>
-  <text x="1888.0" y="634.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getG(): BigInteger</text>
-  <text x="1888.0" y="649.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getLambda(): BigInteger</text>
-  <text x="1888.0" y="664.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getMu(): BigInteger</text>
-</g>
-<g id="Scheme">
-  <title>Scheme [CLASS]</title>
-  <rect class="node-rect" x="60.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="150.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">Scheme</text>
-</g>
-<g id="BlindMath">
-  <title>BlindMath [CLASS]</title>
-  <rect class="node-rect" x="840.0" y="60.0" width="180.0" height="147.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="930.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BlindMath</text>
-  <line x1="840.0" y1="104.0" x2="1020.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="848.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">add(Ciphertext, Ciphertext): Ci…</text>
-  <text x="848.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">subtract(Ciphertext, Ciphertext…</text>
-  <text x="848.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">multiply(Ciphertext, Ciphertext…</text>
-  <text x="848.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheAdd(Ciphertext, Ciphertext):…</text>
-  <text x="848.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheSubtract(Ciphertext, Ciphert…</text>
-  <text x="848.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheMultiply(Ciphertext, Ciphert…</text>
-</g>
-<g id="BigInteger">
-  <title>BigInteger [CLASS]</title>
-  <rect class="node-rect" x="320.0" y="800.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="410.0" y="843.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">BigInteger</text>
+  <rect class="node-rect" x="1620.0" y="60.0" width="180.0" height="235.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1710.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindContext</text>
+  <line x1="1620.0" y1="104.0" x2="1800.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="1628.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">paillierInstance: ThreadLo…</text>
+  <text x="1628.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheInstance: ThreadLocal&lt;F…</text>
+  <text x="1628.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">DEFAULT_PAILLIER_BITS: int</text>
+  <text x="1628.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">KEY_BUNDLE_FILTER: java.io…</text>
+  <line x1="1620.0" y1="176.0" x2="1800.0" y2="176.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="1628.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">init(): void</text>
+  <text x="1628.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">init(PaillierKeyPair): void</text>
+  <text x="1628.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getPaillier(): PaillierMath</text>
+  <text x="1628.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">initBfv(int): void</text>
+  <text x="1628.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">initCkks(int, double): void</text>
+  <text x="1628.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getFheContext(): FheContext</text>
+  <text x="1628.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+6 more)</text>
 </g>
 <g id="PaillierMath">
   <title>PaillierMath [CLASS]</title>
-  <rect class="node-rect" x="1880.0" y="60.0" width="180.0" height="220.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1970.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">PaillierMath</text>
-  <line x1="1880.0" y1="104.0" x2="2060.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1888.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">random: SecureRandom</text>
-  <text x="1888.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">keyPair: PaillierKeyPair</text>
-  <text x="1888.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">keyTag: byte</text>
-  <line x1="1880.0" y1="161.0" x2="2060.0" y2="161.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1888.0" y="174.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getKeyPair(): PaillierKeyPair</text>
-  <text x="1888.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">keyTag(): byte[]</text>
-  <text x="1888.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">encrypt(BigInteger): Ciphertext</text>
-  <text x="1888.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">decrypt(Ciphertext): BigInteger</text>
-  <text x="1888.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">decryptSigned(Ciphertext): BigI…</text>
-  <text x="1888.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">add(Ciphertext, Ciphertext): Ci…</text>
-  <text x="1888.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
+  <rect class="node-rect" x="60.0" y="445.0" width="180.0" height="220.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="467.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">PaillierMath</text>
+  <line x1="60.0" y1="489.0" x2="240.0" y2="489.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="68.0" y="502.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">random: SecureRandom</text>
+  <text x="68.0" y="517.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">keyPair: PaillierKeyPair</text>
+  <text x="68.0" y="532.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">keyTag: byte</text>
+  <line x1="60.0" y1="546.0" x2="240.0" y2="546.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="68.0" y="559.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getKeyPair(): PaillierKeyP…</text>
+  <text x="68.0" y="574.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">keyTag(): byte[]</text>
+  <text x="68.0" y="589.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">encrypt(BigInteger): Ciphe…</text>
+  <text x="68.0" y="604.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">decrypt(Ciphertext): BigIn…</text>
+  <text x="68.0" y="619.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">decryptSigned(Ciphertext):…</text>
+  <text x="68.0" y="634.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">add(Ciphertext, Ciphertext…</text>
+  <text x="68.0" y="649.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
 </g>
-<g id="SecureRandom">
-  <title>SecureRandom [CLASS]</title>
-  <rect class="node-rect" x="580.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="670.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">SecureRandom</text>
+<g id="BlindRotation">
+  <title>BlindRotation [CLASS]</title>
+  <rect class="node-rect" x="840.0" y="60.0" width="180.0" height="235.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="930.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindRotation</text>
+  <line x1="840.0" y1="104.0" x2="1020.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="848.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">engine: Engine</text>
+  <text x="848.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">rotated: AtomicLong</text>
+  <text x="848.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">closed: boolean</text>
+  <text x="848.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">committed: boolean</text>
+  <line x1="840.0" y1="176.0" x2="1020.0" y2="176.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="848.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromCurrent(PaillierKeyPai…</text>
+  <text x="848.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">paillier(PaillierKeyPair, …</text>
+  <text x="848.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromCurrentFhe(): BlindRot…</text>
+  <text x="848.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe(FheContext, FheContext…</text>
+  <text x="848.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">sameKeys(String): String</text>
+  <text x="848.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">rotate(Ciphertext): Cipher…</text>
+  <text x="848.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+7 more)</text>
+</g>
+<g id="KeyBundle">
+  <title>KeyBundle [CLASS]</title>
+  <rect class="node-rect" x="1100.0" y="60.0" width="180.0" height="265.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1190.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">KeyBundle</text>
+  <line x1="1100.0" y1="104.0" x2="1280.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="1108.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialVersionUID: long</text>
+  <text x="1108.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">CURRENT_FORMAT_VERSION: sh…</text>
+  <text x="1108.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">formatVersion: short</text>
+  <text x="1108.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">paillierKeyPair: PaillierK…</text>
+  <text x="1108.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheScheme: Scheme</text>
+  <text x="1108.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree: int</text>
+  <text x="1108.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
+  <line x1="1100.0" y1="221.0" x2="1280.0" y2="221.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="1108.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getFormatVersion(): short</text>
+  <text x="1108.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getPaillierKeyPair(): Pail…</text>
+  <text x="1108.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getFheScheme(): Scheme</text>
+  <text x="1108.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getPolyModulusDegree(): int</text>
+  <text x="1108.0" y="294.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getScale(): double</text>
+  <text x="1108.0" y="309.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getNativeFhePayload(): byt…</text>
+</g>
+<g id="PaillierKeyPair">
+  <title>PaillierKeyPair [CLASS]</title>
+  <rect class="node-rect" x="60.0" y="785.0" width="180.0" height="235.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="150.0" y="807.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">PaillierKeyPair</text>
+  <line x1="60.0" y1="829.0" x2="240.0" y2="829.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="68.0" y="842.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialVersionUID: long</text>
+  <text x="68.0" y="857.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">n: BigInteger</text>
+  <text x="68.0" y="872.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">n2: BigInteger</text>
+  <text x="68.0" y="887.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">g: BigInteger</text>
+  <text x="68.0" y="902.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">lambda: BigInteger</text>
+  <text x="68.0" y="917.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">mu: BigInteger</text>
+  <line x1="60.0" y1="931.0" x2="240.0" y2="931.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="68.0" y="944.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getN(): BigInteger</text>
+  <text x="68.0" y="959.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getN2(): BigInteger</text>
+  <text x="68.0" y="974.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getG(): BigInteger</text>
+  <text x="68.0" y="989.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getLambda(): BigInteger</text>
+  <text x="68.0" y="1004.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getMu(): BigInteger</text>
+</g>
+<g id="BlindMath">
+  <title>BlindMath [CLASS]</title>
+  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="147.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindMath</text>
+  <line x1="320.0" y1="104.0" x2="500.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="328.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">add(Ciphertext, Ciphertext…</text>
+  <text x="328.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">subtract(Ciphertext, Ciphe…</text>
+  <text x="328.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">multiply(Ciphertext, Ciphe…</text>
+  <text x="328.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheAdd(Ciphertext, Ciphert…</text>
+  <text x="328.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheSubtract(Ciphertext, Ci…</text>
+  <text x="328.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fheMultiply(Ciphertext, Ci…</text>
 </g>
 <g id="PaillierVectorized">
   <title>PaillierVectorized [CLASS]</title>
-  <rect class="node-rect" x="1620.0" y="60.0" width="180.0" height="175.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="1710.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">PaillierVectorized</text>
-  <line x1="1620.0" y1="104.0" x2="1800.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1628.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">SPECIES: VectorSpecies&lt;Long&gt;</text>
-  <text x="1628.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">DSPECIES: VectorSpecies&lt;Double&gt;</text>
-  <text x="1628.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAX_MODULUS: long</text>
-  <line x1="1620.0" y1="161.0" x2="1800.0" y2="161.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="1628.0" y="174.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">batchAdd(long[], long[], long[]…</text>
-  <text x="1628.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">checkReduced(LongVector, LongVe…</text>
-  <text x="1628.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">mulMod(long, long, long): long</text>
-  <text x="1628.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">batchAddBigInteger(BigInteger[]…</text>
+  <rect class="node-rect" x="1360.0" y="60.0" width="180.0" height="175.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="1450.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">PaillierVectorized</text>
+  <line x1="1360.0" y1="104.0" x2="1540.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="1368.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">SPECIES: VectorSpecies&lt;Lon…</text>
+  <text x="1368.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">DSPECIES: VectorSpecies&lt;Do…</text>
+  <text x="1368.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAX_MODULUS: long</text>
+  <line x1="1360.0" y1="161.0" x2="1540.0" y2="161.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="1368.0" y="174.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">batchAdd(long[], long[], l…</text>
+  <text x="1368.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">checkReduced(LongVector, L…</text>
+  <text x="1368.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">mulMod(long, long, long): …</text>
+  <text x="1368.0" y="219.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">batchAddBigInteger(BigInte…</text>
 </g>
-<g id="VectorSpecies">
-  <title>VectorSpecies [CLASS]</title>
-  <rect class="node-rect" x="2400.0" y="445.0" width="180.0" height="86.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="2490.0" y="488.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2937">VectorSpecies</text>
-</g>
-<rect x="2404.0" y="946.0" width="220.0" height="124.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
-<text x="2420.0" y="966.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
-<line x1="2420.0" y1="990.0" x2="2456.0" y2="990.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-open-374151)"/>
-<text x="2464.0" y="994.0" font-family="sans-serif" font-size="11" fill="#374151">has</text>
-<line x1="2420.0" y1="1014.0" x2="2456.0" y2="1014.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-hollow-374151)"/>
-<text x="2464.0" y="1018.0" font-family="sans-serif" font-size="11" fill="#374151">extends</text>
-<line x1="2420.0" y1="1038.0" x2="2456.0" y2="1038.0" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#marker-hollow-1d4ed8)"/>
-<text x="2464.0" y="1042.0" font-family="sans-serif" font-size="11" fill="#374151">implements</text>
+<rect x="1624.0" y="1080.0" width="220.0" height="76.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
+<text x="1640.0" y="1100.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
+<line x1="1640.0" y1="1124.0" x2="1676.0" y2="1124.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-open-374151)"/>
+<text x="1684.0" y="1128.0" font-family="sans-serif" font-size="11" fill="#374151">has</text>
 <script type="text/javascript">
 <![CDATA[
 document.addEventListener('DOMContentLoaded', () => {
@@ -379,6 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ]]>
 </script>
 <a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
-  <text x="2624.0" y="1088.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+  <text x="1844.0" y="1174.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
 </a>
 </svg>
