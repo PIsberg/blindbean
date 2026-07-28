@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import se.deversity.vibetags.annotations.AIPublicAPI;
+
 /**
  * Marks a field whose type is itself a {@link BlindEntity}, so the generated wrapper can reach into
  * it.
@@ -39,6 +41,7 @@ import java.lang.annotation.Target;
  * schemes its own fields declare, and its context still has to be initialised — an {@code Order}
  * with a BFV-nested field still needs the native library.
  */
+@AIPublicAPI
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface BlindNested {

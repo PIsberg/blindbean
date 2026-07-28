@@ -65,17 +65,11 @@ The build is a Maven reactor of six library modules, each a real named module wi
   `blindbean-processor` on the `--processor-module-path`, and needs
   `--enable-native-access=se.deversity.blindbean.fhe` for BFV/CKKS. Classpath consumers use the
   `blindbean` aggregate (`<type>pom</type>`). That test is the guard against a wrong `exports`.
-- The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retention). The vibetags
-  guardrail *generator* (vibetags-processor, RC6) now **runs across the reactor**, driven by
-  `-Avibetags.root=${maven.multiModuleProjectDirectory}` on the compiler plugin. Each annotated
-  module owns a `.claude/rules/` of **role-grouped** topic files (`paths:` frontmatter), grouped by
-  that module's `.vibetags-roles`; Claude Code auto-loads them when you open a matching source file.
-  The root `.vibetags-root-index` marker makes the generated block in **`CLAUDE.md` a lean index** —
-  one pointer per module to its `.claude/rules/`, not the full merge. `GEMINI.md` keeps the
-  sidecar-**merged** block (Gemini has no scoped-rules feature, so it needs the embedded copy). These
-  are **generated from the `@AI*` annotations, not hand-edited**: change the annotations, recompile.
-  `blindbean-processor` overrides the compiler config, so it re-declares the vibetags path (pinned to
-  `${vibetags.version}`) and the reactor-root arg itself, or its guardrails drop out of the output.
+- The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retention). Each module's
+  `.claude/rules/` topic files and the generated blocks in `CLAUDE.md` / `GEMINI.md` are **generated
+  from those annotations, not hand-edited** — change the annotation and recompile. The reactor wiring,
+  the `blindbean-processor` override trap and the RC6 lean-index marker are in `docs/CI-NOTES.md`;
+  the annotations themselves are documented in the bundled `vibetags-usage` skill.
 
 ## Architecture (three layers)
 
@@ -103,14 +97,11 @@ The native library location is controlled by the `blindbean.native.path` system 
 
 ## CI
 
-GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (everything that does not need the DLL), a native build matrix on Linux/macOS/Windows publishing the shared library as an artifact, and the full Maven test suite on Windows against the published `blindbean_fhe.dll`. Changes touching `blindbean-fhe/src/main/native/**` require the native matrix to stay green before the Windows test job can consume the artifact.
+GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS, a native build matrix on Linux/macOS/Windows publishing the shared library as an artifact, and the full Maven suite on Windows against that artifact.
 
-**Tests that need the DLL carry `@Tag("native")`.** The fast gate runs `-DexcludedGroups=native`; a local or Windows run leaves `excludedGroups` empty and executes everything. If you add a test that boots a BFV/CKKS context, tag it — an untagged one breaks the Linux gate. Tag the `@Nested` class, not the outer one, when only part of a suite needs native (see `BlindMathTest`, `BlindBeanExtensionTest`).
+**Tests that need the DLL carry `@Tag("native")`.** The fast gate runs `-DexcludedGroups=native`, so an untagged test that boots a BFV/CKKS context breaks the Linux gate. Tag the `@Nested` class, not the outer one, when only part of a suite needs native (see `BlindMathTest`, `BlindBeanExtensionTest`).
 
-Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which enforces a patch-coverage gate on pull requests: new/changed lines must be covered, so ship tests with the code. Coverage is only collected where the code actually runs — the FHE bridge can *only* be covered by the Windows report, so if that upload breaks, `FheContext`/`FheCiphertextNative` read 0% and the gate fails on code that is in fact well tested. Two traps, both hit for real:
-
-- The Codecov action input is **`files:`**, not `file:` (v7 renamed it and silently ignores the old name — check the run log for `Unexpected input(s) 'file'`).
-- A gate that runs only a subset of tests produces a report where everything else reads 0%. Codecov merges uploads, so a *missing* upload — not a missing test — is the usual reason a well-covered file shows 0%. Regenerate the suspect job's report locally (`mvn clean test` with the same flags, then read `target/site/jacoco/jacoco.xml`) before writing tests for a gap that may not exist. Note JaCoCo's agent **appends** to `jacoco.exec`, so always `clean` first or a previous run's data will inflate the numbers.
+Codecov enforces a patch-coverage gate on pull requests — ship tests with the code. The job layout, the two Codecov traps that have bitten for real (the `files:` input name; a missing upload reading as 0% coverage) and the VibeTags generation rules are in **`docs/CI-NOTES.md`**.
 
 ## Supported field types
 
@@ -118,18 +109,14 @@ The scheme is decided by the field's type, and the processor fails the build on 
 `@Homomorphic(type = X.class)` names the *plaintext* type; the field itself is always a `String`
 holding hex.
 
-| Type | Scheme | Arithmetic | Encoding |
-|---|---|---|---|
-| `byte`/`short`/`int`/`long`/`BigInteger` (+ boxed) | PAILLIER | add, sub | `BigInteger.valueOf` |
-| `BigDecimal` | PAILLIER | add, sub | unscaled integer at a fixed `scale()` |
-| `String` | PAILLIER | none | UTF-8 bytes as an unsigned magnitude |
-| `byte[]` | PAILLIER | none | bytes with a `0x01` length marker (a BigInteger drops leading zeros) |
-| `boolean` | PAILLIER | none | 0 / 1 |
-| `Instant`, `LocalDate` | PAILLIER | none | epoch millis / epoch day |
-| `Duration` | PAILLIER | add, sub | millis |
-| `float`/`double` (+ boxed) | CKKS | add, sub, mul | scalar |
-| `float[]`, `double[]` | CKKS | add, sub, mul | slot vector |
-| `long[]`, `int[]`, `short[]` | BFV | add, sub, mul | slot vector |
+| Type | Scheme | Arithmetic |
+|---|---|---|
+| `byte`/`short`/`int`/`long`/`BigInteger` (+ boxed), `BigDecimal`, `Duration` | PAILLIER | add, sub |
+| `String`, `byte[]`, `boolean`, `Instant`, `LocalDate` | PAILLIER | none |
+| `float`/`double` (+ boxed), `float[]`, `double[]` | CKKS | add, sub, mul |
+| `long[]`, `int[]`, `short[]` | BFV | add, sub, mul |
+
+The per-type **encoding** column and the consumer-facing scheme-choice guidance live in the bundled `blindbean` skill, which carries the same mapping in more detail — don't duplicate it here.
 
 Rules worth knowing before adding another type:
 
@@ -164,28 +151,13 @@ rather than a bare "only applies to classes".
 
 ## Releasing
 
-Coordinates are `se.deversity:blindbean` (packages live under `se.deversity.blindbean.*`). Cutting a release is tagging one — `.github/workflows/release.yml` fires on `v*`:
+Coordinates are `se.deversity:blindbean`. Cutting a release is tagging one — `.github/workflows/release.yml` fires on `v*`. Two rules that break a release if violated: the tag **must** match `<version>` in `pom.xml` (the workflow refuses otherwise, and SNAPSHOTs are refused outright), and **`autoPublish` is `false`** so Central always waits for a human to press Publish — a Central release is irreversible.
 
-```bash
-mvn versions:set -DnewVersion=0.2.0   # pom must already say 0.2.0
-git tag v0.2.0 && git push origin v0.2.0
-```
-
-The tag **must** match `<version>` in `pom.xml`; the workflow refuses to run otherwise, because a Release labelled v0.2.0 shipping a 0.1.0 jar is worse than no release. SNAPSHOT versions are refused outright.
-
-The workflow builds the three native libraries, runs the full SEAL-backed suite on Windows, signs, uploads to Maven Central, and attaches the jar + all three natives + `SHA256SUMS.txt` to a GitHub Release. **`autoPublish` is `false`** — the bundle uploads and waits for a human to press Publish on central.sonatype.com, because a Central release is irreversible (a version can never be replaced or withdrawn). Central needs four secrets — `MAVEN_GPG_PRIVATE_KEY`, `MAVEN_GPG_PASSPHRASE`, `CENTRAL_USERNAME`, `CENTRAL_PASSWORD` — and until they are set the workflow **skips Central and still cuts the GitHub Release**, so a tag can never half-publish. See the header of `release.yml`.
-
-Central mandates POM `name`/`description`/`url`/`licenses`/`developers`/`scm` plus signed jar, **sources jar and javadoc jar** — a missing javadoc jar is the classic cause of a release that uploads then silently fails validation. All of that lives in the `release` profile, which is off by default so an ordinary `mvn install` never tries to sign anything. Verify it without publishing:
-
-```bash
-mvn -Prelease package -DskipTests -Dgpg.skip=true   # should produce -sources and -javadoc jars
-```
-
-Javadoc needs `--enable-preview`/`--add-modules` passed explicitly (`additionalJOptions`) or it refuses to parse the sources it is documenting.
+Full procedure, required secrets, the `release` profile and the pre-tag checklist: **`docs/RELEASING.md`**.
 
 ## Further reading
 
-`docs/ARCHITECTURE.md` has PlantUML class/sequence diagrams of the FHE multiply flow and the full FFM bridge parameter table. `README.md` has the annotation-level quickstart, the consumer-build flags and scheme parameter choices. `docs/SECURITY-AND-LIMITATIONS.md` states what each scheme does and does not provide (no encrypted comparisons, malleability, CKKS approximation), the noise-budget rules and key-rotation guidance — consult it before changing crypto-adjacent behavior or advising users. `docs/DX-REVIEW.md` tracks the developer-experience backlog (publish + bundle natives, LTS baseline, Spring/JPA modules) with status.
+`docs/ARCHITECTURE.md` has PlantUML class/sequence diagrams of the FHE multiply flow and the full FFM bridge parameter table. `README.md` has the annotation-level quickstart, the consumer-build flags and scheme parameter choices. `docs/SECURITY-AND-LIMITATIONS.md` states what each scheme does and does not provide (no encrypted comparisons, malleability, CKKS approximation), the noise-budget rules and key-rotation guidance — consult it before changing crypto-adjacent behavior or advising users. `docs/RELEASING.md` has the full release procedure and its checklist. `docs/CI-NOTES.md` has the CI job layout, the Codecov traps and how the VibeTags guardrails are generated. `docs/DX-REVIEW.md` tracks the developer-experience backlog (publish + bundle natives, LTS baseline, Spring/JPA modules) with status. The bundled `vibetags-usage` skill is the reference for the `@AI*` annotations themselves.
 
 <!-- VIBETAGS-START -->
 <!-- VIBETAGS-MODULE: blindbean-core -->

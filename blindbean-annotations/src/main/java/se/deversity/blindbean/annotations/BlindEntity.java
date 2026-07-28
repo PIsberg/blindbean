@@ -5,9 +5,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import se.deversity.vibetags.annotations.AIPublicAPI;
+
 /**
  * Marks a class as being managed by BlindBean context for transparent homomorphic encryptions.
  */
+@AIPublicAPI
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface BlindEntity {

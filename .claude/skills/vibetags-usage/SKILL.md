@@ -1,7 +1,7 @@
 ---
 name: vibetags-usage
 description: This skill should be used when the user asks how to "use VibeTags", "add VibeTags annotations", "set up AI guardrails", "protect code from AI", "configure AI platforms", asks about @AILocked, @AIContext, @AIDraft, @AIAudit, @AIIgnore, @AIPrivacy, @AICore, @AIPerformance, @AIContract, @AITestDriven, @AIThreadSafe, @AIImmutable, @AIDeprecated, @AIObservability, @AIRegulation, @AIArchitecture, @AILegacyBridge, @AIStrictClasspath, @AIInternationalized, @AIPublicAPI, @AISchemaSafe, @AIStrictExceptions, @AIStrictTypes, @AIParallelTests, @AIIdempotent, @AIFeatureFlag, @AISecure, @AICallersOnly, @AISandboxOnly, @AIMemoryBudget, @AIPure, @AIDomainModel, @AIExtensible, @AIInputSanitized, @AISecureLogging, @AIExplain, @AIPrototype, @AISunset, @AITemporary annotations, or wants to control how AI tools interact with Java code.
-version: 1.0.0-RC5
+version: 1.0.0-RC6
 ---
 
 # VibeTags Usage Guide
@@ -17,15 +17,15 @@ VibeTags is a **compile-time Java annotation processor** that generates AI platf
 <dependency>
     <groupId>se.deversity.vibetags</groupId>
     <artifactId>vibetags-processor</artifactId>
-    <version>1.0.0-RC5</version>
+    <version>1.0.0-RC6</version>
     <scope>provided</scope>
 </dependency>
 ```
 
 **Gradle:**
 ```groovy
-compileOnly 'se.deversity.vibetags:vibetags-processor:1.0.0-RC5'
-annotationProcessor 'se.deversity.vibetags:vibetags-processor:1.0.0-RC5'
+compileOnly 'se.deversity.vibetags:vibetags-processor:1.0.0-RC6'
+annotationProcessor 'se.deversity.vibetags:vibetags-processor:1.0.0-RC6'
 ```
 
 ### 2. Opt in to AI platforms (file-presence model)
@@ -34,6 +34,9 @@ VibeTags **never creates files** — it only updates files that already exist. C
 
 ```bash
 touch CLAUDE.md .claudeignore              # Claude / Claude Code
+touch CLAUDE.local.md                      # Claude Code (local override)
+mkdir -p .claude/rules                     # Claude Code (granular per-class rules)
+mkdir -p .claude/skills/vibetags-guardrails && touch .claude/skills/vibetags-guardrails/SKILL.md  # Claude Code (Skill)
 touch .cursorrules .cursorignore           # Cursor (traditional)
 mkdir -p .cursor/rules                     # Cursor (granular per-class rules)
 mkdir -p .trae/rules                       # Trae (granular per-class rules)
@@ -41,8 +44,9 @@ mkdir -p .roo/rules                        # Roo Code (per-class rules)
 touch CONVENTIONS.md .aiderignore          # Aider
 touch QWEN.md .qwenignore                  # Qwen
 touch .aiexclude gemini_instructions.md GEMINI.md  # Gemini
-touch AGENTS.md                            # Codex CLI
+touch AGENTS.md                            # Codex CLI (see note below — only generated when sole)
 mkdir -p .github && touch .github/copilot-instructions.md .copilotignore  # Copilot
+mkdir -p .github/instructions               # GitHub Copilot (granular per-class rules)
 touch llms.txt llms-full.txt               # Windsurf Cascade / llms.txt standard
 touch .windsurfrules                       # Windsurf IDE (traditional)
 mkdir -p .windsurf/rules                   # Windsurf IDE (granular per-class rules)
@@ -64,12 +68,21 @@ touch GEMINI.md                            # Gemini (official markdown)
 touch .antigravityignore                   # Antigravity AI
 touch .clinerules                          # Cline AI assistant
 mkdir -p .junie && touch .junie/guidelines.md  # JetBrains Junie
-mkdir -p .kiro/steering
-mkdir -p .claude/rules .github/instructions                    # Amazon Kiro (granular per-class rules)
+mkdir -p .kiro/steering                    # Amazon Kiro (granular per-class rules)
 touch DESIGN.md                            # AI design agents (Cursor, Claude, Copilot, etc.)
+touch .coderabbit.yaml .pr_agent.toml ellipsis.yaml  # AI PR reviewers (CodeRabbit, PR-Agent, Ellipsis)
+touch .repomixignore .gitingestignore .gptignore .ghostcoderignore .piecesignore  # Context packers
+mkdir -p .void && touch .void/rules.md     # Void Editor
+touch .roomodes                            # Roo Code ("VibeTags Architect" custom mode)
 ```
 
 To remove a platform: delete its file — VibeTags will never recreate it.
+
+> **`AGENTS.md` is special:** it is only generated when it is the **sole** AI config file in the
+> project. Since `AGENTS.md` is a near-universal agent file often kept as a pointer to another
+> tool's file (e.g. `CLAUDE.md`), VibeTags leaves it untouched whenever any other AI config file
+> is present (this also disables the `.codex/` sidecar). Opt in to *only* `AGENTS.md` to have it
+> managed.
 
 ### 3. Annotate your Java code
 
@@ -432,14 +445,14 @@ Declares which architectural layer this class belongs to and which layers it mus
 Use on: **class, method**
 
 ```java
-@AILegacyBridge
+@AILegacyBridge(reason = "Mirrors a v1 payment-SDK quirk; 'cleaning it up' broke the gateway in 2023")
 public class LegacyPaymentAdapter {
     // Works around a quirk in the v1 payment provider SDK — must not be "cleaned up"
     public String formatAmount(double amount) { ... }
 }
 ```
 
-Marks code that exists solely to bridge to a legacy or upstream system with known quirks or bugs. AI must not modernize the structure, apply new patterns, or remove the "ugly" parts — they exist for a reason. Internal business logic may still be changed.
+Marks code that exists solely to bridge to a legacy or upstream system with known quirks or bugs. AI must not modernize the structure, apply new patterns, or remove the "ugly" parts — they exist for a reason. Internal business logic may still be changed. The optional `reason` records *why* across AI sessions and is surfaced in the generated output.
 
 When to use: SDK adapter shims, workarounds for upstream library bugs, compatibility wrappers kept alive for old API clients.
 
@@ -450,7 +463,7 @@ When to use: SDK adapter shims, workarounds for upstream library bugs, compatibi
 Use on: **class, method**
 
 ```java
-@AIStrictClasspath
+@AIStrictClasspath(reason = "Runs in the locked-down sandbox where the SecurityManager throws on reflection")
 public class DataParser {
     // Must only use JDK and existing compile-time classpath — no runtime class loading
 }
@@ -467,7 +480,7 @@ When to use: security-sensitive execution environments, GraalVM native-image tar
 Use on: **class, method**
 
 ```java
-@AIInternationalized
+@AIInternationalized(reason = "Ships in 11 locales; a hardcoded English string failed the l10n audit last quarter")
 public class NotificationTemplateRenderer {
     // All user-visible text must come from message bundles — never hardcoded
 }
@@ -484,7 +497,7 @@ When to use: UI components, REST error responses, email templates, notification 
 Use on: **class, method**
 
 ```java
-@AIPublicAPI
+@AIPublicAPI(reason = "Consumed by three external partner integrations pinned to v1")
 public class ProductSearchClient {
     public List<Product> search(String query, int maxResults) { ... }
 }
@@ -503,7 +516,7 @@ When to use: SDK entry points, REST controller response shapes, message schema c
 Use on: **class, field**
 
 ```java
-@AISchemaSafe
+@AISchemaSafe(reason = "Replicated to the billing read-model; column changes need a backward-compatible migration")
 @Entity
 public class UserEntity {
     @Column(name = "email", nullable = false)
@@ -522,7 +535,7 @@ When to use: JPA/Hibernate entities, Avro/Protobuf schema classes, JSON serializ
 Use on: **class, method**
 
 ```java
-@AIStrictExceptions
+@AIStrictExceptions(reason = "A bare catch(Exception) once swallowed a rollback and double-charged customers")
 public class PaymentGatewayClient {
     public Receipt charge(Money amount) throws PaymentDeclinedException { ... }
 }
@@ -539,7 +552,7 @@ When to use: external integrations, retry boundaries, error-handling layers, cod
 Use on: **class, method, field**
 
 ```java
-@AIStrictTypes
+@AIStrictTypes(reason = "Currency math broke in INC-4412 when a double leaked into the amount")
 public class PricingCalculator {
     // Use BigDecimal for money, Instant/ZonedDateTime for time — never double or String
     public BigDecimal calculateDiscount(Money basePrice, Percentage rate) { ... }
@@ -557,7 +570,7 @@ When to use: financial calculations, time/date handling, any domain model where 
 Use on: **class, method**
 
 ```java
-@AIParallelTests
+@AIParallelTests(reason = "A shared static counter caused flaky CI in build #4471 — keep cases isolated")
 public class OrderServiceTest {
     // Tests must not share mutable state or bind to fixed ports
 }
@@ -664,7 +677,7 @@ Restricts which packages or classes are permitted to invoke this method or class
 Use on: **class, method**
 
 ```java
-@AISandboxOnly
+@AISandboxOnly(reason = "Seeds fake credentials; a prod hotfix once imported it and leaked test data to staging")
 public class SandboxTestHelper { ... }
 ```
 
@@ -696,7 +709,7 @@ Restricts heap allocations, autoboxing, or object instantiation inside high-perf
 Use on: **method**
 
 ```java
-@AIPure
+@AIPure(reason = "Memoized by callers that assume referential transparency — no logging or caching side effects")
 public static int add(int a, int b) { return a + b; }
 ```
 
@@ -787,7 +800,7 @@ Enforces step-by-step mathematical/architectural Chain-of-Thought (CoT) explanat
 Use on: **class**
 
 ```java
-@AIPrototype
+@AIPrototype(reason = "Throwaway Q3 Kafka spike — no error handling on purpose; production must not depend on it")
 public class DraftKafkaIntegrationSpike { ... }
 ```
 
@@ -931,45 +944,6 @@ mkdir -p .claude/rules .github/instructions
 
 ---
 
-## Role/topic grouping (`.vibetags-roles`) — RC5
-
-By default the granular dirs emit **one file per annotated class** (FQN-named, single-class glob).
-Drop a `.vibetags-roles` config **in the same directory as the granular dir** to instead group
-matching classes into a few human-named **topic files** with a multi-glob `paths:` frontmatter:
-
-```
-# <role-name> = <glob-or-FQN>[, <glob-or-FQN> ...]   — first match wins; unmatched → per-class file
-api-endpoints = **/*Controller.java
-persistence   = **/*Repository.java, **/*Entity.java, com.example.LegacyDao
-```
-
-- **Directory-scoped.** A `.vibetags-roles` groups only the granular files written into *its own*
-  directory. A repo-root config does **not** reach a module's granular dir — put a `.vibetags-roles`
-  in each module that has a `.claude/rules/`.
-- The config's content hash folds into the build fingerprint, so edits regenerate.
-- Absent `.vibetags-roles`, granular output is byte-for-byte the per-class default.
-
-## Multi-module Maven reactor (per-module output) — RC5
-
-Opt-in is by file/dir existence, per directory:
-
-- **Root aggregate** (`CLAUDE.md`, `GEMINI.md`, …): the sidecar **merges every module** into one
-  block. This merge is driven by `-Avibetags.root=${maven.multiModuleProjectDirectory}` on the
-  compiler plugin — without it each module treats itself as its own root and the merged root goes
-  stale. Each module drops a `.vibetags-mod-<id>` fragment at that root; they are transient (gitignore
-  `.vibetags-mod-*`, `.vibetags-cache`, `vibetags.log`).
-- **Per-module granular** (`module/.claude/rules/` + `module/.vibetags-roles`): role-grouped topic
-  files scoped to that module's own annotations, written directly (no cross-module merge). Separate
-  dirs mean no clobbering — unlike a *root* `.claude/rules/`, which does **not** merge across modules
-  (last module wins) and should be avoided.
-- **A module that overrides the compiler config** (its own `annotationProcessorPaths`/`compilerArgs`)
-  must re-declare the `vibetags-processor` path (pin the version — an overriding versionless path can
-  mis-resolve) **and** repeat `-Avibetags.root`, or its guardrails silently drop out of the merge.
-- Don't put a granular dir *and* an aggregate `CLAUDE.md` in the same module unless you want the same
-  guardrails twice (both auto-load) — pick one per module.
-
----
-
 ## Advanced Configuration
 
 ### Processor options (Maven)
@@ -1047,6 +1021,9 @@ tasks.withType(JavaCompile) {
 | File(s) | Platform |
 |---|---|
 | `CLAUDE.md`, `.claudeignore` | Claude / Claude Code |
+| `CLAUDE.local.md` | Claude Code (local override) |
+| `.claude/rules/*.md` | Claude Code (granular per-class rules) |
+| `.claude/skills/vibetags-guardrails/SKILL.md` | Claude Code (Skill) |
 | `.cursorrules`, `.cursorignore` | Cursor (traditional) |
 | `.cursor/rules/*.mdc` | Cursor (granular per-class rules) |
 | `.windsurfrules` | Windsurf IDE (traditional) |
@@ -1059,6 +1036,7 @@ tasks.withType(JavaCompile) {
 | `.antigravityignore` | Antigravity AI |
 | `AGENTS.md`, `.codex/config.toml`, `.codex/rules/` | Codex CLI |
 | `.github/copilot-instructions.md`, `.copilotignore` | GitHub Copilot |
+| `.github/instructions/*.instructions.md` | GitHub Copilot (granular per-class rules) |
 | `.rules` | Zed Editor |
 | `.cody/config.json`, `.codyignore` | Sourcegraph Cody |
 | `.supermavenignore` | Supermaven |
@@ -1079,3 +1057,13 @@ tasks.withType(JavaCompile) {
 | `.junie/guidelines.md` | JetBrains Junie |
 | `.kiro/steering/*.md` | Amazon Kiro (granular per-class rules) |
 | `DESIGN.md` | AI design agents (Cursor, Claude, Copilot, etc.) |
+| `.void/rules.md` | Void Editor |
+| `.coderabbit.yaml` | CodeRabbit (AI PR reviewer) |
+| `.pr_agent.toml` | Qodo/Codium PR-Agent (AI PR reviewer) |
+| `ellipsis.yaml` | Ellipsis (AI PR reviewer) |
+| `.roomodes` | Roo Code ("VibeTags Architect" custom mode) |
+| `.repomixignore` | Repomix (context packer) |
+| `.gitingestignore` | Gitingest (context packer) |
+| `.gptignore` | GPT context packer |
+| `.ghostcoderignore` | Ghostcoder |
+| `.piecesignore` | Pieces for Developers |
