@@ -5,10 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import se.deversity.vibetags.annotations.AIPublicAPI;
+
 /**
  * Indicates that the field should be transparently encrypted/decrypted
  * and allows mathematical operations while remaining encrypted.
  */
+@AIPublicAPI
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Homomorphic {

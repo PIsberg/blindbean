@@ -1,5 +1,8 @@
 package se.deversity.blindbean.annotations;
 
+import se.deversity.vibetags.annotations.AIPublicAPI;
+
+@AIPublicAPI
 public enum Scheme {
     /**
      * Partially Homomorphic Encryption capable of Addition.
