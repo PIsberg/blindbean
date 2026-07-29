@@ -56,7 +56,7 @@
                         </path>
                         <!--
                           This module overrides the parent's annotationProcessorPaths, so the
-                          VibeTags RC5 generator must be listed here too or the processor's own
+                          VibeTags guardrail generator must be listed here too or the processor's own
                           @AI* guardrails vanish from the merged root files. Versionless: managed
                           by the imported vibetags-bom. Emits blindbean-processor/.claude/rules/
                           (grouped by its .vibetags-roles) + its sidecar fragment for the root merge.
