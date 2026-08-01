@@ -62,3 +62,27 @@ The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retent
 The generated markdown is **not hand-edited** — change the annotations and recompile. Full reference
 lives in the bundled `vibetags-usage` skill; keep the vendored copies under `.claude/skills/` and
 `.gemini/skills/` in sync with the pinned `${vibetags.version}`.
+
+## Vendored skills
+
+Two skills are vendored, both into `.claude/skills/` and `.gemini/skills/`, and both are copies of
+an upstream file rather than generated output:
+
+| Skill | Upstream | Must match |
+|---|---|---|
+| `vibetags-usage` | `PIsberg/vibetags` `.claude/skills/vibetags-usage/SKILL.md` | `${vibetags.version}` in `pom.xml` |
+| `async-test-lib` | `PIsberg/async-test-lib` `.claude/SKILL.md` | the `async-test-lib` version in `blindbean-tests/pom.xml` |
+
+Bump the dependency and the vendored copy in the same change. A skill that documents a version the
+build does not resolve is worse than no skill: it is a plausible-looking API reference for methods
+that will not compile. That is not hypothetical, the `async-test-lib` copy sat at `0.5.0` while the
+dependency moved to `1.7.0-RC3`.
+
+Upstream version labels are a claim, not the artifact. The 1.7.0-RC5 skill marks
+`LazyConstantMisuseDetector`, `FinalFieldMutationDetector` and `SharedKdfDetector` as `1.8.0+`;
+all three are in the 1.7.0-RC5 jar with `AsyncTestContext` accessors. Check the jar before
+concluding a detector is unavailable:
+
+```bash
+javap -cp <async-test-lib.jar> se.deversity.asynctest.AsyncTestContext | grep Detector
+```
