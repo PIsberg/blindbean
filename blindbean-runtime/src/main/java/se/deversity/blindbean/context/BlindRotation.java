@@ -19,6 +19,10 @@ import java.math.BigInteger;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static java.lang.System.Logger.Level.DEBUG;
+import static java.lang.System.Logger.Level.INFO;
+import static java.lang.System.Logger.Level.WARNING;
+
 /**
  * A key-rotation session: re-encrypts ciphertexts from one key generation to the next.
  *
@@ -100,11 +104,24 @@ public final class BlindRotation implements AutoCloseable {
     private final Engine engine;
     private final AtomicLong rotated = new AtomicLong();
 
+    /**
+     * Logging for the rotation lifecycle.
+     *
+     * <p>This class is {@code @AIPrivacy}-guarded, and the guardrail names exactly what must not
+     * appear here: the key pairs, the native key payloads and the decrypted plaintext. The
+     * plaintext is the sharp edge, because {@code PaillierEngine.rotate} holds it in a local for
+     * the length of one call. Nothing below logs a value; the story is told in scheme, counts and
+     * session state.
+     */
+    private static final System.Logger LOG = System.getLogger(BlindRotation.class.getName());
+
     private volatile boolean closed = false;
     private volatile boolean committed = false;
 
     private BlindRotation(Engine engine) {
         this.engine = engine;
+        LOG.log(INFO, "Rotation session opened for {0} on thread {1}",
+            engine.scheme(), Thread.currentThread().getName());
     }
 
     // ── Paillier ──────────────────────────────────────────────────────────
@@ -201,7 +218,14 @@ public final class BlindRotation implements AutoCloseable {
                 + ciphertext.scheme() + ". Open a separate rotation per scheme.");
         }
         Ciphertext fresh = engine.rotate(ciphertext);
-        rotated.incrementAndGet();
+        long count = rotated.incrementAndGet();
+
+        // Per-ciphertext, so DEBUG. Byte lengths only: the value is what rotation exists to
+        // protect, and it is in memory as plaintext one frame below this line. sizeInBytes() is
+        // arithmetic on the hex string; getBytes() would parse and allocate on every rotation
+        // whether or not anyone is listening.
+        LOG.log(DEBUG, "Rotated {0} ciphertext #{1}: {2} -> {3} bytes",
+            engine.scheme(), count, ciphertext.sizeInBytes(), fresh.sizeInBytes());
         return fresh;
     }
 
@@ -235,6 +259,10 @@ public final class BlindRotation implements AutoCloseable {
         }
         engine.commit();
         committed = true;
+
+        LOG.log(INFO, "Rotation committed for {0}: {1} ciphertext(s) rotated, thread {2} now runs on "
+            + "the target keys. Export the new bundle before the process exits.",
+            engine.scheme(), rotated.get(), Thread.currentThread().getName());
     }
 
     /** True once {@link #commit()} has installed the target keys. */
@@ -256,6 +284,21 @@ public final class BlindRotation implements AutoCloseable {
             return;
         }
         closed = true;
+        // An uncommitted session that rotated real data is the dangerous shape: those values are
+        // already written under the target keys, the thread is still on the source keys, and
+        // nothing in the datastore is rolled back. Worth a WARNING precisely because close()
+        // succeeds silently.
+        long rotatedSoFar = rotated.get();
+        if (!committed && rotatedSoFar > 0) {
+            LOG.log(WARNING, "Rotation session for {0} closed WITHOUT commit after {1} ciphertext(s). "
+                + "Those values are now under the target keys while this thread still holds the "
+                + "source keys; they will not decrypt here until the target keys are installed.",
+                engine.scheme(), rotatedSoFar);
+        } else {
+            LOG.log(DEBUG, "Rotation session for {0} closed: committed={1}, rotated={2}",
+                engine.scheme(), committed, rotatedSoFar);
+        }
+
         engine.release(committed);
     }
 

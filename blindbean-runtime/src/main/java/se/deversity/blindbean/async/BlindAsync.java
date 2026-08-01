@@ -17,6 +17,9 @@ import se.deversity.vibetags.annotations.AIIgnore;
 import se.deversity.vibetags.annotations.AIParallelTests;
 import se.deversity.vibetags.annotations.AIThreadSafe;
 
+import static java.lang.System.Logger.Level.DEBUG;
+import static java.lang.System.Logger.Level.INFO;
+
 /**
  * Virtual-thread dispatcher for async BlindBean wrapper operations.
  *
@@ -65,6 +68,8 @@ public final class BlindAsync {
     @AIIgnore(reason = "Internal DCL synchronization monitor — not relevant to AI-assisted development workflows")
     private static final Object INIT_LOCK = new Object();
 
+    private static final System.Logger LOG = System.getLogger(BlindAsync.class.getName());
+
     private BlindAsync() {}
 
     // ── Lazy initialization ───────────────────────────────────────────────
@@ -78,9 +83,12 @@ public final class BlindAsync {
                     s = state = new State(
                             Executors.newVirtualThreadPerTaskExecutor(),
                             new Semaphore(Runtime.getRuntime().availableProcessors()));
+                    LOG.log(INFO, "Async executor started: virtual threads, {0} concurrent permit(s)",
+                        Runtime.getRuntime().availableProcessors());
                     if (!shutdownHookRegistered) {
                         Runtime.getRuntime().addShutdownHook(new Thread(BlindAsync::shutdown, "blindbean-async-shutdown"));
                         shutdownHookRegistered = true;
+                        LOG.log(DEBUG, "Registered the JVM shutdown hook for the async executor");
                     }
                 }
             }
@@ -102,6 +110,7 @@ public final class BlindAsync {
         try {
             return dispatchRun(task, snapshot, state());
         } catch (RejectedExecutionException raced) {
+            LOG.log(DEBUG, "Lost a shutdown race on dispatch; re-submitting under the init monitor");
             // shutdown() closed the executor between state() and submission. Re-submit while
             // holding the init monitor: shutdown() must also acquire it, so the (possibly fresh)
             // executor observed here cannot be closed before the task is accepted.
@@ -124,6 +133,7 @@ public final class BlindAsync {
         try {
             return dispatchSupply(task, snapshot, state());
         } catch (RejectedExecutionException raced) {
+            LOG.log(DEBUG, "Lost a shutdown race on dispatch; re-submitting under the init monitor");
             synchronized (INIT_LOCK) {
                 return dispatchSupply(task, snapshot, state());
             }
@@ -166,7 +176,9 @@ public final class BlindAsync {
             state = null; // null before close() so concurrent callers reinitialize instead of racing the close
         }
         if (toClose != null) {
+            LOG.log(DEBUG, "Shutting down the async executor; waiting for accepted tasks to finish");
             toClose.executor().close();
+            LOG.log(INFO, "Async executor shut down");
         }
     }
 }

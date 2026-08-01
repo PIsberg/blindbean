@@ -17,6 +17,16 @@ import se.deversity.vibetags.annotations.AIStrictExceptions;
 @AIPerformance(constraint = "Encryption/decryption are modPow-heavy over large BigIntegers — never introduce extra copies, unnecessary allocations, or redundant modular reductions on the hot path")
 @AIExplain(AIExplain.ComplexityLevel.HIGH)
 public class PaillierMath {
+
+    /**
+     * Per-operation logging, and therefore DEBUG only. An INFO line here would fire once per
+     * encrypt, which is how a log stops being readable at exactly the throughput where it matters.
+     *
+     * <p>The plaintext {@code BigInteger} is in scope in most of these methods and never reaches a
+     * log call. Only shapes go out: byte lengths, sign, scheme and key tag.
+     */
+    private static final System.Logger LOG = System.getLogger(PaillierMath.class.getName());
+
     private final SecureRandom random = new SecureRandom();
     private final PaillierKeyPair keyPair;
 
@@ -35,6 +45,15 @@ public class PaillierMath {
 
     public PaillierKeyPair getKeyPair() {
         return keyPair;
+    }
+
+    /** The key tag as hex, for logs. A digest of the public modulus, so it carries no secret. */
+    private String hexTag() {
+        StringBuilder sb = new StringBuilder(8);
+        for (int i = 0; i < Math.min(4, keyTag.length); i++) {
+            sb.append(String.format("%02x", keyTag[i]));
+        }
+        return sb.toString();
     }
 
     /** This key generation's fingerprint. A digest of the public modulus, not key material. */
@@ -70,7 +89,21 @@ public class PaillierMath {
         BigInteger rn = r.modPow(n, n2);
         BigInteger c = gm.multiply(rn).mod(n2);
 
-        return Ciphertext.fromBytes(KeyTag.wrap(keyTag, c.toByteArray()), Scheme.PAILLIER);
+        Ciphertext out = Ciphertext.fromBytes(KeyTag.wrap(keyTag, c.toByteArray()), Scheme.PAILLIER);
+
+        // Bit length of the *plaintext*, not the plaintext. It bounds how large the value was
+        // without disclosing it, which is what makes an encoding bug (a value far wider than the
+        // field should hold) visible in a log without the log becoming the leak.
+        //
+        // Guarded, and using sizeInBytes() rather than getBytes().length: getBytes() parses the
+        // whole hex string into a fresh array, so an unguarded call would have charged every
+        // encrypt for a log line nobody asked for. sizeInBytes() is hexData.length()/2.
+        if (LOG.isLoggable(System.Logger.Level.DEBUG)) {
+            LOG.log(System.Logger.Level.DEBUG,
+                "Paillier encrypt: plaintext {0} bits, sign {1}, ciphertext {2} bytes, keyTag {3}",
+                m.bitLength(), m.signum(), out.sizeInBytes(), hexTag());
+        }
+        return out;
     }
 
     public BigInteger decrypt(Ciphertext c) {
@@ -86,7 +119,13 @@ public class PaillierMath {
         // m = L(c^lambda mod n^2) * mu mod n
         BigInteger u = cipher.modPow(keyPair.getLambda(), keyPair.getN2());
         BigInteger l = u.subtract(BigInteger.ONE).divide(keyPair.getN());
-        return l.multiply(keyPair.getMu()).mod(keyPair.getN());
+        BigInteger plain = l.multiply(keyPair.getMu()).mod(keyPair.getN());
+        if (LOG.isLoggable(System.Logger.Level.DEBUG)) {
+            LOG.log(System.Logger.Level.DEBUG,
+                "Paillier decrypt: ciphertext {0} bytes, residue {1} bits, keyTag {2}",
+                c.sizeInBytes(), plain.bitLength(), hexTag());
+        }
+        return plain;
     }
 
     /**
@@ -105,7 +144,13 @@ public class PaillierMath {
     public BigInteger decryptSigned(Ciphertext c) {
         BigInteger m = decrypt(c);
         BigInteger n = keyPair.getN();
-        return m.compareTo(n.shiftRight(1)) > 0 ? m.subtract(n) : m;
+        boolean negative = m.compareTo(n.shiftRight(1)) > 0;
+
+        // Whether the balanced representation fired is the single most useful fact about a signed
+        // decode, and it is a boolean, not the value. A run where this is never true on data known
+        // to contain negatives is the signature of the residue bug this method exists to fix.
+        LOG.log(System.Logger.Level.DEBUG, "Paillier signed decode: negative={0}", negative);
+        return negative ? m.subtract(n) : m;
     }
 
     public Ciphertext add(Ciphertext a, Ciphertext b) {

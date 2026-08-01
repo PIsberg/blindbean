@@ -31,6 +31,7 @@ and the example module: **`docs/BUILD-AND-TEST.md`**.
 | Architecture layers | Touching the processor, FFM bridge, extension or native code | `docs/ARCHITECTURE-LAYERS.md` |
 | Runtime flags | Running a JVM outside Maven (JMH jar, example module) | `docs/RUNTIME-FLAGS.md` |
 | Field types and schemes | Adding a `@Homomorphic` type or changing encoding | `docs/FIELD-TYPES.md` |
+| Logging | Adding a log line, or wiring BlindBean's logs into your stack | `docs/LOGGING.md` |
 | CI, tags and coverage | A gate went red, or you added a test | `docs/CI-NOTES.md` |
 | Releasing | Cutting a tag | `docs/RELEASING.md` |
 | Crypto guarantees and limits | Changing anything crypto-adjacent, or advising a user | `docs/SECURITY-AND-LIMITATIONS.md` |
