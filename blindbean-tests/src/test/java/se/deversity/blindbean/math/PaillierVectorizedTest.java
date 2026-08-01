@@ -168,6 +168,39 @@ public class PaillierVectorizedTest {
     }
 
     @Test
+    public void theRefusalNamesTheValueItRejectedAndTheArrayItCameFrom() {
+        // The message used to be built from source[offset+lane] rather than from the failing lane.
+        // On 2026-08-01 Windows CI produced
+        //   operand 13 at index 8002 is not reduced into [0, 987654321012345)
+        // where 13 is inside the stated range: the message contradicted itself and sent the reader
+        // to the range check instead of to the load. A diagnostic that can disprove itself is worse
+        // than none, because it gets believed.
+        int length = 64;
+        long mod = 65537;
+
+        long[] good = randomReduced(length, mod);
+        long[] bad = randomReduced(length, mod);
+        bad[3] = mod + 11;   // out of range, inside the first SIMD vector
+
+        IllegalArgumentException fromFirst = assertThrows(IllegalArgumentException.class,
+            () -> PaillierVectorized.batchAdd(bad, good, new long[length], mod));
+        assertTrue(fromFirst.getMessage().contains(Long.toString(mod + 11)),
+            "must report the offending value, not a re-read of the array: " + fromFirst.getMessage());
+        assertTrue(fromFirst.getMessage().contains("index 3"), fromFirst.getMessage());
+        assertTrue(fromFirst.getMessage().contains("c1Array"),
+            "must say which operand array was at fault: " + fromFirst.getMessage());
+
+        long[] badSecond = randomReduced(length, mod);
+        badSecond[5] = -1;
+        IllegalArgumentException fromSecond = assertThrows(IllegalArgumentException.class,
+            () -> PaillierVectorized.batchAdd(good, badSecond, new long[length], mod));
+        assertTrue(fromSecond.getMessage().contains("-1"), fromSecond.getMessage());
+        assertTrue(fromSecond.getMessage().contains("c2Array"),
+            "must distinguish the two operand arrays: " + fromSecond.getMessage());
+    }
+
+    /** Bad values in the SIMD body and in the scalar tail are both refused. */
+    @Test
     public void rejectsUnreducedOperands() {
         // Long enough to hit the SIMD loop and the scalar tail with bad values in each
         int length = 67;

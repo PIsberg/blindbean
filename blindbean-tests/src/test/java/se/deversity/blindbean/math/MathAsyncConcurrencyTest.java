@@ -1,6 +1,7 @@
 package se.deversity.blindbean.math;
 
 import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.Preset;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -19,7 +20,16 @@ class MathAsyncConcurrencyTest {
      * While the method itself is stateless, this confirms that concurrent calls
      * from virtual threads do not experience register corruption or side-effects.
      */
-    // detectRaceConditions/detectVisibility are intentionally OFF here: batchAdd is a stateless
+    // The detectors are OFF here, and until now that was only true in this comment: the annotation
+    // set threads and invocations but never touched detectAll, which defaults to true, so every
+    // detector was in fact instrumenting this test. On 2026-08-01 the Windows CI job failed with
+    //   operand 13 at index 8002 is not reduced into [0, 987654321012345)
+    // where 13 is plainly inside that range and the arrays are filled with values under 1000. The
+    // arrays are thread-confined locals, so no cross-thread race can reach them; what the vector
+    // loaded and what the array held had diverged. Preset.NONE gives the N x M stress execution
+    // with no diagnostic machinery attached, which is what the paragraph below always claimed.
+    //
+    // Original reasoning, still accurate: batchAdd is a stateless
     // pure function over caller-owned arrays (no shared state, no locks), so there is no
     // cross-thread race to detect. The detector's byte-level array-access instrumentation also
     // cannot track the Vector API's SIMD loads/stores — LongVector.fromArray lowers to hardware
@@ -29,7 +39,8 @@ class MathAsyncConcurrencyTest {
     // not corrupted.
     @AsyncTest(
         threads = 24,
-        invocations = 100
+        invocations = 100,
+        preset = Preset.NONE
     )
     void vectorizedBatchAddIsThreadSafe() {
         int len = 8192;
