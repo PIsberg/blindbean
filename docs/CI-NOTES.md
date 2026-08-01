@@ -40,10 +40,19 @@ The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retent
 - Each annotated module owns a `.claude/rules/` of role-grouped topic files (`paths:` frontmatter),
   grouped by that module's `.vibetags-roles`. Claude Code auto-loads them when you open a matching
   source file.
-- The root `.vibetags-root-index` marker (VibeTags ≥ 1.0.0-RC6) makes the generated block in
-  `CLAUDE.md` and `.github/copilot-instructions.md` a **lean index** — one pointer per module to its
-  scoped rules, not the full merge. `GEMINI.md` and `AGENTS.md` have no granular sibling, so they
-  keep the sidecar-**merged** block.
+- The root `.vibetags-root-index` marker (VibeTags ≥ 1.0.0-RC6) keeps the generated block in
+  `CLAUDE.md` and `.github/copilot-instructions.md` short: each module gets a pointer to its scoped
+  rules rather than the full merge. Since 1.0.0-RC8 the safety families are *also* rendered inline
+  in the root block, above that pointer: `locked_files`, `audit_requirements`, `ignored_elements`,
+  `pii_guardrails`, `core_elements`, `security_elements`, `public_api_elements` and
+  `contextual_instructions`. `blindbean-core` and `blindbean-junit` declare none of those, so they
+  stay pointer-only; `blindbean-fhe`, `blindbean-processor` and `blindbean-runtime` gained an inline
+  block at the RC8 bump. A root block that grows on a version bump is that change, not a regression.
+- `.claudeignore` no longer carries a block for a module with no exclusions, so it shrank by four
+  empty module regions at RC8. Same cause, same conclusion.
+- `GEMINI.md` and `AGENTS.md` have no granular sibling in this repo, so they keep the
+  sidecar-**merged** block. RC8 added `.gemini/rules/` as an opt-in; creating that directory would
+  collapse `GEMINI.md` to an index too. It is deliberately not created here.
 - `AGENTS.md` is only *written* by VibeTags when it is the sole AI config file present
   (`ServiceRegistry` treats it as a hand-written pointer otherwise). In this repo it stays a pointer.
 - `blindbean-processor` overrides the compiler config, so it must re-declare the vibetags processor

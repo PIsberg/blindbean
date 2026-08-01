@@ -91,3 +91,9 @@
 2026-07-15 08:51:59.734 INFO  Active services (0): 
 2026-07-15 08:51:59.735 INFO  @AIPrivacy: 8 — Wallet, Document, NumericEntity, Order, Portfolio, SensorData, TypeZoo, UserAccount
 2026-07-15 08:51:59.735 INFO  @AISchemaSafe: 8 — Wallet, Document, NumericEntity, Order, Portfolio, SensorData, TypeZoo, UserAccount
+2026-08-01 17:47:26.830 INFO  VibeTags v1.0.0-RC8 | https://github.com/PIsberg/vibetags
+2026-08-01 17:47:26.834 INFO  Root: C:\dev\private\blindbean\blindbean-example
+2026-08-01 17:47:26.851 INFO  Active services (0): 
+2026-08-01 17:47:26.851 INFO  @AIPrivacy: 8 — Wallet, Document, NumericEntity, Order, Portfolio, SensorData, TypeZoo, UserAccount
+2026-08-01 17:47:26.852 INFO  @AISchemaSafe: 8 — Wallet, Document, NumericEntity, Order, Portfolio, SensorData, TypeZoo, UserAccount
+2026-08-01 17:47:26.852 INFO  @AISandboxOnly: 8 — Wallet, Document, NumericEntity, Order, Portfolio, SensorData, TypeZoo, UserAccount
