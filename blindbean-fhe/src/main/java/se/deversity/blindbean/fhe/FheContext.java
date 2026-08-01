@@ -37,6 +37,24 @@ import se.deversity.vibetags.annotations.AIThreadSafe;
 @AITestDriven(coverageGoal = 90, testLocation = "src/test/java/se.deversity.blindbean/fhe")
 public class FheContext implements AutoCloseable {
 
+    /**
+     * Platform logging. Ciphertext bytes, plaintext values and key payloads never appear here at
+     * any level; sizes, slot geometry, scheme and noise budget do. Noise budget is already a
+     * declared observability signal on {@link #noiseBudget(MemorySegment)}, so it is logged
+     * deliberately rather than incidentally.
+     */
+    private static final System.Logger LOG = System.getLogger(FheContext.class.getName());
+
+    /**
+     * Noise budget, in bits, below which a decrypt still succeeds but is worth warning about.
+     *
+     * <p>Purely a logging threshold: nothing is refused above 0, and the refusal boundary is
+     * unchanged. Set at 10 because the measured failure in {@code load-tests/results/} went from a
+     * working decrypt to 49,663-instead-of-64 across a single multiply, so the useful warning is
+     * the one that fires while there is still a multiply left to reconsider.
+     */
+    private static final int LOW_NOISE_BUDGET_BITS = 10;
+
     private final MemorySegment handle;
     private final Scheme scheme;
     private final Arena arena;
@@ -93,7 +111,11 @@ public class FheContext implements AutoCloseable {
     private static FheContext create(MemorySegment handle, Scheme scheme, int polyModulusDegree, double scale) {
         Arena arena = Arena.ofShared();
         try {
-            return new FheContext(handle, scheme, arena, polyModulusDegree, scale);
+            FheContext ctx = new FheContext(handle, scheme, arena, polyModulusDegree, scale);
+            LOG.log(System.Logger.Level.DEBUG,
+                "Native {0} context created: polyModulusDegree={1}, scale={2}",
+                scheme, polyModulusDegree, scale);
+            return ctx;
         } catch (RuntimeException e) {
             arena.close();
             throw e;
@@ -112,6 +134,13 @@ public class FheContext implements AutoCloseable {
         try {
             return init.get();
         } catch (UnsatisfiedLinkError | ExceptionInInitializerError | NoClassDefFoundError e) {
+            // The first failure most new users hit, and an environment fault rather than a
+            // programming one, so it goes to the log at ERROR even though the caller also gets the
+            // guidance on the exception. The guidance itself is not repeated here.
+            LOG.log(System.Logger.Level.ERROR,
+                "Native FHE library could not be loaded ({0}); BFV/CKKS are unavailable in this JVM. "
+                + "See the FheException message for the build and -Dblindbean.native.path guidance.",
+                e.getClass().getSimpleName());
             throw new FheException(nativeLoadGuidance(e), e);
         }
     }
@@ -544,7 +573,26 @@ public class FheContext implements AutoCloseable {
             return;
         }
         int budget = FheNativeBridge.fhe_noise_budget(handle, ct);
+        LOG.log(System.Logger.Level.DEBUG, "BFV noise budget before decrypt: {0} bits", budget);
+
+        // A budget that is positive but nearly spent is the interesting operational signal: the
+        // next multiply is likely to cross into the range where SEAL returns a plausible wrong
+        // number. Nothing is refused here, so without a WARNING the caller gets no notice at all
+        // until the decrypt that fails.
+        if (budget > 0 && budget < LOW_NOISE_BUDGET_BITS) {
+            LOG.log(System.Logger.Level.WARNING,
+                "BFV noise budget down to {0} bits (warn below {1}). Another multiply will likely "
+                + "exhaust it; additions are nearly free, or raise the polynomial modulus degree.",
+                budget, LOW_NOISE_BUDGET_BITS);
+        }
+
         if (budget <= 0) {
+            // Logged as well as thrown: this is the silent-corruption boundary, and an operator
+            // watching logs should see it even when the caller catches the exception.
+            LOG.log(System.Logger.Level.WARNING,
+                "Refusing to decrypt a BFV ciphertext with {0} bits of noise budget left; SEAL "
+                + "would have returned a plausible WRONG number instead of failing.", budget);
+
             throw new FheException(
                 "Noise budget exhausted (" + budget + " bits): this ciphertext no longer decrypts to "
                 + "a meaningful value. Every homomorphic operation spends budget, and multiplies "

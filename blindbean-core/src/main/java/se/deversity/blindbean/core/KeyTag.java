@@ -50,6 +50,14 @@ import org.jspecify.annotations.Nullable;
  */
 public final class KeyTag {
 
+    /**
+     * Logging for the two outcomes that matter here: a refusal, and a legacy payload being let
+     * through unprotected. Tags are public generation identifiers derived from the public modulus,
+     * so logging them is safe; the payload never is, and never appears below.
+     */
+    private static final System.Logger LOG = System.getLogger(KeyTag.class.getName());
+
+
     private static final byte[] MAGIC = {'B', 'B', 'C', 'T'};
     private static final byte VERSION = 1;
 
@@ -133,9 +141,31 @@ public final class KeyTag {
     public static byte[] verifyAndUnwrap(byte[] enveloped, byte[] expected, String operation) {
         byte[] actual = tagOf(enveloped);
         if (actual != null && !MessageDigest.isEqual(actual, expected)) {
+            // The false-ACCEPT boundary held. Worth WARNING rather than DEBUG: in a rotation
+            // re-run this is the difference between refusing a row and silently corrupting it,
+            // and the operator wants it in the log even though the caller also sees the throw.
+            LOG.log(System.Logger.Level.WARNING,
+                "Refusing to {0}: ciphertext carries key tag {1} but this context holds {2}. "
+                + "This is usually a rotation re-run over already-rotated data.",
+                operation, hex(actual), hex(expected));
             throw new WrongKeyException(operation, expected, actual);
         }
+        if (actual == null) {
+            LOG.log(System.Logger.Level.DEBUG,
+                "Accepting an untagged legacy payload for {0} ({1} bytes); it stays unprotected "
+                + "until it is rewritten under a stamping context.",
+                operation, enveloped.length);
+        }
         return payloadOf(enveloped);
+    }
+
+    /** A key tag as hex, for logs. Public generation identifier, so this leaks nothing. */
+    private static String hex(byte[] tag) {
+        StringBuilder sb = new StringBuilder(tag.length * 2);
+        for (byte b : tag) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     private static MessageDigest sha256() {
