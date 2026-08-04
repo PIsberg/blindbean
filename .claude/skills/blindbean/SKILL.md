@@ -20,7 +20,7 @@ the value **without ever putting the plaintext in the entity**.
 Every JVM running BlindBean needs these, including your test runner:
 
 ```
---enable-preview --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED
+--add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED
 ```
 
 Paillier is pure Java and works out of the box. **BFV and CKKS need the native SEAL library**

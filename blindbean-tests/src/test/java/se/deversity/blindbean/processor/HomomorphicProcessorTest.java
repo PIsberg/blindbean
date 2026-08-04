@@ -56,8 +56,9 @@ public class HomomorphicProcessorTest {
             "-processor", "se.deversity.blindbean.processor.HomomorphicProcessor",
             "-s", genDir.toAbsolutePath().toString(),
             "-d", classesDir.toAbsolutePath().toString(),
-            "--enable-preview",
-            "--release", "26",
+            // The running JDK, not a literal: the CI matrix builds on more than one, and a
+            // hard-coded "26" makes javac reject its own release on every other leg.
+            "--release", String.valueOf(Runtime.version().feature()),
             "--add-modules", "jdk.incubator.vector"
         );
 

@@ -242,5 +242,5 @@ jobs:
             platform — download it below and point `-Dblindbean.native.path` at the directory
             holding it. Paillier is pure Java and needs nothing.
 
-            Requires JDK 26 with `--enable-preview --add-modules jdk.incubator.vector
+            Requires JDK 25 or later, run with `--add-modules jdk.incubator.vector
             --enable-native-access=ALL-UNNAMED`.

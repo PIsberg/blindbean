@@ -14,14 +14,91 @@ permissions:
   contents: read
 
 jobs:
-  java-fast-gate:
-    name: Java fast gate (${{ matrix.os }})
+  # ── Java gate: every supported JDK on every supported OS ──────────────────────────────────────
+  #
+  # The matrix is the point. BlindBean compiles at `${maven.compiler.release}` (26 by default), and
+  # each leg overrides it to its own JDK, so the sources are checked against *that* JDK's API
+  # rather than merely re-verified on the one they were written against.
+  #
+  # 25 and 26 only. The floor is JDK 22, not 21: java.lang.foreign (Arena, MemorySegment,
+  # ValueLayout, used throughout blindbean-fhe) was a preview API in 21, and Arena.allocateFrom did
+  # not exist there at all. A 21 leg would not fail on a flag, it would fail to compile.
+  java-gate:
+    name: Java gate (JDK ${{ matrix.java }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: [ '25', '26' ]
+        include:
+          # 26 is still EA and Oracle is the distribution publishing it. 25 is GA, so it comes from
+          # Temurin, which keeps non-LTS GA builds available after the next EA opens.
+          - java: '25'
+            distribution: 'temurin'
+          - java: '26'
+            distribution: 'oracle'
 
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          cache: maven
+
+      # Build every module and run everything that does not need the native library — the annotation
+      # processor, Paillier, the key stamp, contexts, rotation, the JUnit extension. The reactor
+      # resolves modules internally, so no install step is needed; the tests all live in
+      # blindbean-tests, which is where the JaCoCo report lands.
+      #
+      # `verify` (not `test`) so the static-analysis gates bound to that phase — Checkstyle, PMD and
+      # SpotBugs — run here too; none of them needs the native library, and the ArchUnit boundary
+      # tests run in the normal test phase. A violation fails the gate exactly like a test failure.
+      - name: Build, analyse (checkstyle/pmd/spotbugs) + run the non-native test suite
+        run: ./mvnw -B verify -DexcludedGroups=native -Dmaven.compiler.release=${{ matrix.java }}
+        shell: bash
+
+      # One upload, not six. Codecov merges by report name, and six near-identical reports from the
+      # same gate add no coverage while making a genuinely missing upload harder to spot.
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.java == '26'
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./blindbean-tests/target/site/jacoco/jacoco.xml
+          name: java-fast-gate
+          fail_ci_if_error: false
+
+      - name: Upload Surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: surefire-java-gate-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: blindbean-tests/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ── Javadoc ───────────────────────────────────────────────────────────────────────────────────
+  #
+  # The release profile attaches a javadoc jar, so a javadoc error is release-blocking and would
+  # otherwise only surface at tag time, after the version is already fixed. This runs the same
+  # plugin on every PR instead.
+  #
+  # NOTE: doclint is `none` in pom.xml, so this catches javadoc *errors* (unresolvable @link
+  # targets, malformed HTML that aborts generation), not missing-@param warnings. Turning doclint
+  # on is a separate change with its own backlog.
+  javadoc:
+    name: Javadoc
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -37,29 +114,168 @@ jobs:
           distribution: 'oracle'
           cache: maven
 
-      # Build every module and run everything that does not need blindbean_fhe.dll — the annotation
-      # processor, Paillier, the key stamp, contexts, rotation, the JUnit extension. The reactor
-      # resolves modules internally, so no install step is needed; the tests all live in
-      # blindbean-tests, which is where the JaCoCo report lands.
-      #
-      # `verify` (not `test`) so the static-analysis gates bound to that phase — Checkstyle, PMD and
-      # SpotBugs — run here too; none of them needs the DLL, and the ArchUnit boundary tests run in
-      # the normal test phase. A violation fails the gate exactly like a test failure.
-      - name: Build, analyse (checkstyle/pmd/spotbugs) + run the non-native test suite
-        run: ./mvnw -B verify -DexcludedGroups=native
+      # A bare `javadoc:jar` would resolve the sibling modules from the repository rather than the
+      # working tree, so an API change in one module would be documented against the *last
+      # published* version of the next. Run a lifecycle phase first.
+      - name: Build the reactor
+        run: ./mvnw -B -DskipTests -Dcheckstyle.skip=true -Dpmd.skip=true -Dspotbugs.skip=true install
         shell: bash
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
-        with:
-          files: ./blindbean-tests/target/site/jacoco/jacoco.xml
-          name: java-fast-gate
-          fail_ci_if_error: false
+      - name: Generate javadoc (release profile)
+        run: ./mvnw -B -Prelease -DskipTests -Dgpg.skip=true javadoc:jar
+        shell: bash
 
+      - name: Upload javadoc
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: javadoc
+          path: '**/target/*-javadoc.jar'
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ── Reproducible build ────────────────────────────────────────────────────────────────────────
+  #
+  # Builds the reactor twice from identical source and compares the jars byte for byte. This is what
+  # `project.build.outputTimestamp` in pom.xml buys: without it, jar entry timestamps come from the
+  # clock, every build differs, and nobody downstream can verify that a published jar was really
+  # built from the tagged source.
+  #
+  # `artifact:check-buildplan` is the cheap half — it fails when the build uses a plugin version
+  # known not to produce reproducible output, which is the usual way this regresses.
+  reproducible-build:
+    name: Reproducible build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+
+      - name: Check the build plan supports reproducibility
+        run: ./mvnw -B artifact:check-buildplan
+        shell: bash
+
+      - name: First build
+        run: |
+          ./mvnw -B -DskipTests -Dcheckstyle.skip=true -Dpmd.skip=true -Dspotbugs.skip=true clean package
+          find . -name '*.jar' -path '*/target/*' | sort > /tmp/jars.txt
+          test -s /tmp/jars.txt || { echo "::error::no jars produced — the comparison would pass vacuously"; exit 1; }
+          xargs sha256sum < /tmp/jars.txt > /tmp/sums-1.txt
+          cat /tmp/sums-1.txt
+        shell: bash
+
+      - name: Second build
+        run: |
+          ./mvnw -B -DskipTests -Dcheckstyle.skip=true -Dpmd.skip=true -Dspotbugs.skip=true clean package
+          xargs sha256sum < /tmp/jars.txt > /tmp/sums-2.txt
+        shell: bash
+
+      # diff, not a count: two builds producing the same *number* of differing jars is exactly the
+      # failure this job exists to catch.
+      - name: Compare the two builds
+        run: |
+          if diff -u /tmp/sums-1.txt /tmp/sums-2.txt; then
+            echo "Reproducible: every jar is byte-identical across two clean builds."
+          else
+            echo "::error::Build is not reproducible — the jars above differ between two builds of identical source."
+            exit 1
+          fi
+        shell: bash
+
+  # ── Dependency hygiene ────────────────────────────────────────────────────────────────────────
+  #
+  # Two cheap, different questions:
+  #   enforcer            — is the *build* well-formed? (Maven/JDK floor, duplicate declarations)
+  #   dependency:analyze  — is the *dependency list* honest? (compiled against something undeclared,
+  #                         or declaring something never used)
+  #
+  # The second matters more here than in a typical library: `processor` must depend only on
+  # `annotations`, and a used-undeclared dependency is precisely how that invariant rots without
+  # anyone knowingly editing a pom.
+  dependency-hygiene:
+    name: Dependency hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+
+      - name: Enforcer rules
+        run: ./mvnw -B enforcer:enforce
+        shell: bash
+
+      - name: Build the reactor
+        run: ./mvnw -B -DskipTests -Dcheckstyle.skip=true -Dpmd.skip=true -Dspotbugs.skip=true install
+        shell: bash
+
+      # analyze-only, not analyze: the latter forks a fresh test-compile and would rebuild the whole
+      # reactor a second time. The classes are already there from the step above.
+      #
+      # REPORT, NOT A GATE. `-DfailOnWarning=true` is deliberately absent: the tree currently has
+      # four real used-undeclared findings (blindbean-fhe, -runtime and -junit compile against
+      # blindbean-annotations, and -runtime against blindbean-core, but all reach them
+      # transitively), plus compile-scoped test-only dependencies in blindbean-tests. Declaring
+      # those properly is a dependency change with its own review, not something to smuggle into a
+      # CI PR. Read the warnings in the log; turn on failOnWarning once they are zero.
+      #
+      # The false positives the analyser cannot avoid — SOURCE-retention annotations, aggregator
+      # artifacts — are already filtered by ignore lists in pom.xml, so what remains is real.
+      - name: Analyse declared vs used dependencies (report)
+        run: ./mvnw -B dependency:analyze-only
+        shell: bash
+
+  # ── Dependency review (PRs only) ──────────────────────────────────────────────────────────────
+  #
+  # Fails a PR that introduces a dependency carrying a known advisory. Needs no API key and looks
+  # only at the PR diff, so it is fast; the full-tree scan lives in security-scan.yml.
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  # ── Native library, all three platforms ───────────────────────────────────────────────────────
+  #
+  # Untouched by the JDK matrix: the SEAL bridge is C++ and knows nothing about the JVM version.
   native-build-matrix:
     name: Native build (${{ matrix.label }})
     runs-on: ${{ matrix.os }}
-    needs: java-fast-gate
+    needs: java-gate
     strategy:
       fail-fast: false
       matrix:
@@ -137,7 +353,7 @@ jobs:
   native-sanitizers:
     name: Native ASan/UBSan (linux-x64)
     runs-on: ubuntu-latest
-    needs: java-fast-gate
+    needs: java-gate
     timeout-minutes: 45
 
     steps:
@@ -230,11 +446,25 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # ── Full suite, native tests included, on both supported JDKs ─────────────────────────────────
+  #
+  # The only job that runs the BFV/CKKS tests, the module-path consumer and the example, so also the
+  # only place "BlindBean *works* on JDK 25" is demonstrated rather than merely compiled. Windows,
+  # because that is the platform whose DLL artifact is published above.
   full-windows:
-    name: Full Windows test
+    name: Full Windows test (JDK ${{ matrix.java }})
     runs-on: windows-latest
     needs: native-build-matrix
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '25', '26' ]
+        include:
+          - java: '25'
+            distribution: 'temurin'
+          - java: '26'
+            distribution: 'oracle'
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -244,11 +474,11 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up JDK 26
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
-          java-version: '26'
-          distribution: 'oracle'
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
           cache: maven
 
       - name: Download Windows native artifact
@@ -266,28 +496,28 @@ jobs:
           Write-Host "DLL size: $((Get-Item build-native/Release/blindbean_fhe.dll).Length) bytes"
         shell: pwsh
 
-      # Reactor build: compiles all six modules, runs the full test suite (incl. native), and
-      # installs each module to the local repo so the standalone example / load-tests /
-      # module-path checks can resolve them.
+      # Reactor build: compiles all modules, runs the full test suite (incl. native), and installs
+      # each module to the local repo so the standalone example / load-tests / module-path checks
+      # can resolve them.
       #
       # No -Dblindbean.native.path here on purpose: surefire forks with the blindbean-tests module
       # as its cwd, so a RELATIVE path would resolve under that module, not the repo root. The
       # blindbean-tests pom defaults it to ${project.basedir}/../build-native/Release, which points
       # at the DLL the download step placed at the repo root.
       - name: Build + test all modules
-        run: .\mvnw.cmd clean install -B
+        run: .\mvnw.cmd clean install -B "-Dmaven.compiler.release=${{ matrix.java }}"
         shell: pwsh
 
       # The crown jewel of the split: a consumer on the MODULE path, in its own JVM, resolving the
       # split modules, discovering the processor on the --processor-module-path, and calling native
       # FFM from the named fhe module. This is the check that fails if a module-info export is wrong.
       - name: Module-path consumer test
-        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release"
+        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release" "-Dmaven.compiler.release=${{ matrix.java }}"
         shell: pwsh
         working-directory: module-path-tests
 
       - name: Build and Test Example Application
-        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release"
+        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release" "-Dmaven.compiler.release=${{ matrix.java }}"
         shell: pwsh
         working-directory: blindbean-example
 
@@ -299,7 +529,7 @@ jobs:
       # -Dstress.max.ops caps the two loops that dominate the runtime; the full sweep (the figures
       # in load-tests/results/) is a local/release run. ~10s here vs ~2min at full load.
       - name: Load-test regression gate (small load)
-        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release" "-Dstress.max.ops=50"
+        run: ..\mvnw.cmd clean test -B "-Dblindbean.native.path=../build-native/Release" "-Dstress.max.ops=50" "-Dmaven.compiler.release=${{ matrix.java }}"
         shell: pwsh
         working-directory: load-tests
 
@@ -307,12 +537,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: load-test-reports
+          name: load-test-reports-jdk${{ matrix.java }}
           path: load-tests/target/*.txt
           if-no-files-found: ignore
           retention-days: 14
 
+      # The FHE bridge can *only* be covered here — it needs the DLL. If this upload breaks,
+      # FheContext/FheCiphertextNative read 0% in Codecov on code that is in fact well tested.
+      # From the 26 leg only, so the two legs cannot race to overwrite the same report.
       - name: Upload coverage to Codecov
+        if: matrix.java == '26'
         uses: codecov/codecov-action@v7
         with:
           files: ./blindbean-tests/target/site/jacoco/jacoco.xml,./blindbean-example/target/site/jacoco/jacoco.xml
@@ -323,9 +557,10 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: surefire-reports-windows
+          name: surefire-reports-windows-jdk${{ matrix.java }}
           path: |
             target/surefire-reports/
+            blindbean-tests/target/surefire-reports/
             blindbean-example/target/surefire-reports/
           if-no-files-found: ignore
           retention-days: 14

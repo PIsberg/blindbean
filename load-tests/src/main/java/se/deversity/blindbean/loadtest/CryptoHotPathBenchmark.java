@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <pre>
  *   mvn package -DskipTests
- *   java --enable-preview --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED \
+ *   java --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED \
  *        -Dblindbean.native.path=../build-native/Release \
  *        -jar target/benchmarks.jar -wi 3 -i 5 -f 1 -tu us -bm avgt -prof gc \
  *        -rf json -rff results/0.1.0/jmh.json

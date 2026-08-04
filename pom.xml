@@ -63,9 +63,25 @@
     </scm>
 
     <properties>
-        <maven.compiler.source>26</maven.compiler.source>
-        <maven.compiler.target>26</maven.compiler.target>
+        <!--
+          The bytecode level, overridable so CI can prove the sources still build on every JDK we
+          claim to support: `./mvnw verify -Dmaven.compiler.release=25`. 26 stays the default.
+
+          The floor is 22, not 21. `java.lang.foreign` (Arena, MemorySegment, ValueLayout — used
+          throughout blindbean-fhe) was a preview API in 21, and Arena.allocateFrom did not exist
+          there at all, so anything below 22 fails to compile.
+        -->
+        <maven.compiler.release>26</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--
+          Makes the build reproducible: jar entry timestamps come from this value instead of the
+          clock, so two builds of the same source produce byte-identical artifacts and a consumer
+          can verify a published jar was really built from the tagged commit. The CI job
+          `reproducible-build` fails if that stops being true.
+
+          A fixed instant, not ${maven.build.timestamp} — that would defeat the whole point.
+        -->
+        <project.build.outputTimestamp>2026-08-04T00:00:00Z</project.build.outputTimestamp>
         <junit.version>6.1.2</junit.version>
         <vibetags.version>1.0.0-RC10</vibetags.version>
     </properties>
@@ -137,16 +153,78 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!--
+                  maven-dependency-plugin, with its bytecode reader forced up to date.
+
+                  `analyze-only` parses every class it finds, and the ASM shipped inside
+                  maven-dependency-analyzer lags the JDK badly: every released version through
+                  3.9.0 dies on this project with "Unsupported class file major version 70", and
+                  70 is what JDK 26 emits (69, from the JDK 25 leg, fails too). That is the
+                  toolchain being behind, not a defect in the dependencies it is meant to analyse.
+
+                  Pinning ASM here fixes it without waiting for a plugin release. When the plugin
+                  catches up, this override can go; the version below must stay at or above the
+                  newest class file version the build produces.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.9.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                            <version>9.9</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <!--
+                          Two categories the analyser provably cannot see, so silencing them is
+                          not sweeping anything under a rug:
+
+                          1. Annotation-only artifacts. The @AI* guardrails are SOURCE retention
+                             and jspecify is effectively so, meaning they leave no trace in the
+                             bytecode analyze-only reads. They are used on every file and reported
+                             unused in every module.
+                          2. Aggregator artifacts. junit-jupiter and archunit-junit5 exist to pull
+                             their real dependencies transitively; the code compiles against those
+                             instead, so the aggregator itself always reads as unused.
+
+                          Anything NOT listed here is a genuine finding. Do not extend this list to
+                          quieten a real one.
+                        -->
+                        <ignoredUnusedDeclaredDependencies>
+                            <dep>se.deversity.vibetags:vibetags-annotations</dep>
+                            <dep>org.jspecify:jspecify</dep>
+                            <dep>com.google.auto.service:auto-service</dep>
+                            <dep>org.junit.jupiter:junit-jupiter</dep>
+                            <dep>com.tngtech.archunit:archunit-junit5</dep>
+                            <dep>org.openjdk.jmh:jmh-generator-annprocess</dep>
+                        </ignoredUnusedDeclaredDependencies>
+                        <ignoredUsedUndeclaredDependencies>
+                            <dep>com.google.auto.service:auto-service-annotations</dep>
+                            <dep>com.tngtech.archunit:archunit</dep>
+                        </ignoredUsedUndeclaredDependencies>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.15.0</version>
                     <configuration>
-                        <source>26</source>
-                        <target>26</target>
+                        <!--
+                          `release` rather than source/target: it checks the sources against that
+                          JDK's *API* too, which source/target does not. A build at 25 therefore
+                          fails on a 26-only method instead of producing a jar that dies at runtime.
+
+                          Preview is deliberately off. Nothing in the tree uses a preview
+                          language or API feature, and a preview-compiled class file refuses to
+                          load on any JDK but the exact one that produced it — which would make the
+                          published jar single-version and the JDK matrix below impossible.
+                        -->
+                        <release>${maven.compiler.release}</release>
                         <fork>true</fork>
                         <compilerArgs>
-                            <arg>--enable-preview</arg>
                             <arg>--add-modules</arg>
                             <arg>jdk.incubator.vector</arg>
                             <!-- Error Prone + NullAway: nullness enforcement over @NullMarked code -->
@@ -198,7 +276,6 @@
                     <configuration>
                         <argLine>
                             @{argLine}
-                            --enable-preview
                             --add-modules jdk.incubator.vector
                             --enable-native-access=ALL-UNNAMED
                         </argLine>
@@ -328,6 +405,38 @@
         </pluginManagement>
 
         <plugins>
+            <!--
+              Build hygiene, bound to `validate` so it fails before anything expensive runs.
+
+              requireJavaVersion's floor is 25, not the release level: this is the JDK running
+              Maven, and the CI matrix runs 25 and 26. requireNoRepositories matters for a Central
+              release — an inherited third-party repository would make the published pom
+              unresolvable for consumers who do not have it configured.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-build-hygiene</id>
+                        <phase>validate</phase>
+                        <goals><goal>enforce</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <rules>
+                        <requireMavenVersion>
+                            <version>[3.9.0,)</version>
+                        </requireMavenVersion>
+                        <requireJavaVersion>
+                            <version>[25,)</version>
+                        </requireJavaVersion>
+                        <banDuplicatePomDependencyVersions/>
+                        <requireNoRepositories/>
+                    </rules>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -370,7 +479,6 @@
                         <param>se.deversity.blindbean.fhe.FheNativeBridge</param>
                     </excludedClasses>
                     <jvmArgs>
-                        <jvmArg>--enable-preview</jvmArg>
                         <jvmArg>--add-modules=jdk.incubator.vector</jvmArg>
                         <jvmArg>--enable-native-access=ALL-UNNAMED</jvmArg>
                         <jvmArg>-Dlicense.mock.mode=true</jvmArg>
@@ -418,9 +526,8 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <release>26</release>
+                            <release>${maven.compiler.release}</release>
                             <additionalJOptions>
-                                <additionalJOption>--enable-preview</additionalJOption>
                                 <additionalJOption>--add-modules</additionalJOption>
                                 <additionalJOption>jdk.incubator.vector</additionalJOption>
                             </additionalJOptions>
@@ -456,6 +563,41 @@
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+          OWASP dependency-check, kept behind a profile so it never runs in a normal build. The
+          plugin downloads and maintains a local copy of the NVD feed, which is slow enough
+          (hundreds of MB, rate-limited without an API key) that bolting it to `verify` would make
+          every build hostage to an external service.
+
+          Driven by .github/workflows/security-scan.yml, which supplies NVD_API_KEY and skips the
+          scan outright, loudly, when that secret is absent.
+        -->
+        <profile>
+            <id>security-scan</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>12.1.9</version>
+                        <configuration>
+                            <!-- CVSS 7.0 is the "high" boundary; at or above it, fail. Lower
+                                 findings still land in the report for triage. -->
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                            <formats>
+                                <format>HTML</format>
+                                <format>JSON</format>
+                            </formats>
+                            <!-- The assembly analyser needs .NET and is pure noise on a JVM
+                                 project; it logs an error per run and finds nothing. -->
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         </configuration>
                     </plugin>
                 </plugins>

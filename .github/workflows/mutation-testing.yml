@@ -1,0 +1,73 @@
+name: Mutation testing
+
+# Opt-in only. PIT re-runs the test suite once per surviving mutant, so on a suite this size it is
+# an hour-scale job — far too slow for a PR gate, and its score moves for reasons unrelated to the
+# change under review. Run it deliberately, when you want to know whether the tests actually
+# *detect* things rather than merely execute them.
+#
+# Note what this cannot tell you: there is no DLL on the Linux runner, so the FFM bridge is outside
+# the mutated surface (FheNativeBridge is excluded in pom.xml anyway). `-DexcludedGroups=native` is
+# there to keep the @Tag("native") tests out; pitest-maven takes the same property name as surefire.
+#
+# UNVERIFIED: this workflow has not been executed yet — it is dispatch-only, so nothing runs it
+# until someone asks. Expect to adjust the exclusion if the first run tries to boot a BFV context.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Maven module to mutate (blank = whole reactor)'
+        required: false
+        default: ''
+      threshold:
+        description: 'Fail below this mutation score (0 = report only)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: read
+
+jobs:
+  pitest:
+    name: PIT mutation coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+
+      # A bare `pitest:mutationCoverage` would resolve siblings from the repository, i.e. the last
+      # *published* version rather than the working tree. Install first.
+      - name: Build + install the reactor
+        run: ./mvnw -B -DskipTests -Dcheckstyle.skip=true -Dpmd.skip=true -Dspotbugs.skip=true install
+        shell: bash
+
+      - name: Run PIT
+        run: |
+          ARGS=(-B org.pitest:pitest-maven:mutationCoverage
+                -DexcludedGroups=native
+                -DmutationThreshold=${{ inputs.threshold }})
+          if [ -n "${{ inputs.target }}" ]; then
+            ARGS+=(-pl "${{ inputs.target }}")
+          fi
+          ./mvnw "${ARGS[@]}"
+        shell: bash
+
+      - name: Upload the PIT report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pitest-report
+          path: '**/target/pit-reports/**'
+          if-no-files-found: ignore
+          retention-days: 30
