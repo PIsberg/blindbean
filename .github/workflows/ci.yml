@@ -222,8 +222,13 @@ jobs:
           distribution: 'oracle'
           cache: maven
 
+      # `validate`, not the bare `enforcer:enforce` goal. A CLI goal invocation ignores the
+      # plugin's declared execution and looks for CLI-level rules, which blindbean-bom does not
+      # have: it is the one module with no parent, so it inherits no enforcer configuration and the
+      # bare goal dies there with "No rules are configured". Running the phase fires the
+      # `enforce-build-hygiene` execution wherever it is actually bound.
       - name: Enforcer rules
-        run: ./mvnw -B enforcer:enforce
+        run: ./mvnw -B validate
         shell: bash
 
       - name: Build the reactor
