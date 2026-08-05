@@ -38,8 +38,10 @@ default so an ordinary `mvn install` never tries to sign anything. Verify it wit
 mvn -Prelease package -DskipTests -Dgpg.skip=true   # should produce -sources and -javadoc jars
 ```
 
-Javadoc needs `--enable-preview`/`--add-modules` passed explicitly (`additionalJOptions`) or it
-refuses to parse the sources it is documenting.
+Javadoc needs `--add-modules jdk.incubator.vector` passed explicitly (`additionalJOptions`) or it
+refuses to parse the sources it is documenting. `--enable-preview` is no longer among them, and the
+`javadoc` job in `ci.yml` runs the same plugin on every PR, so a javadoc error surfaces before the
+version is fixed rather than at tag time.
 
 ## Release checklist
 

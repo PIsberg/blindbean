@@ -9,6 +9,15 @@
     <version>0.1.0</version>
     <packaging>pom</packaging>
 
+    <!--
+      The BOM is the one reactor module with no parent, so it inherits nothing and needs its own
+      copy of the reproducible-build timestamp. Without it `artifact:check-buildplan` fails here
+      and nowhere else. Keep in step with the root pom.
+    -->
+    <properties>
+        <project.build.outputTimestamp>2026-08-04T00:00:00Z</project.build.outputTimestamp>
+    </properties>
+
     <name>BlindBean BOM</name>
     <description>Import for consistent BlindBean module versions.</description>
     <url>https://github.com/PIsberg/blindbean</url>

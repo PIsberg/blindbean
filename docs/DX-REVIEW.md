@@ -39,11 +39,17 @@ That is a day of setup before the first `encrypt()`. Almost everyone bounces her
 - Add a devcontainer (or Codespaces badge) with JDK 26-EA preinstalled and the
   prebuilt DLL wired up, so "try BlindBean" is one click.
 
-### 2. The JDK 26-EA + `--enable-preview` wall
+### 2. The JDK version wall (partly resolved)
 
-Preview flags are viral: every consumer must compile *and run* with
-`--enable-preview --add-modules jdk.incubator.vector --enable-native-access=…`, and
-preview classfiles pin the exact JDK feature release. No platform team ships that.
+**Resolved:** `--enable-preview` is gone. Nothing in the tree needed it, and dropping it removed the
+worst part of this problem — preview classfiles pin the exact JDK feature release, so the published
+jar used to load on JDK 26 and nothing else. The build now compiles at `${maven.compiler.release}`
+and CI proves 25 and 26 both work, on Linux, macOS and Windows.
+
+**Still open:** the floor is JDK 22, so LTS shops on 21 remain locked out, and consumers still need
+`--add-modules jdk.incubator.vector` because the Vector API is an incubating module. 21 is not a
+flag away: `java.lang.foreign` was preview in 21 and `Arena.allocateFrom` did not exist there, so
+`blindbean-fhe` genuinely does not compile against it.
 
 **Proposals**
 - Split the SIMD acceleration from the baseline: `PaillierMath` is BigInteger-based

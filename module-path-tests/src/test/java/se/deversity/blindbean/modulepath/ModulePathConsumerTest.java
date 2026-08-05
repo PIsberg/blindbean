@@ -178,8 +178,8 @@ class ModulePathConsumerTest {
         // 26 builds). The explicit-file form drives the same module resolution without that path.
         Result compiled = run(
             bin("javac"),
-            "--release", "26",
-            "--enable-preview",
+            // The running JDK, not a literal: the CI matrix builds on more than one.
+            "--release", String.valueOf(Runtime.version().feature()),
             "--module-path", mp,
             "--processor-module-path", mp,
             "-d", out.toString(),
@@ -195,7 +195,6 @@ class ModulePathConsumerTest {
         // ── run it as a real named module ──
         Result ran = run(
             bin("java"),
-            "--enable-preview",
             "--add-modules", "jdk.incubator.vector",
             "--enable-native-access=se.deversity.blindbean.fhe",
             "-Dblindbean.native.path=" + System.getProperty("blindbean.native.path", "../build-native/Release"),

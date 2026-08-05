@@ -67,8 +67,8 @@ public class ExpandedTypeProcessorTest {
             "-processor", "se.deversity.blindbean.processor.HomomorphicProcessor",
             "-s", genDir.toAbsolutePath().toString(),
             "-d", classesDir.toAbsolutePath().toString(),
-            "--enable-preview",
-            "--release", "26",
+            // The running JDK, not a literal — see HomomorphicProcessorTest.
+            "--release", String.valueOf(Runtime.version().feature()),
             "--add-modules", "jdk.incubator.vector");
 
         compiler.getTask(new StringWriter(), fm, diagnostics, options, null,

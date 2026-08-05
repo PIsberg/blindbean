@@ -10,7 +10,6 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -40,12 +39,27 @@ import se.deversity.vibetags.annotations.AIStrictClasspath;
     "se.deversity.blindbean.annotations.BlindEntity",
     "se.deversity.blindbean.annotations.Homomorphic"
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_26)
 @AutoService(Processor.class)
 @AIContext(focus = "Strictly maintain high-performance AST compilation speed", avoids = "Heavy internal object allocations")
 @AIStrictClasspath
 @AIInternationalized
 public class HomomorphicProcessor extends AbstractProcessor {
+
+    /**
+     * The newest source version this JDK knows about, rather than a hard-coded constant.
+     *
+     * <p>This deliberately replaces {@code @SupportedSourceVersion(SourceVersion.RELEASE_26)}. An
+     * annotation value must be a compile-time constant, so naming {@code RELEASE_26} pinned the
+     * processor to a JDK whose {@code javax.lang.model} declares that constant: compiling against
+     * the JDK 25 API failed outright with "an enum annotation value must be an enum constant", and
+     * running on a newer JDK would have produced a "source value 27 is out of date" warning on
+     * every consumer build. {@code latestSupported()} is the documented alternative and tracks the
+     * running compiler.
+     */
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
 
     /** Immutable model for one @Homomorphic field. */
     private record FieldModel(String name, String capName, Scheme scheme, String typeName, int scale) {}

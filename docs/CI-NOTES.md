@@ -1,10 +1,60 @@
 # CI notes
 
-GitHub Actions runs three jobs: a fast Java-only gate on Linux+macOS (everything that does not need
-the DLL), a native build matrix on Linux/macOS/Windows publishing the shared library as an artifact,
-and the full Maven test suite on Windows against the published `blindbean_fhe.dll`. Changes touching
-`blindbean-fhe/src/main/native/**` require the native matrix to stay green before the Windows test
-job can consume the artifact.
+`ci.yml` runs, in order of what they cost you when they break:
+
+| Job | What it proves | Legs |
+|---|---|---|
+| `java-gate` | everything that does not need the native library compiles and passes, on every supported JDK and OS | 6 (JDK 25/26 × Linux/macOS/Windows) |
+| `javadoc` | the javadoc jar the release profile attaches actually builds | 1 |
+| `reproducible-build` | two clean builds of the same source produce byte-identical jars | 1 |
+| `dependency-hygiene` | enforcer rules pass (gate); declared vs used dependencies (**report only**, see below) | 1 |
+| `dependency-review` | no PR-introduced dependency carries a high advisory | PRs only |
+| `native-build-matrix` | the SEAL bridge compiles, and publishes the shared library as an artifact | 3 |
+| `native-sanitizers` | the FFM boundary is clean under ASan + UBSan | 1 |
+| `full-windows` | the whole suite, native tests included, against the published DLL | 2 (JDK 25/26) |
+
+Changes touching `blindbean-fhe/src/main/native/**` require the native matrix to stay green before
+the Windows test job can consume the artifact.
+
+Two more workflows are deliberately *not* wired into `ci.yml`: `security-scan.yml` (OWASP
+dependency-check, weekly + on demand) and `mutation-testing.yml` (PIT, `workflow_dispatch` only).
+Both are slow, and the first changes verdict without the code changing — a gate that goes red
+because a CVE was published overnight teaches people to ignore red.
+
+## The JDK matrix
+
+The build compiles at `${maven.compiler.release}` (26 by default) and each matrix leg overrides it
+to its own JDK, so the sources are checked against *that* JDK's API rather than merely recompiled.
+Reproduce a leg locally with `./mvnw verify -Dmaven.compiler.release=25`.
+
+Two things make this work, and both will silently undo it if reverted:
+
+- **No `--enable-preview` anywhere.** Preview classfiles load on exactly the JDK that produced them,
+  so a preview build cannot have a matrix at all. Nothing in the tree needs preview; see
+  `RUNTIME-FLAGS.md`.
+- **Nothing names a `SourceVersion.RELEASE_nn` constant.** `HomomorphicProcessor` overrides
+  `getSupportedSourceVersion()` returning `latestSupported()` instead of carrying
+  `@SupportedSourceVersion(RELEASE_26)`. An annotation value must be a compile-time constant, so the
+  literal form fails to compile against any older JDK's `javax.lang.model` with "an enum annotation
+  value must be an enum constant".
+
+**The floor is JDK 22, not 21.** `java.lang.foreign` was a preview API in 21 and `Arena.allocateFrom`
+did not exist there, so `blindbean-fhe` does not compile against 21 at any flag setting. Adding a 21
+leg is a rewrite of the FFM bridge, not a CI change.
+
+## Reproducible builds
+
+`project.build.outputTimestamp` in `pom.xml` is what makes `reproducible-build` pass — without it
+jar entry timestamps come from the clock and every build differs. If that job goes red, run the two
+builds locally and `diff` the checksums before assuming CI is at fault; the usual cause is a newly
+added plugin that stamps something non-deterministic into the jar.
+
+## OWASP dependency-check needs a secret
+
+`security-scan.yml` skips the scan, loudly, when the `NVD_API_KEY` repository secret is absent —
+NVD rate-limits anonymous feed downloads badly enough that the job would otherwise hang for hours.
+**A skipped scan is not a passed scan.** The job writes that distinction into the step summary on
+purpose. Get a key at <https://nvd.nist.gov/developers/request-an-api-key>.
 
 ## Native-tagged tests
 
@@ -50,9 +100,12 @@ The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retent
   block at the RC8 bump. A root block that grows on a version bump is that change, not a regression.
 - `.claudeignore` no longer carries a block for a module with no exclusions, so it shrank by four
   empty module regions at RC8. Same cause, same conclusion.
-- `GEMINI.md` and `AGENTS.md` have no granular sibling in this repo, so they keep the
-  sidecar-**merged** block. RC8 added `.gemini/rules/` as an opt-in; creating that directory would
-  collapse `GEMINI.md` to an index too. It is deliberately not created here.
+- `AGENTS.md` has no granular sibling, so it keeps the sidecar-**merged** block. `GEMINI.md` no
+  longer does: `.gemini/rules/` exists and is tracked, so RC10 collapses `GEMINI.md` to an index
+  pointing at those files, exactly as `CLAUDE.md` does for `.claude/rules/`. (This paragraph used
+  to claim the directory was deliberately absent — it was already committed when that was written.)
+  Expect a build to add a rule file whenever a module gains its first indexed guardrail; that is
+  generated output and belongs in the commit.
 - `AGENTS.md` is only *written* by VibeTags when it is the sole AI config file present
   (`ServiceRegistry` treats it as a hand-written pointer otherwise). In this repo it stays a pointer.
 - `blindbean-processor` overrides the compiler config, so it must re-declare the vibetags processor

@@ -21,8 +21,8 @@
     <version>0.1.0</version>
 
     <properties>
-        <maven.compiler.source>26</maven.compiler.source>
-        <maven.compiler.target>26</maven.compiler.target>
+        <!-- Standalone build (no parent): keep in step with the root pom's release level. -->
+        <maven.compiler.release>26</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <blindbean.version>0.1.0</blindbean.version>
         <blindbean.native.path>../build-native/Release</blindbean.native.path>
@@ -83,8 +83,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
                 <configuration>
+                    <release>${maven.compiler.release}</release>
                     <compilerArgs>
-                        <arg>--enable-preview</arg>
                         <arg>--add-modules</arg>
                         <arg>jdk.incubator.vector</arg>
                     </compilerArgs>
@@ -97,7 +97,6 @@
                 <version>3.5.6</version>
                 <configuration>
                     <argLine>
-                        --enable-preview
                         --add-modules jdk.incubator.vector
                         --enable-native-access=ALL-UNNAMED
                     </argLine>
