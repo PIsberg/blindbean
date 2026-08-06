@@ -585,7 +585,7 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>12.1.9</version>
+                        <version>12.2.2</version>
                         <configuration>
                             <!-- CVSS 7.0 is the "high" boundary; at or above it, fail. Lower
                                  findings still land in the report for triage. -->
