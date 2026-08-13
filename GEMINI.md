@@ -85,10 +85,10 @@ Detailed per-element guardrails live in scoped rule files that load automaticall
 ## 🚫 IGNORED ELEMENTS (EXCLUDE FROM CONTEXT)
 Do not reference, suggest changes to, or include the following in completions or answers.
 
-- `se.deversity.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)`
-- `se.deversity.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)`
-- `se.deversity.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)`
-- `se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)`
+- `se.deversity.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)` - Pure internal type-mapping helper — not part of the public processor API
+- `se.deversity.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)` - Pure internal type-mapping helper — not part of the public processor API
+- `se.deversity.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)` - Pure internal type-dispatch helper — not part of the public processor API
+- `se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)` - Pure internal type-dispatch helper — not part of the public processor API
 
 ## Scoped Rules Index
 Detailed per-element guardrails live in scoped rule files that load automatically when you open the matching source file. Consult the referenced file before modifying an element:
@@ -123,7 +123,7 @@ Critical Vulnerabilities to Prevent:
 ## 🚫 IGNORED ELEMENTS (EXCLUDE FROM CONTEXT)
 Do not reference, suggest changes to, or include the following in completions or answers.
 
-- `se.deversity.blindbean.async.BlindAsync.INIT_LOCK`
+- `se.deversity.blindbean.async.BlindAsync.INIT_LOCK` - Internal DCL synchronization monitor — not relevant to AI-assisted development workflows
 
 ## 🔒 PII / PRIVACY GUARDRAILS
 The following elements handle Personally Identifiable Information (PII).
