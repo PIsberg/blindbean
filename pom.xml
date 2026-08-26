@@ -253,7 +253,7 @@
                             <path>
                                 <groupId>com.uber.nullaway</groupId>
                                 <artifactId>nullaway</artifactId>
-                                <version>0.13.8</version>
+                                <version>0.14.0</version>
                             </path>
                             <!--
                               VibeTags RC5 guardrail generator. Versionless: managed by the imported
