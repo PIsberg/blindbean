@@ -9,6 +9,7 @@ paths: ["**/async/*.java"]
 
 ### se.deversity.blindbean.async.BlindAsync.INIT_LOCK
 This element is strictly excluded from AI context. Do not reference it.
+- **Reason**: Internal DCL synchronization monitor — not relevant to AI-assisted development workflows
 
 ## Security Audit Requirements
 

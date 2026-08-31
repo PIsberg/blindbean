@@ -34,6 +34,7 @@
 
 ### Rules for method initNative
 - **Rule**: Robust exception handling required. Prohibit catching/throwing generic Exception/Throwable. Use descriptive, specific/custom exceptions.
+- **Reason**: Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem
 
 ### Rules for method close
 - **Rule**: This operation is idempotent. Calling it multiple times must produce the same result as calling it once.
