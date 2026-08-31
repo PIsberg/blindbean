@@ -21,7 +21,12 @@ paths: ["**/junit/*.java"]
 
 ## Public API Surface Protection
 - **Rule**: Exposes public API. Preserve signature, Javadoc, and behavior without breaking backwards or source compatibility.
-- **Applies to**: `se.deversity.blindbean.junit.BlindBeanExtension`, `se.deversity.blindbean.junit.BlindBeanTest`
+
+### se.deversity.blindbean.junit.BlindBeanExtension
+- **Reason**: Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite
+
+### se.deversity.blindbean.junit.BlindBeanTest
+- **Reason**: Attribute names (scheme, polyModulusDegree, ckksScale) and their defaults are written into consumer test classes; renaming or removing one silently changes which context those suites boot
 
 ## Idempotency Guarantee
 

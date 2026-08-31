@@ -13,6 +13,7 @@
 
 ## Public API Surface Protection
 - **Rule**: Exposes public API. Preserve signature, Javadoc, and behavior without breaking backwards or source compatibility.
+- **Reason**: Consumers reference this extension directly via @ExtendWith and inherit it through @BlindBeanTest; renaming or changing its callbacks breaks every downstream test suite
 
 ### Rules for method afterEach
 - **Rule**: This operation is idempotent. Calling it multiple times must produce the same result as calling it once.

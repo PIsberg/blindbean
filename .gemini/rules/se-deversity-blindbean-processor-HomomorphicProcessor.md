@@ -7,7 +7,18 @@
 
 ## Exclusion Rule
 These elements are strictly excluded from AI context. Do not reference them.
-- **Applies to**: `HomomorphicProcessor.getBoxedType(java.lang.String)`, `HomomorphicProcessor.getPrimitiveType(java.lang.String)`, `HomomorphicProcessor.isFloatingPoint(java.lang.String)`, `HomomorphicProcessor.isIntegral(java.lang.String)`
+
+### Rules for method getBoxedType
+- **Reason**: Pure internal type-mapping helper — not part of the public processor API
+
+### Rules for method getPrimitiveType
+- **Reason**: Pure internal type-mapping helper — not part of the public processor API
+
+### Rules for method isFloatingPoint
+- **Reason**: Pure internal type-dispatch helper — not part of the public processor API
+
+### Rules for method isIntegral
+- **Reason**: Pure internal type-dispatch helper — not part of the public processor API
 
 ## Internationalization Mandate
 - **Rule**: Prohibit hardcoding user-facing strings, labels, or messages. All user-visible text must be resolved via localization resources.

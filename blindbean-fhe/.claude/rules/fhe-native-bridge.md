@@ -57,7 +57,10 @@ paths: ["**/fhe/*.java"]
 
 ## Strict Exception Handling
 - **Rule**: Robust exception handling required. Prohibit catching/throwing generic Exception/Throwable. Use descriptive, specific/custom exceptions.
-- **Applies to**: `se.deversity.blindbean.fhe.FheCiphertextNative`, `se.deversity.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)`
+- **Applies to**: `se.deversity.blindbean.fhe.FheCiphertextNative`
+
+### se.deversity.blindbean.fhe.FheContext.initNative(java.util.function.Supplier<java.lang.foreign.MemorySegment>)
+- **Reason**: Only linkage errors may be translated here; a genuine SEAL failure must not be disguised as a missing-library problem
 
 ## Idempotency Guarantee
 - **Rule**: These operations are idempotent. Calling them multiple times must produce the same result as calling them once.

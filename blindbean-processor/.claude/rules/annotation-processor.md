@@ -13,7 +13,18 @@ paths: ["**/processor/*.java"]
 
 ## Exclusion Rule
 These elements are strictly excluded from AI context. Do not reference them.
-- **Applies to**: `se.deversity.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)`, `se.deversity.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)`, `se.deversity.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)`, `se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)`
+
+### se.deversity.blindbean.processor.HomomorphicProcessor.getBoxedType(java.lang.String)
+- **Reason**: Pure internal type-mapping helper — not part of the public processor API
+
+### se.deversity.blindbean.processor.HomomorphicProcessor.getPrimitiveType(java.lang.String)
+- **Reason**: Pure internal type-mapping helper — not part of the public processor API
+
+### se.deversity.blindbean.processor.HomomorphicProcessor.isFloatingPoint(java.lang.String)
+- **Reason**: Pure internal type-dispatch helper — not part of the public processor API
+
+### se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)
+- **Reason**: Pure internal type-dispatch helper — not part of the public processor API
 
 ## Internationalization Mandate
 
