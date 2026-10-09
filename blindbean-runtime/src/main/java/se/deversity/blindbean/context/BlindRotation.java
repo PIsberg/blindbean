@@ -335,9 +335,10 @@ public final class BlindRotation implements AutoCloseable {
             // (n_src - |v|) mod n_tgt, which no longer decodes to -|v| — every negative value
             // would be silently replaced with well-formed garbage on every rotation. The balanced
             // representation (decryptSigned) is the library-wide numeric convention, and it is
-            // also safe for the unsigned encodings (String / byte[]): their magnitudes sit far
-            // below n/2 for any payload the modulus can hold at all, where the signed and
-            // unsigned readings agree exactly.
+            // also safe for the unsigned encodings (String / byte[]): PaillierMath.encrypt refuses
+            // anything above (n-1)/2, so their magnitudes sit where the signed and unsigned
+            // readings agree exactly. A value too wide for a smaller target modulus is refused by
+            // target.encrypt rather than wrapped.
             BigInteger plain = source.decryptSigned(ciphertext);
             return target.encrypt(plain);
         }

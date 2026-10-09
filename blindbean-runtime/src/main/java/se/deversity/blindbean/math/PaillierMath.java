@@ -38,9 +38,19 @@ public class PaillierMath {
      */
     private final byte[] keyTag;
 
+    /**
+     * Bounds of the balanced plaintext range, {@code [-(n-1)/2, (n-1)/2]}: the values
+     * {@link #decryptSigned} can hand back, and so the only ones {@link #encrypt} accepts.
+     * Computed once so the hot path pays two comparisons and no allocation.
+     */
+    private final BigInteger maxPlaintext;
+    private final BigInteger minPlaintext;
+
     public PaillierMath(PaillierKeyPair keyPair) {
         this.keyPair = keyPair;
         this.keyTag = KeyTag.derive(keyPair.getN().toByteArray());
+        this.maxPlaintext = keyPair.getN().shiftRight(1);
+        this.minPlaintext = maxPlaintext.negate();
     }
 
     public PaillierKeyPair getKeyPair() {
@@ -61,7 +71,16 @@ public class PaillierMath {
         return keyTag.clone();
     }
 
+    /**
+     * Encrypts {@code m}, which must lie in the balanced range {@code [-(n-1)/2, (n-1)/2]}.
+     *
+     * @throws IllegalArgumentException if {@code m} is outside that range. Paillier's plaintext
+     *         space is Z_n, so a wider value used to be reduced mod n without a word and decrypt
+     *         to a plausible wrong number. The upper half of [0, n) is refused as well, because
+     *         every signed decode and every key rotation reads it as negative.
+     */
     public Ciphertext encrypt(BigInteger m) {
+        requireRepresentable(m);
         BigInteger n = keyPair.getN();
         BigInteger r;
         do {
@@ -182,6 +201,25 @@ public class PaillierMath {
         BigInteger inverseB = numB.modInverse(keyPair.getN2());
         BigInteger result = numA.multiply(inverseB).mod(keyPair.getN2());
         return Ciphertext.fromBytes(KeyTag.wrap(keyTag, result.toByteArray()), Scheme.PAILLIER);
+    }
+
+    /**
+     * Refuses a plaintext the modulus cannot carry. The message gives sizes only, never the value.
+     *
+     * <p>The string and {@code byte[]} encoders were the common way in: their UTF-8 bytes become one
+     * integer, so at the 2048-bit default anything past about 255 bytes wrapped mod n and came back
+     * from decrypt as unrelated bytes.
+     */
+    private void requireRepresentable(BigInteger m) {
+        if (m.compareTo(maxPlaintext) > 0 || m.compareTo(minPlaintext) < 0) {
+            int modulusBits = keyPair.getN().bitLength();
+            throw new IllegalArgumentException(
+                "Paillier plaintext of " + m.bitLength() + " bits does not fit this " + modulusBits
+                + "-bit modulus: it carries values in [-(n-1)/2, (n-1)/2], at most "
+                + (modulusBits - 1) + " bits of magnitude. Encrypting it would reduce it mod n and "
+                + "decrypt to a different value. A String or byte[] field holds at most "
+                + (modulusBits - 3) / 8 + " bytes; split larger values, or use a larger modulus.");
+        }
     }
 
     /**

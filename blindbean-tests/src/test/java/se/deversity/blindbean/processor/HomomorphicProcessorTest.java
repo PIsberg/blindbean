@@ -419,6 +419,67 @@ public class HomomorphicProcessorTest {
     }
 
     /**
+     * A String wider than the Paillier modulus cannot be held by one ciphertext. The encoder used
+     * to hand it to encrypt() anyway, which reduced it mod n, so a 300-character note came back
+     * from decrypt as unrelated bytes with no error anywhere. It must be refused at encrypt time.
+     */
+    @Test
+    public void paillierStringTooWideForTheModulusIsRefusedNotGarbled(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class LongNote {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = String.class)
+                private String note;
+
+                public String getNote() { return note; }
+                public void setNote(String n) { this.note = n; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("LongNote", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        // 512-bit modulus: test-only, for keygen speed. It holds at most 63 bytes.
+        se.deversity.blindbean.context.BlindContext.init(new se.deversity.blindbean.math.PaillierKeyPair(512));
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.LongNote");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.LongNoteBlindWrapper");
+
+            Object entity  = entityClass.getConstructor().newInstance();
+            Object wrapper = wrapperClass.getConstructor(entityClass).newInstance(entity);
+            var encrypt = wrapperClass.getMethod("encryptNote", String.class);
+            var decrypt = wrapperClass.getMethod("decryptNote");
+
+            String fits = "x".repeat(63);
+            encrypt.invoke(wrapper, fits);
+            assertEquals(fits, decrypt.invoke(wrapper), "a string the modulus can hold must round-trip");
+
+            String tooLong = "y".repeat(300);
+            var thrown = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                () -> encrypt.invoke(wrapper, tooLong),
+                "a string wider than the modulus must be refused, not reduced mod n");
+            assertInstanceOf(IllegalArgumentException.class, thrown.getCause());
+            assertEquals(fits, decrypt.invoke(wrapper),
+                "a refused encrypt must leave the stored ciphertext untouched");
+        } finally {
+            se.deversity.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    /**
      * CKKS is approximate: an encrypted 42 decrypts to something like 41.9999999 or 42.0000001.
      * The generated decoder for an integral or boolean CKKS field used a plain cast, which
      * truncates toward zero, so roughly half of all integral decrypts came back one too small, and

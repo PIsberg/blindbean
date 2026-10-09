@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -70,5 +71,32 @@ public class PaillierSignedTest {
         PaillierMath m = math();
         assertEquals(BigInteger.valueOf(42), m.decryptSigned(m.encrypt(BigInteger.valueOf(42))));
         assertEquals(BigInteger.ZERO, m.decryptSigned(m.encrypt(BigInteger.ZERO)));
+    }
+
+    @Test
+    public void bothEndsOfTheBalancedRangeRoundTrip() {
+        PaillierMath m = math();
+        BigInteger limit = m.getKeyPair().getN().shiftRight(1); // (n-1)/2, n is odd
+
+        assertEquals(limit, m.decryptSigned(m.encrypt(limit)));
+        assertEquals(limit.negate(), m.decryptSigned(m.encrypt(limit.negate())));
+    }
+
+    @Test
+    public void aPlaintextOutsideTheBalancedRangeIsRefusedNotReducedModN() {
+        // encrypt() used to reduce any plaintext mod n without a word, so a value the modulus
+        // cannot hold came back as a plausible wrong number. n itself decrypted to 0. The generated
+        // String encoder hit this with any string longer than the modulus is wide, roughly 255 UTF-8
+        // bytes at the 2048-bit default, and handed back garbage on decrypt.
+        PaillierMath m = math();
+        BigInteger n = m.getKeyPair().getN();
+        BigInteger limit = n.shiftRight(1);
+
+        for (BigInteger tooWide : new BigInteger[] {
+                limit.add(BigInteger.ONE), limit.add(BigInteger.ONE).negate(), n, n.shiftLeft(3)}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> m.encrypt(tooWide), "plaintext of " + tooWide.bitLength() + " bits");
+            assertTrue(e.getMessage().contains("bits"), e.getMessage());
+        }
     }
 }
