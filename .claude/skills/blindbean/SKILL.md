@@ -274,7 +274,8 @@ In tests, prefer the JUnit extension over hand-rolled setup — it manages the w
 class MyTest { ... }
 ```
 
-Nested classes inherit the enclosing annotation.
+Nested classes inherit the enclosing annotation. So do subclasses of an annotated base class, and
+a composed annotation that carries `@BlindBeanTest` works as well.
 
 ---
 

@@ -70,6 +70,46 @@ public class BlindBeanExtensionTest {
         }
     }
 
+    /**
+     * A shared base class carrying the configuration. JUnit inherits the @ExtendWith that
+     * @BlindBeanTest carries, so the extension runs for the subclass; it then looked the
+     * annotation up with Class.getAnnotation, which does not see a superclass's annotation
+     * (@BlindBeanTest is not @Inherited), and silently booted Paillier only.
+     */
+    @BlindBeanTest(scheme = Scheme.BFV, polyModulusDegree = 8192)
+    abstract static class BfvBase {
+    }
+
+    @Nested
+    @Tag("native")
+    class ConfigInheritedFromASuperclass extends BfvBase {
+
+        @Test
+        void theSuperclassSchemeIsBooted() {
+            var ctx = BlindContext.getFheContext();
+            assertEquals(Scheme.BFV, ctx.scheme());
+        }
+    }
+
+    /** A composed annotation: @BlindBeanTest is meta-present, not directly present. */
+    @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+    @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE)
+    @BlindBeanTest(scheme = Scheme.CKKS, polyModulusDegree = 8192)
+    @interface CkksSuite {
+    }
+
+    @Nested
+    @Tag("native")
+    @CkksSuite
+    class ConfigFromAComposedAnnotation {
+
+        @Test
+        void theComposedSchemeIsBooted() {
+            var ctx = BlindContext.getFheContext();
+            assertEquals(Scheme.CKKS, ctx.scheme());
+        }
+    }
+
     @Nested
     @org.junit.jupiter.api.extension.ExtendWith(BlindBeanExtension.class)
     class DirectExtendWithoutAnnotation {
