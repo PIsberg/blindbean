@@ -218,35 +218,56 @@ public class BlindContext {
             KeyBundle bundle = (KeyBundle) ois.readObject();
             LOG.log(DEBUG, "Key bundle read from {0}; deserialization filter accepted the graph", filePath);
 
-            // Paillier resumption
             PaillierKeyPair paillierKeyPair = bundle.getPaillierKeyPair();
             byte[] restoredState = bundle.getNativeFhePayload();
-            if (paillierKeyPair != null) {
-                init(paillierKeyPair);
+            se.deversity.blindbean.annotations.Scheme fheScheme = bundle.getFheScheme();
+
+            // Build everything before installing anything. This used to install the Paillier keys
+            // and close the thread's FHE context first, then find out the native keys would not
+            // import: the caller was left on the bundle's Paillier keys with no FHE context, so a
+            // failed load destroyed a working key set instead of leaving it alone.
+            FheContext restored = null;
+            if (fheScheme != null && restoredState != null) {
+                restored = switch (fheScheme) {
+                    case BFV  -> FheContext.bfv(bundle.getPolyModulusDegree());
+                    case CKKS -> FheContext.ckks(bundle.getPolyModulusDegree(), bundle.getScale());
+                    case PAILLIER -> null;
+                };
+                if (restored != null) {
+                    // Mount native pointers strictly; on failure close the context built here,
+                    // which was never installed, so the thread's own context is untouched.
+                    try {
+                        restored.importState(restoredState);
+                        LOG.log(DEBUG, "Native {0} state imported: {1} bytes", fheScheme, restoredState.length);
+                    } catch (RuntimeException e) {
+                        LOG.log(WARNING, "Native key import failed for {0}; discarding the {1} context "
+                            + "built for it. The thread keeps the keys it had.", filePath, fheScheme);
+                        restored.close();
+                        throw e;
+                    }
+                }
             }
 
-            // FHE resumption
-            se.deversity.blindbean.annotations.Scheme fheScheme = bundle.getFheScheme();
-            byte[] nativeFhePayload = restoredState;
-            if (fheScheme != null && nativeFhePayload != null) {
-                if (fheScheme == se.deversity.blindbean.annotations.Scheme.BFV) {
-                    initBfv(bundle.getPolyModulusDegree());
-                } else if (fheScheme == se.deversity.blindbean.annotations.Scheme.CKKS) {
-                    initCkks(bundle.getPolyModulusDegree(), bundle.getScale());
+            // Install. Neither step below throws in practice, but if the first one did, the native
+            // context built above would otherwise leak.
+            try {
+                if (paillierKeyPair != null) {
+                    init(paillierKeyPair);
                 }
-
-                // Mount native pointers strictly; on failure close the freshly created
-                // context rather than leaving one installed with non-imported default keys
+            } catch (RuntimeException e) {
+                if (restored != null) {
+                    restored.close();
+                }
+                throw e;
+            }
+            if (restored != null) {
                 try {
-                    fheInstance.get().importState(nativeFhePayload);
-                    LOG.log(DEBUG, "Native {0} state imported: {1} bytes",
-                        fheScheme, nativeFhePayload.length);
-                } catch (RuntimeException e) {
-                    LOG.log(WARNING, "Native key import failed for {0}; closing the half-built {1} context "
-                        + "rather than leaving one installed with non-imported default keys", filePath, fheScheme);
                     closeExistingFhe();
-                    throw e;
+                } finally {
+                    fheInstance.set(restored);
                 }
+                LOG.log(INFO, "{0} context ready: polyModulusDegree={1}, restored from {2}",
+                    fheScheme, bundle.getPolyModulusDegree(), filePath);
             }
 
             // Outside the FHE branch on purpose. This INFO used to sit inside it, so loading a
