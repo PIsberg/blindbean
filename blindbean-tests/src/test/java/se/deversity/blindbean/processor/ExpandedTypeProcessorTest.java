@@ -423,6 +423,25 @@ public class ExpandedTypeProcessorTest {
         assertFalse(r.failed(), r.errors());
     }
 
+    @Test
+    public void anEntityInTheDefaultPackageGetsAWrapperThatCompiles(@TempDir Path tmp) throws Exception {
+        // "package ;" is not Java. The processor emitted it for an entity in the unnamed package.
+        String src = """
+            import se.deversity.blindbean.annotations.*;
+            @BlindEntity
+            public class Loose {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)
+                private String balance;
+                public Loose() {}
+                public String getBalance() { return balance; }
+                public void setBalance(String v) { this.balance = v; }
+            }
+            """;
+        Result r = compile("Loose", src, tmp);
+
+        assertFalse(r.failed(), r.errors());
+    }
+
     // ── Nested entities ──────────────────────────────────────────────────────
 
     /** Two entities in one compilation unit: an outer one nesting an inner one. */
