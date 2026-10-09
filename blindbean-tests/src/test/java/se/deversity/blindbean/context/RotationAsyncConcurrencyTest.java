@@ -5,6 +5,7 @@ import se.deversity.blindbean.math.PaillierKeyPair;
 import se.deversity.blindbean.math.PaillierMath;
 
 import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.DetectorType;
 import se.deversity.asynctest.BeforeEachInvocation;
 
 import org.junit.jupiter.api.AfterEach;
@@ -66,12 +67,8 @@ class RotationAsyncConcurrencyTest {
     @AsyncTest(
         threads = 16,
         invocations = 20,
-        detectRaceConditions = true,
-        detectAtomicityViolations = true,
-        detectSharedSecureRandom = true,
-        detectSharedStatefulCrypto = true,
-        detectVisibility = true,
-        timeoutMs = 60000
+        timeoutMs = 60000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.ATOMICITY_VIOLATIONS, DetectorType.SHARED_SECURE_RANDOM, DetectorType.SHARED_STATEFUL_CRYPTO, DetectorType.VISIBILITY }
     )
     void concurrentRotationPreservesEveryValue() {
         long raw = ThreadLocalRandom.current().nextLong(1_000_000L);

@@ -3,6 +3,7 @@ package se.deversity.blindbean.math;
 import se.deversity.blindbean.core.Ciphertext;
 
 import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.DetectorType;
 import se.deversity.asynctest.AsyncTestContext;
 import se.deversity.asynctest.Preset;
 
@@ -61,13 +62,8 @@ class PaillierSignedConcurrencyTest {
     @AsyncTest(
         threads = 12,
         invocations = 20,
-        detectAll = false,
-        detectRaceConditions = true,
-        detectAtomicityViolations = true,
-        detectSharedSecureRandom = true,
-        detectSharedStatefulCrypto = true,
-        detectSharedMessageDigest = true,
-        timeoutMs = 60000
+        timeoutMs = 60000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.ATOMICITY_VIOLATIONS, DetectorType.SHARED_SECURE_RANDOM, DetectorType.SHARED_STATEFUL_CRYPTO, DetectorType.SHARED_MESSAGE_DIGEST }
     )
     void signedValuesRoundTripThroughASharedInstance() {
         AsyncTestContext.raceConditionDetector().recordFieldRead(MATH, "MATH");
@@ -88,9 +84,8 @@ class PaillierSignedConcurrencyTest {
     @AsyncTest(
         threads = 12,
         invocations = 20,
-        detectAll = false,
-        detectRaceConditions = true,
-        timeoutMs = 60000
+        timeoutMs = 60000,
+        includes = DetectorType.RACE_CONDITIONS
     )
     void theRawDecodeStaysUnsignedOnEveryThread() {
         BigInteger negative = BigInteger.valueOf(-5L);
@@ -142,11 +137,8 @@ class PaillierSignedConcurrencyTest {
     @AsyncTest(
         threads = 16,
         invocations = 20,
-        detectAll = false,
-        detectSharedSecureRandom = true,
-        detectSharedStatefulCrypto = true,
-        detectRaceConditions = true,
-        timeoutMs = 60000
+        timeoutMs = 60000,
+        includes = { DetectorType.SHARED_SECURE_RANDOM, DetectorType.SHARED_STATEFUL_CRYPTO, DetectorType.RACE_CONDITIONS }
     )
     void encryptionStaysProbabilisticUnderContention() {
         BigInteger value = BigInteger.valueOf(4242L);

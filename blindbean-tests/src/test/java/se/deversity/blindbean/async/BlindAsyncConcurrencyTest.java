@@ -60,9 +60,7 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 50,
         invocations = 20,
-        detectDoubleCheckedLocking = true,
-        detectRaceConditions = true,
-        detectVisibility = true
+        includes = { DetectorType.DOUBLE_CHECKED_LOCKING, DetectorType.RACE_CONDITIONS, DetectorType.VISIBILITY }
     )
     void executorInitializationNeverRaces() {
         BlindAsync.runAsync(() -> {}).join();
@@ -78,10 +76,8 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 20,
         invocations = 100,
-        monitorSemaphore = true,
-        detectCompletableFutureExceptions = true,
-        detectInterruptMishandling = true,
-        timeoutMs = 8000
+        timeoutMs = 8000,
+        includes = { DetectorType.SEMAPHORE, DetectorType.COMPLETABLE_FUTURE_EXCEPTIONS, DetectorType.INTERRUPT_MISHANDLING }
     )
     void semaphorePermitsAlwaysReleasedOnException() {
         BlindAsync.runAsync(() -> {
@@ -103,7 +99,7 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 20,
         invocations = 100,
-        detectRaceConditions = true
+        includes = DetectorType.RACE_CONDITIONS
     )
     void contextSnapshotPropagatedToCorrectVirtualThread() throws Exception {
         BlindContext.init(SHARED_KEY_PAIR); // each thread gets its own ThreadLocal; reuse key pair to avoid per-invocation prime generation
@@ -137,8 +133,8 @@ class BlindAsyncConcurrencyTest {
         invocations = 50,
         useVirtualThreads = true,
         virtualThreadStressMode = "OFF",
-        detectVirtualThreadPinning = true,
-        timeoutMs = 15000
+        timeoutMs = 15000,
+        includes = DetectorType.VIRTUAL_THREAD_PINNING
     )
     void runAsyncDoesNotPinCarrierThread() {
         BlindAsync.supplyAsync(() -> BigInteger.TWO).join();
@@ -154,9 +150,7 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 10,
         invocations = 50,
-        detectCompletableFutureCompletionLeaks = true,
-        detectCompletableFutureExceptions = true,
-        detectResourceLeaks = true
+        includes = { DetectorType.COMPLETABLE_FUTURE_COMPLETION_LEAKS, DetectorType.COMPLETABLE_FUTURE_EXCEPTIONS, DetectorType.RESOURCE_LEAKS }
     )
     void fanOutFuturesAlwaysComplete() {
         CompletableFuture.allOf(
@@ -179,11 +173,8 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 20,
         invocations = 20,
-        detectRaceConditions = true,
-        detectAtomicityViolations = true,
-        detectSharedSecureRandom = true,
-        detectSharedStatefulCrypto = true,
-        timeoutMs = 30000
+        timeoutMs = 30000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.ATOMICITY_VIOLATIONS, DetectorType.SHARED_SECURE_RANDOM, DetectorType.SHARED_STATEFUL_CRYPTO }
     )
     void paillierEncryptDecryptIsThreadSafe() {
         long raw = ThreadLocalRandom.current().nextLong(1_000_000L);
@@ -203,8 +194,8 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 30,
         invocations = 20,
-        detectRaceConditions = true,
-        timeoutMs = 30000
+        timeoutMs = 30000,
+        includes = DetectorType.RACE_CONDITIONS
     )
     void snapshotRestoreRoundTripIsIsolated() {
         BlindContext.init(SHARED_KEY_PAIR); // reuse key pair — avoids per-invocation prime generation on CI
@@ -230,9 +221,8 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 50,
         invocations = 50,
-        detectRaceConditions = true,
-        detectVisibility = true,
-        timeoutMs = 30000
+        timeoutMs = 30000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.VISIBILITY }
     )
     void churnExecutorShutdownAndInit() {
         if (ThreadLocalRandom.current().nextBoolean()) {
@@ -252,8 +242,8 @@ class BlindAsyncConcurrencyTest {
     @AsyncTest(
         threads = 100,
         invocations = 10,
-        detectCompletableFutureCompletionLeaks = true,
-        timeoutMs = 15000
+        timeoutMs = 15000,
+        includes = DetectorType.COMPLETABLE_FUTURE_COMPLETION_LEAKS
     )
     void permitHoggingDoesNotPreventFutureCompletion() {
         BlindAsync.runAsync(() -> {
