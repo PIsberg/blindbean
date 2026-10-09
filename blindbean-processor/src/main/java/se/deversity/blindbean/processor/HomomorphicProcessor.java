@@ -856,9 +856,11 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 out.println("            return ctx.decryptLong(ct.handle()) != 0L;");
                 out.println("        }");
             } else {
+                // CKKS decrypts an encrypted 0.0 to 0.0 plus noise, never exactly 0.0, so comparing
+                // against 0.0 read nearly every false as true. Round to the nearest integer first.
                 out.println("        FheContext ctx = BlindContext.getFheContext();");
                 out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                out.println("            return ctx.decryptDouble(ct.handle()) != 0.0;");
+                out.println("            return Math.round(ctx.decryptDouble(ct.handle())) != 0L;");
                 out.println("        }");
             }
             out.println("    }");
@@ -886,9 +888,11 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     String rType = boxedDecryptReturnType(f);
                     out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     emitNullGuardOnDecrypt(out, f);
+                    // Round, never cast: CKKS hands back 41.9999999 as often as 42.0000001, and a
+                    // cast truncates toward zero, so about half of all decrypts lost one.
                     out.println("        FheContext ctx = BlindContext.getFheContext();");
                     out.println("        try (FheCiphertextNative ct = FheCiphertextNative.fromBlindCiphertext(ctx, getCiphertext" + f.capName() + "())) {");
-                    out.println("            return (" + rType + ")(" + pType + ")ctx.decryptDouble(ct.handle());");
+                    out.println("            return (" + rType + ")(" + pType + ")Math.round(ctx.decryptDouble(ct.handle()));");
                     out.println("        }");
                     out.println("    }");
                 }

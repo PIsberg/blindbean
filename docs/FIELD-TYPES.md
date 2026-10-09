@@ -31,6 +31,10 @@ Rules worth knowing before adding another type:
   corrupted every other slot in the vector. `maxSlotValue()` reports the limit.
 - **CKKS has degree/2 slots**, not degree (complex-conjugate symmetry), and is approximate — never
   use it for money. `BigDecimal` on Paillier is the exact option.
+- **An integral or `boolean` field on CKKS decodes by rounding to the nearest integer.** An
+  encrypted 42 decrypts to 41.9999999 about as often as to 42.0000001, so the cast the decoder
+  used to apply returned 41 about half the time, and an encrypted `false` (0.0 plus noise) read as
+  `true`. Rounding is exact while the accumulated error stays below 0.5.
 - `byte[]` is deliberately a Paillier **blob**, not a BFV vector; use `short[]`/`int[]` for small
   integer vectors.
 
