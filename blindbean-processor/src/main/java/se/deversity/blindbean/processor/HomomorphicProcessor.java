@@ -1232,10 +1232,18 @@ public class HomomorphicProcessor extends AbstractProcessor {
         };
     }
 
-    /** Returns the Java source type for the plain-value overload of add/sub/mul. */
+    /**
+     * Returns the Java source type for the plain-value overload of add/sub/mul.
+     *
+     * <p>Must name the same type as the sync overload the async one delegates to. The types
+     * {@link #emitPlainOverloadForNewTypes} handles take the field's own type, so they have to be
+     * listed here too: falling through to the scheme default once made {@code addPriceAsync}
+     * call an {@code addPrice(BigInteger)} that a BigDecimal field does not have, and the
+     * consumer's build failed inside generated code.
+     */
     private String plainMathParamType(FieldModel f) {
         String typeName = f.typeName();
-        if (typeName.equals("long[]") && f.scheme() == Scheme.BFV) return "long[]";
+        if (isBigDecimal(typeName) || isDuration(typeName) || isArray(typeName)) return typeName;
         return switch (f.scheme()) {
             case PAILLIER -> "BigInteger";
             case BFV      -> "long";
