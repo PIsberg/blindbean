@@ -5,6 +5,7 @@ import se.deversity.blindbean.context.BlindContext;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.platform.commons.support.AnnotationSupport;
 
 import se.deversity.vibetags.annotations.AIContract;
 import se.deversity.vibetags.annotations.AIIdempotent;
@@ -54,12 +55,31 @@ public final class BlindBeanExtension implements BeforeEachCallback, AfterEachCa
         ExtensionContext current = context;
         while (current != null) {
             Optional<BlindBeanTest> found = current.getTestClass()
-                .map(c -> c.getAnnotation(BlindBeanTest.class))
-                .filter(a -> a != null);
+                .flatMap(BlindBeanExtension::findOnTypeHierarchy);
             if (found.isPresent()) {
                 return found;
             }
             current = current.getParent().orElse(null);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * The annotation directly present, meta-present (a composed annotation) or on a superclass,
+     * nearest class first.
+     *
+     * <p>JUnit inherits the {@code @ExtendWith} that {@code @BlindBeanTest} carries, so this
+     * extension runs for a subclass of an annotated base and for a class carrying a composed
+     * annotation. {@code Class.getAnnotation} saw neither ({@code @BlindBeanTest} is not
+     * {@code @Inherited}, and it is not directly present on a composed one), so those suites
+     * silently booted Paillier only instead of the scheme they asked for.
+     */
+    private static Optional<BlindBeanTest> findOnTypeHierarchy(Class<?> testClass) {
+        for (Class<?> c = testClass; c != null && c != Object.class; c = c.getSuperclass()) {
+            Optional<BlindBeanTest> found = AnnotationSupport.findAnnotation(c, BlindBeanTest.class);
+            if (found.isPresent()) {
+                return found;
+            }
         }
         return Optional.empty();
     }

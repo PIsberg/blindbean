@@ -431,13 +431,25 @@ extern "C" int32_t fhe_import_keys(FheContext handle, const uint8_t* buf, size_t
         std::string data(reinterpret_cast<const char*>(buf), len);
         std::istringstream iss(data, std::ios::binary);
 
-        ctx->secretKey.load(*ctx->sealCtx, iss);
-        ctx->publicKey.load(*ctx->sealCtx, iss);
-        ctx->relinKeys.load(*ctx->sealCtx, iss);
+        // Load into temporaries and commit only once every key has loaded. Loading straight into
+        // ctx left a payload that broke after the secret key with another generation's secret
+        // key beside this context's public key, and the next export wrote that pair to disk.
+        seal::SecretKey secretKey;
+        seal::PublicKey publicKey;
+        seal::RelinKeys relinKeys;
+        secretKey.load(*ctx->sealCtx, iss);
+        publicKey.load(*ctx->sealCtx, iss);
+        relinKeys.load(*ctx->sealCtx, iss);
 
-        ctx->encryptor = std::make_unique<seal::Encryptor>(*ctx->sealCtx, ctx->publicKey);
-        ctx->decryptor = std::make_unique<seal::Decryptor>(*ctx->sealCtx, ctx->secretKey);
-        
+        auto encryptor = std::make_unique<seal::Encryptor>(*ctx->sealCtx, publicKey);
+        auto decryptor = std::make_unique<seal::Decryptor>(*ctx->sealCtx, secretKey);
+
+        ctx->secretKey = std::move(secretKey);
+        ctx->publicKey = std::move(publicKey);
+        ctx->relinKeys = std::move(relinKeys);
+        ctx->encryptor = std::move(encryptor);
+        ctx->decryptor = std::move(decryptor);
+
         return 0;
     } catch (const std::exception& e) {
         fprintf(stderr, "[SEAL] fhe_import_keys error: %s\n", e.what());

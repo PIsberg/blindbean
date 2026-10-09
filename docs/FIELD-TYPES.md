@@ -25,12 +25,19 @@ Rules worth knowing before adding another type:
   generated code goes through `PaillierMath.decryptSigned` (balanced representation). Strings and
   `byte[]` must keep using plain `decrypt` — they are unsigned magnitudes, and a blob with the top
   bit set would otherwise read as negative.
+- **The Paillier modulus caps every plaintext at (n-1)/2 in magnitude.** `PaillierMath.encrypt`
+  refuses anything wider instead of reducing it mod n. For a `String` or `byte[]` that is 255 bytes
+  at the 2048-bit default; see `SECURITY-AND-LIMITATIONS.md`.
 - **A BFV slot is ~20 bits, not 64.** `PlainModulus::Batching(degree, 20)` gives t ≈ 1,032,193, so a
   slot holds about ±516,000. `FheContext.encryptLongArray` now rejects anything larger — before the
   guard SEAL reduced it mod t and returned a plausible wrong number, and a single out-of-range entry
   corrupted every other slot in the vector. `maxSlotValue()` reports the limit.
 - **CKKS has degree/2 slots**, not degree (complex-conjugate symmetry), and is approximate — never
   use it for money. `BigDecimal` on Paillier is the exact option.
+- **An integral or `boolean` field on CKKS decodes by rounding to the nearest integer.** An
+  encrypted 42 decrypts to 41.9999999 about as often as to 42.0000001, so the cast the decoder
+  used to apply returned 41 about half the time, and an encrypted `false` (0.0 plus noise) read as
+  `true`. Rounding is exact while the accumulated error stays below 0.5.
 - `byte[]` is deliberately a Paillier **blob**, not a BFV vector; use `short[]`/`int[]` for small
   integer vectors.
 

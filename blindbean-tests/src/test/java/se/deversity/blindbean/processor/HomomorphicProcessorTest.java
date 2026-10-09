@@ -419,6 +419,141 @@ public class HomomorphicProcessorTest {
     }
 
     /**
+     * A String wider than the Paillier modulus cannot be held by one ciphertext. The encoder used
+     * to hand it to encrypt() anyway, which reduced it mod n, so a 300-character note came back
+     * from decrypt as unrelated bytes with no error anywhere. It must be refused at encrypt time.
+     */
+    @Test
+    public void paillierStringTooWideForTheModulusIsRefusedNotGarbled(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class LongNote {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = String.class)
+                private String note;
+
+                public String getNote() { return note; }
+                public void setNote(String n) { this.note = n; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("LongNote", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        // 512-bit modulus: test-only, for keygen speed. It holds at most 63 bytes.
+        se.deversity.blindbean.context.BlindContext.init(new se.deversity.blindbean.math.PaillierKeyPair(512));
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.LongNote");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.LongNoteBlindWrapper");
+
+            Object entity  = entityClass.getConstructor().newInstance();
+            Object wrapper = wrapperClass.getConstructor(entityClass).newInstance(entity);
+            var encrypt = wrapperClass.getMethod("encryptNote", String.class);
+            var decrypt = wrapperClass.getMethod("decryptNote");
+
+            String fits = "x".repeat(63);
+            encrypt.invoke(wrapper, fits);
+            assertEquals(fits, decrypt.invoke(wrapper), "a string the modulus can hold must round-trip");
+
+            String tooLong = "y".repeat(300);
+            var thrown = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                () -> encrypt.invoke(wrapper, tooLong),
+                "a string wider than the modulus must be refused, not reduced mod n");
+            assertInstanceOf(IllegalArgumentException.class, thrown.getCause());
+            assertEquals(fits, decrypt.invoke(wrapper),
+                "a refused encrypt must leave the stored ciphertext untouched");
+        } finally {
+            se.deversity.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    /**
+     * CKKS is approximate: an encrypted 42 decrypts to something like 41.9999999 or 42.0000001.
+     * The generated decoder for an integral or boolean CKKS field used a plain cast, which
+     * truncates toward zero, so roughly half of all integral decrypts came back one too small, and
+     * an encrypted {@code false} (0.0 plus noise) read as {@code true}. It must round.
+     */
+    @org.junit.jupiter.api.Tag("native")
+    @Test
+    public void ckksIntegralAndBooleanFieldsDecryptExactly(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class Approx {
+                @Homomorphic(scheme = Scheme.CKKS, type = long.class)
+                private String count;
+                @Homomorphic(scheme = Scheme.CKKS, type = Integer.class)
+                private String level;
+                @Homomorphic(scheme = Scheme.CKKS, type = boolean.class)
+                private String flag;
+
+                public String getCount() { return count; }
+                public void setCount(String v) { this.count = v; }
+                public String getLevel() { return level; }
+                public void setLevel(String v) { this.level = v; }
+                public String getFlag() { return flag; }
+                public void setFlag(String v) { this.flag = v; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("Approx", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        se.deversity.blindbean.context.BlindContext.initCkks(8192, Math.pow(2.0, 40));
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.Approx");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.ApproxBlindWrapper");
+
+            Object entity  = entityClass.getConstructor().newInstance();
+            Object wrapper = wrapperClass.getConstructor(entityClass).newInstance(entity);
+
+            // Enough values that a truncating decoder cannot get lucky on all of them.
+            for (long v = -20; v <= 20; v++) {
+                wrapperClass.getMethod("encryptCount", long.class).invoke(wrapper, v);
+                assertEquals(v, wrapperClass.getMethod("decryptCount").invoke(wrapper),
+                    "CKKS long " + v + " must decrypt exactly");
+
+                wrapperClass.getMethod("encryptLevel", int.class).invoke(wrapper, (int) v);
+                assertEquals((int) v, wrapperClass.getMethod("decryptLevel").invoke(wrapper),
+                    "CKKS Integer " + v + " must decrypt exactly");
+            }
+            for (int i = 0; i < 10; i++) {
+                for (boolean b : new boolean[] {false, true}) {
+                    wrapperClass.getMethod("encryptFlag", boolean.class).invoke(wrapper, b);
+                    assertEquals(b, wrapperClass.getMethod("decryptFlag").invoke(wrapper),
+                        "CKKS boolean " + b + " must decrypt as itself");
+                }
+            }
+        } finally {
+            se.deversity.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    /**
      * The generated rotate<Field>(BlindRotation) hook must re-encrypt the stored ciphertext in
      * place, so a consumer rotating keys never handles plaintext and never hand-rolls a
      * decrypt/encrypt loop.

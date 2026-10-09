@@ -176,6 +176,18 @@ Strings and `byte[]` are encoded as **unsigned magnitudes** and must keep using
 plain `decrypt`; reading them signed would turn any blob whose leading bit is set
 into a negative number.
 
+### The Paillier modulus bounds every plaintext
+
+`PaillierMath.encrypt` accepts only the balanced range `[-(n-1)/2, (n-1)/2]` and
+throws `IllegalArgumentException` for anything wider. It used to reduce a wider
+value mod n without complaint, so it decrypted to a plausible wrong number. A
+`String` or `byte[]` field hit this first: its bytes become one integer, so at
+the 2048-bit default anything past **255 bytes** (63 at 512 bits) came back as
+unrelated bytes. The upper half of [0, n) is refused too, because every signed
+decode and every key rotation reads it as negative. Split longer values across
+fields, or use a larger modulus. A rotation onto a smaller target modulus refuses
+a value the target cannot hold in the same way.
+
 ### Exact decimals
 
 CKKS is approximate and must never hold money. Use `BigDecimal` on Paillier: it is

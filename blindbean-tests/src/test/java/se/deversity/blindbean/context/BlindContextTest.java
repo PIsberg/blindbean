@@ -1,10 +1,15 @@
 package se.deversity.blindbean.context;
 
+import se.deversity.blindbean.annotations.Scheme;
 import se.deversity.blindbean.core.Ciphertext;
+import se.deversity.blindbean.fhe.FheCiphertextNative;
+import se.deversity.blindbean.fhe.FheContext;
 import se.deversity.blindbean.fhe.FheException;
 import se.deversity.blindbean.math.PaillierKeyPair;
 import se.deversity.blindbean.math.PaillierMath;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -28,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Lifecycle, snapshot/restore, and key import/export tests for {@link BlindContext}.
- * All tests exercise the Paillier paths only, so they run without the native FHE library.
+ * All tests exercise the Paillier paths only, so they run without the native FHE library, except
+ * the {@code @Tag("native")} nested class, which needs a real BFV context to fail an import against.
  */
 public class BlindContextTest {
 
@@ -182,6 +188,43 @@ public class BlindContextTest {
     public void loadKeysFromMissingFileThrowsFheException() {
         assertThrows(FheException.class,
             () -> BlindContext.loadKeys(tempDir.resolve("does-not-exist.bin").toString()));
+    }
+
+    /**
+     * A bundle that fails to load must leave the thread exactly as it was. loadKeys used to install
+     * the bundle's Paillier keys first, then close the thread's FHE context to build the new one,
+     * and only then discover that the native keys would not import. The caller was left on the
+     * bundle's Paillier keys with no FHE context at all, so the failed load had destroyed a working
+     * key set rather than leaving it alone.
+     */
+    @Nested
+    @Tag("native")
+    class FailedLoad {
+
+        @Test
+        public void aBundleWhoseNativeKeysDoNotImportLeavesTheThreadsKeysUntouched() throws Exception {
+            PaillierKeyPair installed = new PaillierKeyPair(512);
+            BlindContext.init(installed);
+            BlindContext.initBfv(8192);
+            FheContext fheBefore = BlindContext.getFheContext();
+
+            Path corrupt = tempDir.resolve("corrupt.bin");
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(corrupt))) {
+                oos.writeObject(new KeyBundle(new PaillierKeyPair(512), Scheme.BFV, 8192, 0.0,
+                                              new byte[] {1, 2, 3}));
+            }
+
+            assertThrows(FheException.class, () -> BlindContext.loadKeys(corrupt.toString()));
+
+            assertSame(installed, BlindContext.getPaillier().getKeyPair(),
+                "a failed load must not have swapped in the bundle's Paillier keys");
+            assertSame(fheBefore, BlindContext.getFheContext(),
+                "a failed load must not have closed or replaced the thread's FHE context");
+            try (FheCiphertextNative ct = new FheCiphertextNative(fheBefore.encryptLong(7L), fheBefore)) {
+                assertEquals(7L, fheBefore.decryptLong(ct.handle()),
+                    "the surviving FHE context must still be open and working");
+            }
+        }
     }
 
     @Test

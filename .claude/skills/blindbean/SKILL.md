@@ -39,8 +39,8 @@ The processor enforces the pairing and fails the build if you get it wrong.
 |---|---|---|---|---|
 | `long`, `int`, `short`, `byte`, `BigInteger` | `PAILLIER` | ✅ | ❌ | Pure Java, no native lib. The default. |
 | `BigDecimal` | `PAILLIER` | ✅ | ❌ | **Exact** decimals at a fixed `scale`. Use this for money. |
-| `String` | `PAILLIER` | ❌ | ❌ | Encoded, not arithmetic. **Must** be Paillier. |
-| `byte[]` | `PAILLIER` | ❌ | ❌ | Opaque blob. No arithmetic on bytes. |
+| `String` | `PAILLIER` | ❌ | ❌ | Encoded, not arithmetic. **Must** be Paillier. At most 255 UTF-8 bytes at the 2048-bit default; longer is refused. |
+| `byte[]` | `PAILLIER` | ❌ | ❌ | Opaque blob. No arithmetic on bytes. Same 255-byte cap. |
 | `boolean` | `PAILLIER` | ❌ | ❌ | Maths is meaningless, so none is generated. |
 | `Instant`, `LocalDate` | `PAILLIER` | ❌ | ❌ | *Points* in time — "Tuesday + Thursday" is nonsense. |
 | `Duration` | `PAILLIER` | ✅ | ❌ | A *quantity*, so it adds. |
@@ -274,7 +274,8 @@ In tests, prefer the JUnit extension over hand-rolled setup — it manages the w
 class MyTest { ... }
 ```
 
-Nested classes inherit the enclosing annotation.
+Nested classes inherit the enclosing annotation. So do subclasses of an annotated base class, and
+a composed annotation that carries `@BlindBeanTest` works as well.
 
 ---
 

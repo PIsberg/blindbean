@@ -355,6 +355,93 @@ public class ExpandedTypeProcessorTest {
             "rotating a null column must be a no-op, not an NPE mid-batch");
     }
 
+    // ── Async ────────────────────────────────────────────────────────────────
+
+    @Test
+    public void asyncPlainOverloadsTakeTheSameTypeAsTheirSyncTwins(@TempDir Path tmp) throws Exception {
+        // The async plain overloads used to pick their parameter from the scheme alone
+        // (BigInteger / long / double), while the sync overload they delegate to takes the field's
+        // own type for BigDecimal, Duration and every vector. addPriceAsync(BigInteger) then called
+        // an addPrice(BigInteger) that does not exist, so any async entity with one of those fields
+        // failed the consumer's build inside generated code.
+        String src = """
+            package com.example.apt;
+            import se.deversity.blindbean.annotations.*;
+            @BlindEntity(async = true)
+            public class Ledger {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = java.math.BigDecimal.class, scale = 2)
+                private String price;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = java.time.Duration.class)
+                private String uptime;
+                @Homomorphic(scheme = Scheme.BFV, type = int[].class)
+                private String counts;
+                @Homomorphic(scheme = Scheme.CKKS, type = float[].class)
+                private String weights;
+                public Ledger() {}
+                public String getPrice() { return price; }
+                public void setPrice(String v) { this.price = v; }
+                public String getUptime() { return uptime; }
+                public void setUptime(String v) { this.uptime = v; }
+                public String getCounts() { return counts; }
+                public void setCounts(String v) { this.counts = v; }
+                public String getWeights() { return weights; }
+                public void setWeights(String v) { this.weights = v; }
+            }
+            """;
+        Result r = compile("Ledger", src, tmp);
+
+        assertFalse(r.failed(), r.errors());
+        assertTrue(r.wrapper().contains("addPriceAsync(java.math.BigDecimal plain)"), r.wrapper());
+        assertTrue(r.wrapper().contains("subUptimeAsync(java.time.Duration plain)"));
+        assertTrue(r.wrapper().contains("mulCountsAsync(int[] plain)"));
+        assertTrue(r.wrapper().contains("addWeightsAsync(float[] plain)"));
+    }
+
+    // ── Where the entity is declared ─────────────────────────────────────────
+
+    @Test
+    public void aStaticNestedEntityGetsAWrapperThatCompiles(@TempDir Path tmp) throws Exception {
+        // The wrapper named the entity by its simple name, which does not resolve for a member
+        // class: "private final Account entity;" in package com.example.apt has no Account to
+        // find, so the consumer's build failed inside generated code.
+        String src = """
+            package com.example.apt;
+            import se.deversity.blindbean.annotations.*;
+            public class Bank {
+                @BlindEntity
+                public static class Account {
+                    @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)
+                    private String balance;
+                    public Account() {}
+                    public String getBalance() { return balance; }
+                    public void setBalance(String v) { this.balance = v; }
+                }
+            }
+            """;
+        Result r = compile("Bank", src, tmp);
+
+        assertFalse(r.failed(), r.errors());
+    }
+
+    @Test
+    public void anEntityInTheDefaultPackageGetsAWrapperThatCompiles(@TempDir Path tmp) throws Exception {
+        // "package ;" is not Java. The processor emitted it for an entity in the unnamed package.
+        String src = """
+            import se.deversity.blindbean.annotations.*;
+            @BlindEntity
+            public class Loose {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)
+                private String balance;
+                public Loose() {}
+                public String getBalance() { return balance; }
+                public void setBalance(String v) { this.balance = v; }
+            }
+            """;
+        Result r = compile("Loose", src, tmp);
+
+        assertFalse(r.failed(), r.errors());
+    }
+
     // ── Nested entities ──────────────────────────────────────────────────────
 
     /** Two entities in one compilation unit: an outer one nesting an inner one. */
