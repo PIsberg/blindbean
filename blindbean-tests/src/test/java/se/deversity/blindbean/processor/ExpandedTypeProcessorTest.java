@@ -397,6 +397,32 @@ public class ExpandedTypeProcessorTest {
         assertTrue(r.wrapper().contains("addWeightsAsync(float[] plain)"));
     }
 
+    // ── Where the entity is declared ─────────────────────────────────────────
+
+    @Test
+    public void aStaticNestedEntityGetsAWrapperThatCompiles(@TempDir Path tmp) throws Exception {
+        // The wrapper named the entity by its simple name, which does not resolve for a member
+        // class: "private final Account entity;" in package com.example.apt has no Account to
+        // find, so the consumer's build failed inside generated code.
+        String src = """
+            package com.example.apt;
+            import se.deversity.blindbean.annotations.*;
+            public class Bank {
+                @BlindEntity
+                public static class Account {
+                    @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)
+                    private String balance;
+                    public Account() {}
+                    public String getBalance() { return balance; }
+                    public void setBalance(String v) { this.balance = v; }
+                }
+            }
+            """;
+        Result r = compile("Bank", src, tmp);
+
+        assertFalse(r.failed(), r.errors());
+    }
+
     // ── Nested entities ──────────────────────────────────────────────────────
 
     /** Two entities in one compilation unit: an outer one nesting an inner one. */

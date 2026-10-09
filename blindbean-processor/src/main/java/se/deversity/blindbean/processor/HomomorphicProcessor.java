@@ -479,11 +479,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 }
                 out.println();
 
-                // Class declaration
+                // Class declaration. The entity is named by its canonical name, not its simple
+                // name: a static member class (Bank.Account) is not in scope as "Account" from a
+                // top-level wrapper in the same package.
+                String entityType = typeElement.getQualifiedName().toString();
                 out.println("public class " + wrapperName + " {");
-                out.println("    private final " + className + " entity;");
+                out.println("    private final " + entityType + " entity;");
                 out.println();
-                out.println("    public " + wrapperName + "(" + className + " entity) {");
+                out.println("    public " + wrapperName + "(" + entityType + " entity) {");
                 out.println("        this.entity = entity;");
                 out.println("    }");
 
