@@ -1,6 +1,7 @@
 package se.deversity.blindbean.core;
 
 import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.DetectorType;
 import se.deversity.asynctest.Preset;
 
 import java.util.Arrays;
@@ -75,11 +76,8 @@ class KeyTagConcurrencyTest {
     @AsyncTest(
         threads = 20,
         invocations = 50,
-        detectAll = false,
-        detectSharedMessageDigest = true,
-        detectSharedStatefulCrypto = true,
-        detectRaceConditions = true,
-        timeoutMs = 15000
+        timeoutMs = 15000,
+        includes = { DetectorType.SHARED_MESSAGE_DIGEST, DetectorType.SHARED_STATEFUL_CRYPTO, DetectorType.RACE_CONDITIONS }
     )
     void deriveReturnsTheSameTagOnEveryThread() {
         int i = ThreadLocalRandom.current().nextInt(MATERIAL.length);
@@ -98,10 +96,8 @@ class KeyTagConcurrencyTest {
     @AsyncTest(
         threads = 32,
         invocations = 30,
-        detectAll = false,
-        detectSharedMessageDigest = true,
-        detectRaceConditions = true,
-        timeoutMs = 15000
+        timeoutMs = 15000,
+        includes = { DetectorType.SHARED_MESSAGE_DIGEST, DetectorType.RACE_CONDITIONS }
     )
     void deriveOfOneGenerationIsStableAcrossThreads() {
         assertArrayEquals(REFERENCE_TAGS[0], KeyTag.derive(MATERIAL[0]));
@@ -178,10 +174,8 @@ class KeyTagConcurrencyTest {
     @AsyncTest(
         threads = 16,
         invocations = 50,
-        detectAll = false,
-        detectRaceConditions = true,
-        detectVisibility = true,
-        timeoutMs = 10000
+        timeoutMs = 10000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.VISIBILITY }
     )
     void legacyUntaggedPayloadsStayReadableUnderContention() {
         assertFalse(KeyTag.isTagged(PAYLOAD), "fixture must actually be untagged");

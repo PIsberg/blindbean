@@ -4,6 +4,7 @@ import se.deversity.blindbean.annotations.Scheme;
 import se.deversity.blindbean.async.BlindAsync;
 import se.deversity.blindbean.context.BlindContext;
 import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.DetectorType;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,9 +51,8 @@ class FheAsyncConcurrencyTest {
     @AsyncTest(
         threads = 20,
         invocations = 100,
-        detectRaceConditions = true,
-        detectAtomicityViolations = true,
-        timeoutMs = 60000
+        timeoutMs = 60000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.ATOMICITY_VIOLATIONS }
     )
     void concurrentBfvOperationsAreThreadSafe() {
         long val1 = ThreadLocalRandom.current().nextLong(1000);
@@ -81,7 +81,7 @@ class FheAsyncConcurrencyTest {
     @AsyncTest(
         threads = 10,
         invocations = 50,
-        detectRaceConditions = true
+        includes = DetectorType.RACE_CONDITIONS
     )
     void concurrentCloseIsSafe() {
         // Each thread tries to close the SAME shared context
@@ -100,9 +100,8 @@ class FheAsyncConcurrencyTest {
     @AsyncTest(
         threads = 15,
         invocations = 30,
-        detectRaceConditions = true,
-        detectResourceLeaks = true,
-        timeoutMs = 60000
+        timeoutMs = 60000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.RESOURCE_LEAKS }
     )
     void simultaneousKeyExport() {
         byte[] state = bfvContext.exportState();
@@ -119,8 +118,8 @@ class FheAsyncConcurrencyTest {
     @AsyncTest(
         threads = 10,
         invocations = 20,
-        detectResourceLeaks = true,
-        timeoutMs = 45000
+        timeoutMs = 45000,
+        includes = DetectorType.RESOURCE_LEAKS
     )
     void rapidContextCreationAndCleanup() {
         try (FheContext ctx = FheContext.bfv(4096)) {

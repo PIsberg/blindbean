@@ -1,6 +1,7 @@
 package se.deversity.blindbean.fhe;
 
 import se.deversity.asynctest.AsyncTest;
+import se.deversity.asynctest.DetectorType;
 import se.deversity.asynctest.BeforeEachInvocation;
 
 import org.junit.jupiter.api.Tag;
@@ -44,10 +45,8 @@ class FheCiphertextCloseConcurrencyTest {
     @AsyncTest(
         threads = 16,
         invocations = 50,
-        detectRaceConditions = true,
-        detectAtomicityViolations = true,
-        detectResourceLeaks = true,
-        timeoutMs = 30000
+        timeoutMs = 30000,
+        includes = { DetectorType.RACE_CONDITIONS, DetectorType.ATOMICITY_VIOLATIONS, DetectorType.RESOURCE_LEAKS }
     )
     void concurrentCloseFreesTheHandleExactlyOnce() {
         shared.close();
