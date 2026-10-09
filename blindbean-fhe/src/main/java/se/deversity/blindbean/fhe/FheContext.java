@@ -439,7 +439,12 @@ public class FheContext implements AutoCloseable {
         }
     }
 
-    /** Reloads the underlying SEAL keys natively. */
+    /**
+     * Reloads the underlying SEAL keys natively.
+     *
+     * <p>All or nothing: if any key in {@code data} fails to load, this throws and the context keeps
+     * exactly the keys it had, so a later {@link #exportState()} still writes a consistent set.
+     */
     public void importState(byte[] data) {
         synchronized (nativeLock) {
             ensureOpen();

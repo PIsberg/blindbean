@@ -150,4 +150,44 @@ public class FheContextTest {
             }
         }
     }
+
+    /**
+     * A key import that fails must leave the context's keys exactly as they were.
+     *
+     * <p>The native import loaded the secret key straight into the live context, then the public
+     * key, then the relin keys. A payload that broke after the secret key (truncated, or cut off
+     * mid-write) left the context holding another generation's secret key beside its own public
+     * key. Encrypt and decrypt kept working, because the encryptor and decryptor hold copies made
+     * earlier, which is what made it dangerous: the next {@code exportState()}, and so the next
+     * {@code BlindContext.exportKeys}, wrote that mismatched pair to disk. A bundle like that
+     * decrypts nothing the context ever encrypted, and it is typically discovered only after the
+     * process holding the good keys is gone.
+     */
+    @Test
+    public void aFailedImportLeavesTheKeysUntouched() {
+        try (FheContext ctx = FheContext.bfv(8192); FheContext other = FheContext.bfv(8192)) {
+            byte[] otherKeys = other.exportState();
+            // A SEAL object starts with a 16-byte header whose bytes 8..15 hold the object's total
+            // serialized size, little-endian. Cutting just past the secret key makes it load and
+            // the public key that follows it fail.
+            long secretKeyLength = 0;
+            for (int i = 15; i >= 8; i--) {
+                secretKeyLength = (secretKeyLength << 8) | (otherKeys[i] & 0xFF);
+            }
+            byte[] truncated = java.util.Arrays.copyOf(otherKeys, (int) secretKeyLength + 32);
+            byte[] keysBefore = ctx.exportState();
+
+            assertThrows(FheException.class, () -> ctx.importState(truncated));
+
+            assertArrayEquals(keysBefore, ctx.exportState(),
+                "a failed import must not change the keys the context exports");
+            var ct = ctx.encryptLong(4242L);
+            try {
+                assertEquals(4242L, ctx.decryptLong(ct),
+                    "after a failed import the context must still decrypt what it encrypts");
+            } finally {
+                ctx.freeCiphertext(ct);
+            }
+        }
+    }
 }
