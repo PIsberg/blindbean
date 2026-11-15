@@ -12,21 +12,23 @@ cmake -S blindbean-fhe/src/main/native -B build-native \
 cmake --build build-native --config Release
 
 # 2. Build + install Java library
-./mvnw clean install -B -Dblindbean.native.path=build-native
+./mvnw clean install -B -Dblindbean.native.path="$PWD/build-native"
 
 # 3. Run tests
-./mvnw clean test -Dblindbean.native.path=build-native
+./mvnw clean test -Dblindbean.native.path="$PWD/build-native"
 
 # Single test / single method
-./mvnw test -Dtest=FheNativeBridgeTest -Dblindbean.native.path=build-native
-./mvnw test -Dtest=FheContextTest#guidanceEchoesTheConfiguredPathWhenSet -Dblindbean.native.path=build-native
+./mvnw test -Dtest=FheNativeBridgeTest -Dblindbean.native.path="$PWD/build-native"
+./mvnw test -Dtest=FheContextTest#guidanceEchoesTheConfiguredPathWhenSet -Dblindbean.native.path="$PWD/build-native"
 
 # JMH benchmarks
 ./mvnw clean verify
 java --add-modules jdk.incubator.vector -jar target/benchmarks.jar
 ```
 
-On Windows use `mvnw.cmd` and `-Dblindbean.native.path=build-native/Release` (MSVC puts artifacts under the config subdir; non-Windows builds do not). `JAVA_HOME` must point at a JDK 25 or 26 install — if it points at an older one, surefire forks that JVM and the run dies on a "class file version" error. To build at the lower level explicitly (what the CI matrix's 25 leg does), add `-Dmaven.compiler.release=25`.
+On Windows use `mvnw.cmd` and either omit the flag (the `blindbean-tests` pom defaults it to `${project.basedir}/../build-native/Release`) or pass `"-Dblindbean.native.path=$PWD\build-native\Release"` from PowerShell. MSVC puts artifacts under the config subdir; non-Windows builds do not.
+
+**The path must be absolute.** Surefire forks with `blindbean-tests/` as its working directory, so a relative `build-native` resolves to `blindbean-tests/build-native`, which does not exist. A set `blindbean.native.path` that lacks the library fails with an `FheException` naming the directory it resolved to; it never falls back to another location, and BlindBean never searches the working directory (`src/main/native/`, `build-native/`), which older versions did (#254). With the property unset, only the absolute entries of `java.library.path` are searched. See `SECURITY-AND-LIMITATIONS.md` "Native library loading". `JAVA_HOME` must point at a JDK 25 or 26 install — if it points at an older one, surefire forks that JVM and the run dies on a "class file version" error. To build at the lower level explicitly (what the CI matrix's 25 leg does), add `-Dmaven.compiler.release=25`.
 
 The `blindbean-example` module is a separate Maven project demonstrating consumer usage of `@Homomorphic` / `@BlindEntity` and the generated wrappers — build the main library with `install` first so the example can resolve it.
 

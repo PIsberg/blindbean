@@ -75,6 +75,27 @@ public class FheContextTest {
         assertTrue(msg.contains(System.getProperty("os.arch")), "must state the detected arch");
     }
 
+    /**
+     * The bridge's static initializer reports why the load failed (which directory it searched),
+     * but the JVM hands that over wrapped in an ExceptionInInitializerError whose own message is
+     * null, and on every later access in a NoClassDefFoundError around that. The guidance must
+     * still show the loader's own words.
+     */
+    @Test
+    public void guidanceCarriesTheLoaderMessageThroughInitializerWrapping() {
+        stashProperty();
+        System.setProperty(PROP, "/opt/app/native");
+        FheException loader = new FheException("blindbean.native.path=/opt/app/native contains none of [blindbean_fhe.dll]");
+        ExceptionInInitializerError first = new ExceptionInInitializerError(loader);
+        NoClassDefFoundError later = new NoClassDefFoundError("Could not initialize class FheNativeBridge");
+        later.initCause(first);
+
+        for (Throwable cause : new Throwable[]{first, later}) {
+            String msg = FheContext.nativeLoadGuidance(cause);
+            assertTrue(msg.contains("contains none of"), "must echo the loader's message: " + msg);
+        }
+    }
+
     @Test
     public void guidanceTreatsBlankPropertyAsUnset() {
         stashProperty();

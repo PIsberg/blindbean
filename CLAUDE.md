@@ -13,14 +13,16 @@ BlindBean is a Java library (JDK 26 by default, 25 supported, 22 is the floor) t
 ## Start here
 
 ```bash
-./mvnw clean install -B -Dblindbean.native.path=build-native
+./mvnw clean install -B -Dblindbean.native.path="$PWD/build-native"
 ```
 
 Needs **JDK 25 or 26**. `JAVA_HOME` must point at one, or surefire forks the wrong JVM and the run
-dies on a "class file version" error. On Windows use `mvnw.cmd` and
-`-Dblindbean.native.path=build-native/Release`. Tests that touch BFV/CKKS need the native DLL built
-first; Paillier, processor and JUnit-extension tests do not. Full commands, the native cmake build
-and the example module: **`docs/BUILD-AND-TEST.md`**.
+dies on a "class file version" error. On Windows use `mvnw.cmd` and drop the flag: the
+`blindbean-tests` pom defaults it to `../build-native/Release`. The path must be absolute, because
+surefire forks in `blindbean-tests/`, and a set path that lacks the library fails rather than
+falling back (the working directory is never searched, #254). Tests that touch BFV/CKKS need the
+native DLL built first; Paillier, processor and JUnit-extension tests do not. Full commands, the
+native cmake build and the example module: **`docs/BUILD-AND-TEST.md`**.
 
 ## Topic index
 
@@ -131,6 +133,9 @@ Guardrails for module `blindbean-core` are maintained in that module's own files
   <security_elements>
     <element path="se.deversity.blindbean.fhe.FheContext">
       <aspect>fhe-encryption</aspect>
+    </element>
+    <element path="se.deversity.blindbean.fhe.NativeLibraryLocator">
+      <aspect>native-library-search-path</aspect>
     </element>
   </security_elements>
 

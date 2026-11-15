@@ -72,10 +72,13 @@ paths: ["**/fhe/*.java"]
 - **Reason**: Guarded by closed flag; subsequent calls after first close() are no-ops
 
 ## Security-Critical Code
+- **Rule**: This code is security-critical. Do not weaken security properties. Every change must be explicitly reviewed for security impact.
 
 ### se.deversity.blindbean.fhe.FheContext
-- **Rule**: This code is security-critical. Do not weaken security properties. Every change must be explicitly reviewed for security impact.
 - **Aspect**: fhe-encryption
+
+### se.deversity.blindbean.fhe.NativeLibraryLocator
+- **Aspect**: native-library-search-path
 
 ## Security Audit Requirements
 

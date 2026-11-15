@@ -267,6 +267,20 @@ scheme semantically secure (IND-CPA): encrypting the same value twice yields
 different ciphertexts that both decrypt to it. The randomness is neither
 optional nor configurable — a deterministic encryption here would be a break.
 
+### Native library loading
+
+Loading `blindbean_fhe` runs its code inside the JVM with the application's privileges, so where
+it comes from is a trust decision. BlindBean loads it from the directory in
+`blindbean.native.path`, or, with that property unset, from the first absolute
+`java.library.path` entry holding it. It never searches the working directory and skips relative
+`java.library.path` entries such as the `.` in the JDK's Windows default (CWE-427, #254). A set
+property that does not hold the library is an error, not a reason to look elsewhere.
+
+In production, set `blindbean.native.path` to an absolute directory that only the deployment can
+write. What BlindBean cannot control: the operating system's own loader resolves the library's
+dependencies by its rules, and anyone who can write the configured directory or a
+`java.library.path` entry can still replace the library.
+
 ### Threading
 
 `BlindContext` state is thread-local; use `snapshot()`/`restore()` to move

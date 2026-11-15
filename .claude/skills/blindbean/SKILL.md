@@ -25,7 +25,8 @@ Every JVM running BlindBean needs these, including your test runner:
 
 Paillier is pure Java and works out of the box. **BFV and CKKS need the native SEAL library**
 (`blindbean_fhe.dll/.so/.dylib`) from the release assets, located with
-`-Dblindbean.native.path=<dir>`. Without it, any BFV/CKKS call throws `FheException` — the message
+`-Dblindbean.native.path=<absolute dir>` (only that directory is searched; unset, only absolute
+`java.library.path` entries; never the working directory). Without it, any BFV/CKKS call throws `FheException` — the message
 tells you what it looked for and where.
 
 ---
