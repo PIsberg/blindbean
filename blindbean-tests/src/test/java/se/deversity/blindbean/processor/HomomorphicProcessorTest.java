@@ -35,14 +35,20 @@ public class HomomorphicProcessorTest {
     private List<Diagnostic<? extends JavaFileObject>> compile(
             String className, String source, Path genDir, Path classesDir) throws IOException {
 
+        // Write the source file
+        Path srcFile = classesDir.getParent().resolve(className + ".java");
+        Files.writeString(srcFile, source);
+        return compileFiles(List.of(srcFile), genDir, classesDir);
+    }
+
+    /** Compiles several already-written source files in one javac run, for multi-package cases. */
+    private List<Diagnostic<? extends JavaFileObject>> compileFiles(
+            List<Path> srcFiles, Path genDir, Path classesDir) throws IOException {
+
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         assertNotNull(compiler, "System Java compiler not available");
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-
-        // Write the source file
-        Path srcFile = classesDir.getParent().resolve(className + ".java");
-        Files.writeString(srcFile, source);
 
         // Build the classpath from the current test classpath so the processor
         // and blindbean classes are visible to the in-process compiler.
@@ -63,7 +69,7 @@ public class HomomorphicProcessorTest {
         );
 
         Iterable<? extends JavaFileObject> units =
-            fm.getJavaFileObjects(srcFile.toFile());
+            fm.getJavaFileObjects(srcFiles.stream().map(Path::toFile).toArray(File[]::new));
 
         JavaCompiler.CompilationTask task =
             compiler.getTask(new StringWriter(), fm, diagnostics, options, null, units);
@@ -477,6 +483,186 @@ public class HomomorphicProcessorTest {
         } finally {
             se.deversity.blindbean.context.BlindContext.clear();
         }
+    }
+
+    /**
+     * The processor scanned only the entity's own declared fields, so a {@code @Homomorphic} or
+     * {@code @BlindNested} field on a superclass was silently left out of the wrapper (#99): the
+     * build passed and the encrypted field simply had no API. Inherited fields must be generated
+     * through the inherited accessors.
+     */
+    @Test
+    public void inheritedHomomorphicAndNestedFieldsAreGenerated(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.BlindNested;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            class Owner {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class) private String score;
+                public String getScore() { return score; } public void setScore(String v) { score = v; }
+            }
+
+            abstract class BaseAccount {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class) private String balance;
+                @BlindNested private Owner owner = new Owner();
+                public String getBalance() { return balance; } public void setBalance(String v) { balance = v; }
+                public Owner getOwner() { return owner; }
+            }
+
+            @BlindEntity
+            public class SavingsAccount extends BaseAccount {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class) private String interest;
+                public String getInterest() { return interest; } public void setInterest(String v) { interest = v; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("SavingsAccount", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+        assertTrue(diags.stream().noneMatch(d -> d.getMessage(Locale.ROOT).contains("not inside a @BlindEntity")),
+            "a field an entity inherits is not skipped, so it must not be warned about as skipped: " + diags);
+
+        se.deversity.blindbean.context.BlindContext.init(new se.deversity.blindbean.math.PaillierKeyPair(512));
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.SavingsAccount");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.SavingsAccountBlindWrapper");
+            Object entity  = entityClass.getConstructor().newInstance();
+            Object wrapper = wrapperClass.getConstructor(entityClass).newInstance(entity);
+
+            wrapperClass.getMethod("encryptInterest", long.class).invoke(wrapper, 7L);
+            assertEquals(7L, wrapperClass.getMethod("decryptInterest").invoke(wrapper), "own field");
+
+            var encryptBalance = assertDoesNotThrow(
+                () -> wrapperClass.getMethod("encryptBalance", long.class),
+                "the inherited @Homomorphic field must get a generated API");
+            encryptBalance.invoke(wrapper, 1200L);
+            wrapperClass.getMethod("addBalance", java.math.BigInteger.class).invoke(wrapper, java.math.BigInteger.valueOf(34));
+            assertEquals(1234L, wrapperClass.getMethod("decryptBalance").invoke(wrapper),
+                "the inherited field must round-trip through the inherited accessors");
+
+            var owner = assertDoesNotThrow(() -> wrapperClass.getMethod("owner"),
+                "the inherited @BlindNested field must get its accessor");
+            Object ownerWrapper = owner.invoke(wrapper);
+            ownerWrapper.getClass().getMethod("encryptScore", long.class).invoke(ownerWrapper, 99L);
+            assertEquals(99L, ownerWrapper.getClass().getMethod("decryptScore").invoke(ownerWrapper));
+        } finally {
+            se.deversity.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    /**
+     * The wrapper lives in the entity's package but is not a subclass, so it cannot call a
+     * protected accessor inherited from another package. That used to pass validation and then
+     * fail inside generated code with an access error the author never wrote; it must be reported
+     * against the field instead.
+     */
+    @Test
+    public void inheritedProtectedAccessorFromAnotherPackageIsACompileError(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Path srcDir     = tmpDir.resolve("src");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+        Files.createDirectories(srcDir);
+
+        Path base = srcDir.resolve("Base.java");
+        Files.writeString(base, """
+            package com.example.base;
+
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            public abstract class Base {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class) private String total;
+                protected String getTotal() { return total; }
+                protected void setTotal(String v) { total = v; }
+            }
+            """);
+        Path entity = srcDir.resolve("Ledger.java");
+        Files.writeString(entity, """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+
+            @BlindEntity
+            public class Ledger extends com.example.base.Base {
+            }
+            """);
+
+        List<Diagnostic<? extends JavaFileObject>> diags = compileFiles(List.of(base, entity), genDir, classesDir);
+        assertTrue(diags.stream().anyMatch(d -> d.getKind() == Diagnostic.Kind.ERROR
+                && d.getMessage(Locale.ROOT).contains("'total' is missing getter")),
+            "an inherited accessor the wrapper cannot call must be reported on the field, got: " + diags);
+    }
+
+    /** The "skipping" warning stays for a field that really is skipped: no entity extends its class. */
+    @Test
+    public void homomorphicFieldOnAClassNoEntityExtendsStillWarns(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            public class Orphan {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class) private String lost;
+                public String getLost() { return lost; } public void setLost(String v) { lost = v; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags = compile("Orphan", source, genDir, classesDir);
+        assertTrue(diags.stream().anyMatch(d -> d.getKind() == Diagnostic.Kind.WARNING
+                && d.getMessage(Locale.ROOT).contains("'lost' is not inside a @BlindEntity")),
+            "a field no entity reaches must still be warned about, got: " + diags);
+    }
+
+    /** A field redeclared in a subclass would generate the same methods twice; refuse it by name. */
+    @Test
+    public void inheritedFieldRedeclaredInTheSubclassIsACompileError(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            abstract class Base {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class) private String total;
+                public String getTotal() { return total; } public void setTotal(String v) { total = v; }
+            }
+
+            @BlindEntity
+            public class Shadow extends Base {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = int.class) private String total;
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags = compile("Shadow", source, genDir, classesDir);
+        assertTrue(diags.stream().anyMatch(d -> d.getKind() == Diagnostic.Kind.ERROR
+                && d.getMessage(Locale.ROOT).contains("'total'")
+                && d.getMessage(Locale.ROOT).contains("com.example.apt.Base")),
+            "a hidden inherited field must be a named compile error, got: " + diags);
     }
 
     /**
