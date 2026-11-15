@@ -130,11 +130,11 @@ extern "C" FheCiphertext fhe_encrypt_long(FheContext handle, int64_t value) {
     }
 }
 
-extern "C" int64_t fhe_decrypt_long(FheContext handle, FheCiphertext ctHandle) {
+extern "C" int32_t fhe_decrypt_long_checked(FheContext handle, FheCiphertext ctHandle, int64_t* out_value) {
     try {
         auto* ctx = static_cast<BlindBeanContext*>(handle);
         auto* ct  = static_cast<seal::Ciphertext*>(ctHandle);
-        if (!ctx || !ct || ctx->isCkks) return 0;
+        if (!ctx || !ct || ctx->isCkks || !out_value) return FHE_ERR_ARGUMENT;
 
         seal::Plaintext plain;
         ctx->decryptor->decrypt(*ct, plain);
@@ -142,10 +142,12 @@ extern "C" int64_t fhe_decrypt_long(FheContext handle, FheCiphertext ctHandle) {
         seal::BatchEncoder encoder(*ctx->sealCtx);
         std::vector<int64_t> result;
         encoder.decode(plain, result);
-        return result[0];
+        if (result.empty()) return FHE_ERR_SEAL;
+        *out_value = result[0];
+        return FHE_OK;
     } catch (const std::exception& e) {
-        fprintf(stderr, "[SEAL] fhe_decrypt_long error: %s\n", e.what());
-        return 0;
+        fprintf(stderr, "[SEAL] fhe_decrypt_long_checked error: %s\n", e.what());
+        return FHE_ERR_SEAL;
     }
 }
 
@@ -220,11 +222,11 @@ extern "C" FheCiphertext fhe_encrypt_double(FheContext handle, double value) {
     }
 }
 
-extern "C" double fhe_decrypt_double(FheContext handle, FheCiphertext ctHandle) {
+extern "C" int32_t fhe_decrypt_double_checked(FheContext handle, FheCiphertext ctHandle, double* out_value) {
     try {
         auto* ctx = static_cast<BlindBeanContext*>(handle);
         auto* ct  = static_cast<seal::Ciphertext*>(ctHandle);
-        if (!ctx || !ct || !ctx->isCkks) return 0.0;
+        if (!ctx || !ct || !ctx->isCkks || !out_value) return FHE_ERR_ARGUMENT;
 
         seal::Plaintext plain;
         ctx->decryptor->decrypt(*ct, plain);
@@ -232,10 +234,12 @@ extern "C" double fhe_decrypt_double(FheContext handle, FheCiphertext ctHandle) 
         seal::CKKSEncoder encoder(*ctx->sealCtx);
         std::vector<double> result;
         encoder.decode(plain, result);
-        return result[0];
+        if (result.empty()) return FHE_ERR_SEAL;
+        *out_value = result[0];
+        return FHE_OK;
     } catch (const std::exception& e) {
-        fprintf(stderr, "[SEAL] fhe_decrypt_double error: %s\n", e.what());
-        return 0.0;
+        fprintf(stderr, "[SEAL] fhe_decrypt_double_checked error: %s\n", e.what());
+        return FHE_ERR_SEAL;
     }
 }
 

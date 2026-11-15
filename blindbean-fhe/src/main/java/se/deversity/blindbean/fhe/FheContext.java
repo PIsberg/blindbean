@@ -240,8 +240,27 @@ public class FheContext implements AutoCloseable {
                 throw new FheException("decryptLong requires BFV context, got " + scheme);
             }
             requireDecryptable(ct);
-            return FheNativeBridge.fhe_decrypt_long(handle, ct);
+            try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
+                MemorySegment out = arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG);
+                requireDecrypted("fhe_decrypt_long_checked", FheNativeBridge.fhe_decrypt_long_checked(handle, ct, out));
+                return out.get(java.lang.foreign.ValueLayout.JAVA_LONG, 0);
+            }
         }
+    }
+
+    /**
+     * Turns a checked-decrypt status into an exception. The native side used to return 0 or 0.0 on
+     * failure, which a caller could not tell from an encrypted zero (#221); SEAL's own message goes
+     * to stderr from the native side, since it may describe the ciphertext but never the plaintext.
+     */
+    private static void requireDecrypted(String function, int status) {
+        if (status == FheNativeBridge.FHE_OK) {
+            return;
+        }
+        String reason = status == FheNativeBridge.FHE_ERR_ARGUMENT
+            ? "a NULL handle or a ciphertext of the wrong scheme"
+            : "SEAL rejected the ciphertext, typically one from another context or parameter set";
+        throw new FheException(function + " failed (status " + status + "): " + reason);
     }
 
     /**
@@ -398,7 +417,12 @@ public class FheContext implements AutoCloseable {
                 java.lang.foreign.MemorySegment outBuffer =
                         arena.allocate(java.lang.foreign.ValueLayout.JAVA_LONG, slots);
                 int count = FheNativeBridge.fhe_decrypt_long_array(handle, ct, outBuffer, slots);
-                if (count == 0) return new long[0];
+                // A batch always has polyModulusDegree slots, so 0 is the native failure signal,
+                // not an empty result. It used to come back as an empty array (#221).
+                if (count <= 0) {
+                    throw new FheException("fhe_decrypt_long_array returned no slots: the ciphertext "
+                        + "could not be decrypted under this context");
+                }
                 return outBuffer.asSlice(0, count * 8L).toArray(java.lang.foreign.ValueLayout.JAVA_LONG);
             }
         }
@@ -426,7 +450,11 @@ public class FheContext implements AutoCloseable {
             if (scheme != Scheme.CKKS) {
                 throw new FheException("decryptDouble requires CKKS context, got " + scheme);
             }
-            return FheNativeBridge.fhe_decrypt_double(handle, ct);
+            try (java.lang.foreign.Arena arena = java.lang.foreign.Arena.ofConfined()) {
+                MemorySegment out = arena.allocate(java.lang.foreign.ValueLayout.JAVA_DOUBLE);
+                requireDecrypted("fhe_decrypt_double_checked", FheNativeBridge.fhe_decrypt_double_checked(handle, ct, out));
+                return out.get(java.lang.foreign.ValueLayout.JAVA_DOUBLE, 0);
+            }
         }
     }
 
