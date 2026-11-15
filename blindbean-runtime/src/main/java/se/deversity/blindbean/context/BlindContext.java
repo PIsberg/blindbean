@@ -149,14 +149,23 @@ public class BlindContext {
     /**
      * Exports the current combined Paillier and Microsoft SEAL encryption states to a file.
      * This secures the keys allowing the application to persist data over restarts.
+     * <p>
+     * The bundle is written to a temporary file in the destination's directory, synced to disk,
+     * and then renamed over the destination. A failed export, whether it is rejected up front or
+     * fails during the write, leaves an existing file at {@code filePath} unchanged and removes the
+     * temporary file. Because the destination is replaced rather than rewritten, a symbolic link at
+     * {@code filePath} is replaced by a regular file, and the new file gets the permissions of a
+     * freshly created temporary file (owner-only on POSIX) rather than those of the file it
+     * replaces.
      * @param filePath the destination binary path to stream the bundle to.
+     * @throws FheException if there is nothing to export, {@code filePath} is a directory, or the
+     *         bundle cannot be written
      */
     @AISecure(aspect = "key-serialization")
     public static void exportKeys(
             @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
-        // Assemble the bundle *before* touching the destination: opening a FileOutputStream
-        // truncates it, so validating (or serializing the native state) afterwards would
-        // destroy a previously exported bundle on the way to throwing.
+        // Assemble the bundle *before* touching the filesystem, so a validation failure or a
+        // failing native exportState never creates a temporary file or touches the destination.
         PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
         FheContext ctx = fheInstance.get();
 
@@ -174,11 +183,38 @@ public class BlindContext {
                 ctx != null ? ctx.exportState() : null
         );
 
-        // Two resources, not one nested constructor: ObjectOutputStream's constructor writes the
-        // stream header, and if that throws the inner stream was never registered for closing.
-        try (java.io.FileOutputStream out = new java.io.FileOutputStream(filePath);
-             java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(out)) {
-            oos.writeObject(bundle);
+        // Never write into the destination itself (#224): a truncating open followed by a failure
+        // mid-write (disk full, I/O error, a killed process) would leave a partial file where the
+        // previous good bundle was. Write a complete, fsynced copy next to it, then rename it over
+        // the destination, so a reader sees either the old bundle or the new one, never a mix.
+        java.nio.file.Path tmp = null;
+        try {
+            java.nio.file.Path dest = java.nio.file.Path.of(filePath).toAbsolutePath();
+            java.nio.file.Path dir = dest.getParent();
+            if (dir == null || java.nio.file.Files.isDirectory(dest)) {
+                // A replacing move would swap an empty directory for the bundle; refuse instead.
+                throw new java.io.IOException("Destination is a directory: " + dest);
+            }
+            tmp = java.nio.file.Files.createTempFile(dir, "." + dest.getFileName() + ".", ".tmp");
+
+            // Two resources, not one nested constructor: ObjectOutputStream's constructor writes
+            // the stream header, and if that throws the inner stream was never registered for closing.
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(tmp.toFile());
+                 java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(out)) {
+                oos.writeObject(bundle);
+                oos.flush();
+                // Durable before the rename: otherwise a crash could persist the rename but not
+                // the bytes, which is the same lost bundle by another route.
+                out.getFD().sync();
+            }
+            try {
+                java.nio.file.Files.move(tmp, dest, java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                // Still safe from a partial write: tmp holds a complete bundle at this point.
+                java.nio.file.Files.move(tmp, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+            tmp = null;
 
             // Sizes and scheme only. The payload and the key pair are OMIT-masked. The payload is
             // read into a local first: calling the nullable getter twice inside a ternary is the
@@ -189,8 +225,16 @@ public class BlindContext {
                 kp != null ? "yes" : "no",
                 ctx != null ? ctx.scheme() : "none",
                 exportedState != null ? exportedState.length : 0);
-        } catch (Exception e) {
-            throw new FheException("Key export failed", e);
+        } catch (java.io.IOException | RuntimeException e) {
+            FheException failure = new FheException("Key export failed", e);
+            if (tmp != null) {
+                try {
+                    java.nio.file.Files.deleteIfExists(tmp);
+                } catch (java.io.IOException cleanup) {
+                    failure.addSuppressed(cleanup);
+                }
+            }
+            throw failure;
         }
     }
 
