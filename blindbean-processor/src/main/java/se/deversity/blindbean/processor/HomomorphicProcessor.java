@@ -793,7 +793,8 @@ public class HomomorphicProcessor extends AbstractProcessor {
             };
             out.println("    public " + typeName + " decrypt" + f.capName() + "() {");
             emitNullGuardOnDecrypt(out, f);
-            out.println("        long n = BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "()).longValue();");
+            emitRangeCheckedPaillierDecode(out, f, 63, "long");
+            out.println("        long n = v.longValue();");
             out.println("        return " + decode + ";");
             out.println("    }");
             return;
@@ -879,7 +880,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     String rType = boxedDecryptReturnType(f);
                     out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     emitNullGuardOnDecrypt(out, f);
-                    out.println("        return (" + rType + ")(" + pType + ")BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "()).longValue();");
+                    int bits = switch (pType) {
+                        case "byte"  -> 7;
+                        case "short" -> 15;
+                        case "int"   -> 31;
+                        default      -> 63;
+                    };
+                    emitRangeCheckedPaillierDecode(out, f, bits, pType);
+                    out.println("        return (" + rType + ")(" + pType + ")v.longValue();");
                     out.println("    }");
                 }
                 case BFV -> {
@@ -1159,6 +1167,22 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     private void emitEncryptAsync(PrintWriter out, FieldModel f) {
         emitRunAsync(out, "encrypt", f.capName(), encryptParamType(f), "plain");
+    }
+
+    /**
+     * Emits {@code v}, the field's exact signed Paillier plaintext, and a check that it fits in
+     * {@code bits} magnitude bits. Paillier holds the exact sum, so a homomorphic add or sub that
+     * left the field's range is detectable here; narrowing with {@code longValue()} and a cast
+     * would turn it into a plausible wrong number instead (#220). {@code bitLength()} excludes the
+     * sign, so {@code <= 31} is exactly the {@code int} range, MIN_VALUE included. The message names
+     * the field and type but never the value: it is decrypted plaintext.
+     */
+    private void emitRangeCheckedPaillierDecode(PrintWriter out, FieldModel f, int bits, String typeLabel) {
+        out.println("        java.math.BigInteger v = BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "());");
+        out.println("        if (v.bitLength() > " + bits + ") {");
+        out.println("            throw new ArithmeticException(\"Decrypted value of field '" + f.name()
+            + "' does not fit in " + typeLabel + ": a homomorphic add or sub overflowed the field's range\");");
+        out.println("        }");
     }
 
     private void emitDecryptAsync(PrintWriter out, FieldModel f) {
