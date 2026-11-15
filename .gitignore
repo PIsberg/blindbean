@@ -9,3 +9,4 @@ vcpkg_installed/
 vibetags.log
 load-tests/target/
 dependency-reduced-pom.xml
+.vibetags-generate.lock
