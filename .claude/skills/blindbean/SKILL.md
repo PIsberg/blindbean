@@ -287,6 +287,11 @@ a composed annotation that carries `@BlindBeanTest` works as well.
   an `FheException` naming the slot. It used to be encrypted anyway: 1,000,000 decrypted to -32,193,
   and one out-of-range entry corrupted *every other slot in the vector*. Check
   `FheContext.maxSlotValue()` and scale your values, or raise the plaintext modulus.
+- **An `int` sum that overflows throws on decrypt, it does not wrap.** Paillier keeps the exact
+  sum, so `decryptX()` on a `byte`/`short`/`int`/`long` field whose homomorphic result left the
+  type's range throws `ArithmeticException` naming the field (2,000,000,000 + 2,000,000,000 used to
+  come back as -294,967,296). Size the field for the largest total, not the largest input: a running
+  balance of `int` deposits wants `long` or `BigInteger`.
 - **Every plaintext overload costs a full encryption.** `addX(5)` is ~330× more expensive than
   `addX(ciphertext)` on a value you already hold (8.1 ms vs 24 µs at Paillier-2048). In a loop,
   encrypt once and pass the `Ciphertext`. Note also that **subtraction costs ~23× an addition** —
