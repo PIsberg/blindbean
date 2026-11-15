@@ -32,7 +32,9 @@
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-core</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-fhe</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-runtime</artifactId></dependency>
-        <dependency><groupId>se.deversity</groupId><artifactId>blindbean-junit</artifactId></dependency>
+        <!-- blindbean-junit is deliberately not here: it carries JUnit at compile scope (its users
+             need the API), so including it would put JUnit on every consumer's classpath (#274).
+             Tests that use @BlindBeanTest add blindbean-junit themselves, in test scope. -->
         <!-- processor is compile-time; consumers add it to their processor path, not runtime cp,
              so it is intentionally NOT a transitive runtime dep of the aggregate. -->
     </dependencies>
@@ -60,6 +62,8 @@
                                     <excludes>
                                         <exclude>se.deversity.codekarta</exclude>
                                         <exclude>com.fasterxml.jackson.core</exclude>
+                                        <exclude>org.junit.jupiter</exclude>
+                                        <exclude>org.junit.platform</exclude>
                                     </excludes>
                                     <message>The blindbean aggregate must not ship build tooling or its dependencies to consumers (#273).</message>
                                 </bannedDependencies>

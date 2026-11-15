@@ -272,7 +272,9 @@ CompletableFuture<Long> f3 = BlindAsync.supplyAsync(() -> w.decryptBalance());
 you carry one over — use `BlindContext.snapshot()` / `restore()` across the boundary, or the task
 will silently auto-init a *fresh* Paillier key and write ciphertexts nobody can read.
 
-In tests, prefer the JUnit extension over hand-rolled setup — it manages the whole lifecycle:
+In tests, prefer the JUnit extension over hand-rolled setup — it manages the whole lifecycle. It
+lives in `se.deversity:blindbean-junit`, which the `blindbean` aggregate does **not** include (that
+would put JUnit on every consumer's production classpath), so add it in test scope:
 
 ```java
 @BlindBeanTest                                              // Paillier defaults

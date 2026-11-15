@@ -13,7 +13,7 @@ The build is a Maven reactor of six library modules, each a real named module wi
 | `blindbean-runtime` | `se.deversity.blindbean.runtime` | math, context, async | fhe, `jdk.incubator.vector` |
 | `blindbean-processor` | `se.deversity.blindbean.processor` | processor | annotations only; `provides` Processor |
 | `blindbean-junit` | `se.deversity.blindbean.junit` | junit | runtime, junit-api |
-| `blindbean` (pom) | — | — | aggregate; keeps the classpath coordinate |
+| `blindbean` (pom) | — | — | aggregate; keeps the classpath coordinate. Excludes `blindbean-junit`, and an enforcer rule bans code-karta, Jackson and JUnit from its tree (#273, #274) |
 | `blindbean-bom` (pom) | — | — | version management |
 
 - **`math`, `context`, `async` ship together as `-runtime`** because `BlindMath` (in `math`) dispatches
