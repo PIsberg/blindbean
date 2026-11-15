@@ -46,6 +46,11 @@ Rules worth knowing before adding another type:
 - **The Paillier modulus caps every plaintext at (n-1)/2 in magnitude.** `PaillierMath.encrypt`
   refuses anything wider instead of reducing it mod n. For a `String` or `byte[]` that is 255 bytes
   at the 2048-bit default; see `SECURITY-AND-LIMITATIONS.md`.
+- **A `String` may not start with U+0000.** Its UTF-8 bytes are stored as an unsigned magnitude,
+  which has no leading zero bytes, so `"\u0000abc"` used to decrypt as `"abc"`. `encryptX` now
+  throws `IllegalArgumentException` naming the field instead (#222). A NUL anywhere else
+  round-trips. `byte[]` has no such limit: it carries a `0x01` marker byte for exactly this reason,
+  which `String` never got, and adding one now would change the format of every stored String.
 - **A BFV slot is ~20 bits, not 64.** `PlainModulus::Batching(degree, 20)` gives t ≈ 1,032,193, so a
   slot holds about ±516,000. `FheContext.encryptLongArray` now rejects anything larger — before the
   guard SEAL reduced it mod t and returned a plausible wrong number, and a single out-of-range entry
