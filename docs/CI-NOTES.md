@@ -154,12 +154,14 @@ The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retent
   block at the RC8 bump. A root block that grows on a version bump is that change, not a regression.
 - `.claudeignore` no longer carries a block for a module with no exclusions, so it shrank by four
   empty module regions at RC8. Same cause, same conclusion.
-- `AGENTS.md` has no granular sibling, so it keeps the sidecar-**merged** block. `GEMINI.md`
-  collapsed to an index of `.gemini/rules/` from RC10 up to 1.2.x. Since VibeTags 1.3 (#763, "a lean
-  root GEMINI.md") an indexed reactor root's `GEMINI.md` carries the safety sections inline and no
-  index, and a clean build with the cache deleted no longer rewrites `.gemini/rules/` (checked at
-  1.4.2; the files there keep their 1.2.0-era timestamps). Gemini CLI never read that directory
-  (VibeTags #669). Whether to delete the leftover `.gemini/rules/` is tracked in #255.
+- `AGENTS.md` has no granular sibling, so it keeps the sidecar-**merged** block. `GEMINI.md` is an
+  index of `.gemini/rules/`, and VibeTags 1.4.2 still maintains that directory: it is opted in by
+  presence and written only when a file's content changes, so most files keep old timestamps while
+  a changed annotation rewrites its file (`NativeLibraryLocator.md` appeared in #254, and #262
+  rewrote the processor's). Gemini CLI does not load the directory on its own (VibeTags #669), which
+  is why the index tells it to `read_file` an element's file before editing it. Deleting
+  `.gemini/rules/` opts out for good and inlines every rule into `GEMINI.md` instead (130 to 332
+  lines, checked at 1.4.2); the index layout was kept on purpose (#255).
   Expect a build to add a rule file whenever a module gains its first indexed guardrail; that is
   generated output and belongs in the commit.
 - `AGENTS.md` is only *written* by VibeTags when it is the sole AI config file present
