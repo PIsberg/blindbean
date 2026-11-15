@@ -74,6 +74,13 @@ produced under the context.
   bundle **including private key material**. Treat the file like a private
   key: filesystem permissions, encrypted volumes, never in VCS, never in
   logs.
+- `loadKeys` treats the file as untrusted input. Whatever its bytes, it
+  restores a bundle or throws `FheException`: class names outside the
+  bundle's own classes are refused before they are loaded, the allowlist
+  filter rejects everything else before instantiation, and no array may
+  claim more bytes than the file holds. Jazzer fuzzes it on every change
+  (`KeyBundleLoadFuzzTest`). The path itself is the caller's choice:
+  sanitize it if any part of it is user-derived.
 - Rotation is re-encryption: there is no in-place re-key. Use
   `BlindRotation`, which holds the old and new key generations side by side
   so plaintext exists only inside `rotate()` and the thread's context is not

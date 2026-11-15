@@ -174,7 +174,10 @@ public class BlindContext {
                 ctx != null ? ctx.exportState() : null
         );
 
-        try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(new java.io.FileOutputStream(filePath))) {
+        // Two resources, not one nested constructor: ObjectOutputStream's constructor writes the
+        // stream header, and if that throws the inner stream was never registered for closing.
+        try (java.io.FileOutputStream out = new java.io.FileOutputStream(filePath);
+             java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(out)) {
             oos.writeObject(bundle);
 
             // Sizes and scheme only. The payload and the key pair are OMIT-masked. The payload is
@@ -192,19 +195,52 @@ public class BlindContext {
     }
 
     /**
-     * Deserialization allowlist for {@link #loadKeys(String)}: only the classes that a
-     * legitimate {@link KeyBundle} graph can contain. Everything else is rejected before
-     * instantiation, blocking deserialization-gadget attacks via tampered key files.
+     * The classes a legitimate {@link KeyBundle} graph can contain, by serialized name. The one
+     * array it carries ({@code byte[]}: BigInteger magnitudes and the native payload) is listed
+     * separately in {@link KeyBundleInputStream}, because the filter syntax matches array
+     * element types, not array names.
+     */
+    private static final java.util.Set<String> KEY_BUNDLE_CLASSES = java.util.Set.of(
+            "se.deversity.blindbean.context.KeyBundle",
+            "se.deversity.blindbean.math.PaillierKeyPair",
+            "se.deversity.blindbean.annotations.Scheme",
+            "java.lang.Enum",
+            "java.lang.Number",
+            "java.math.BigInteger");
+
+    /**
+     * Deserialization allowlist for {@link #loadKeys(String)}: only {@link #KEY_BUNDLE_CLASSES}.
+     * Everything else is rejected before instantiation, blocking deserialization-gadget attacks
+     * via tampered key files. {@code loadKeys} merges a per-file array-length bound into it.
      */
     private static final java.io.ObjectInputFilter KEY_BUNDLE_FILTER =
             java.io.ObjectInputFilter.Config.createFilter(
-                "se.deversity.blindbean.context.KeyBundle;"
-                + "se.deversity.blindbean.math.PaillierKeyPair;"
-                + "se.deversity.blindbean.annotations.Scheme;"
-                + "java.lang.Enum;"
-                + "java.lang.Number;"
-                + "java.math.BigInteger;"
-                + "maxdepth=10;!*");
+                String.join(";", KEY_BUNDLE_CLASSES) + ";maxdepth=10;!*");
+
+    /**
+     * Checks the allowlist <em>before</em> a class is loaded. The JDK resolves a stream's class
+     * name before it consults the filter, so a tampered name was loaded first: with the case of
+     * one letter flipped ({@code se.deVersity...KeyBundle}) a case-insensitive filesystem (Windows,
+     * default macOS) finds the real class file under the wrong name and the JVM throws
+     * {@link NoClassDefFoundError}, an {@code Error} that escaped {@code loadKeys}' contract.
+     * Rejecting the name here also means no attacker-chosen class is ever loaded at all.
+     * Found by {@code KeyBundleLoadFuzzTest}.
+     */
+    private static final class KeyBundleInputStream extends java.io.ObjectInputStream {
+        KeyBundleInputStream(java.io.InputStream in) throws java.io.IOException {
+            super(in);
+        }
+
+        @Override
+        protected Class<?> resolveClass(java.io.ObjectStreamClass desc)
+                throws java.io.IOException, ClassNotFoundException {
+            String name = desc.getName();
+            if (!KEY_BUNDLE_CLASSES.contains(name) && !"[B".equals(name)) {
+                throw new java.io.InvalidClassException(name, "not part of a key bundle");
+            }
+            return super.resolveClass(desc);
+        }
+    }
 
     /**
      * Restores encryption context from a previously exported state file.
@@ -213,8 +249,21 @@ public class BlindContext {
     @AISecure(aspect = "key-deserialization")
     public static void loadKeys(
             @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
-        try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(filePath))) {
-            ois.setObjectInputFilter(KEY_BUNDLE_FILTER);
+        // Two resources, not one nested constructor: ObjectInputStream's constructor reads the
+        // stream header, so an empty, truncated or non-serialized file throws there, before the
+        // try owned anything, and leaked the open file handle (on Windows the file then could not
+        // be deleted). Found by KeyBundleLoadFuzzTest.
+        try (java.io.FileInputStream in = new java.io.FileInputStream(filePath);
+             java.io.ObjectInputStream ois = new KeyBundleInputStream(in)) {
+            // No array in a real bundle can be longer than the file holding it. Without this
+            // bound a 1 KB file claiming a 2 GB byte[] made ObjectInputStream allocate the 2 GB up
+            // front: OutOfMemoryError on a small heap, escaping as an Error rather than an
+            // FheException. Measured on the open channel, so the file cannot change in between.
+            long fileSize = in.getChannel().size();
+            ois.setObjectInputFilter(java.io.ObjectInputFilter.merge(KEY_BUNDLE_FILTER,
+                info -> info.arrayLength() > fileSize
+                    ? java.io.ObjectInputFilter.Status.REJECTED
+                    : java.io.ObjectInputFilter.Status.UNDECIDED));
             KeyBundle bundle = (KeyBundle) ois.readObject();
             LOG.log(DEBUG, "Key bundle read from {0}; deserialization filter accepted the graph", filePath);
 
