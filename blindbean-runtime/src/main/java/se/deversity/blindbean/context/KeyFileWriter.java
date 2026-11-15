@@ -102,21 +102,22 @@ final class KeyFileWriter {
 
     /** No previous bundle: create the file owner-only, and remove a partial one if the write fails. */
     private static void writeNewFile(Path path, byte[] bytes, Sink sink) throws IOException {
-        try (FileChannel channel = FileChannel.open(path,
-                java.util.EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), ownerOnly(path))) {
+        // Opened outside the try on purpose: if CREATE_NEW fails, someone else's file (one created
+        // since the existence check, or a dangling symlink) is at the path, and the cleanup below
+        // must never delete it. Only a file this call created is removed.
+        FileChannel created = FileChannel.open(path,
+            java.util.EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), ownerOnly(path));
+        try (FileChannel channel = created) {
             OutputStream out = Channels.newOutputStream(channel);
             sink.write(out, bytes);
             out.flush();
             channel.force(true);
         } catch (IOException | RuntimeException failure) {
-            // Nothing was there before, so a partial file is only debris. A dangling symlink that
-            // led here is the operator's, and stays.
-            if (!Files.isSymbolicLink(path)) {
-                try {
-                    Files.deleteIfExists(path);
-                } catch (IOException cleanup) {
-                    failure.addSuppressed(cleanup);
-                }
+            // Nothing was there before, so a partial file is only debris.
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException cleanup) {
+                failure.addSuppressed(cleanup);
             }
             throw failure;
         }
