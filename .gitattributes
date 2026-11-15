@@ -1,0 +1,4 @@
+# Shell scripts must keep LF on every platform. With core.autocrlf=true a Windows checkout
+# otherwise turns them CRLF, and bash then fails on a stray carriage return in the first line.
+*.sh text eol=lf
+mvnw text eol=lf
