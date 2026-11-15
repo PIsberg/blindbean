@@ -49,7 +49,7 @@ At compile time, `HomomorphicProcessor` evaluates classes annotated with `@Blind
   | `String` | PAILLIER | UTF-8 bytes as an unsigned magnitude |
   | `byte[]` | PAILLIER | bytes behind a `0x01` marker (a `BigInteger` drops leading zeros) |
   | `boolean` | PAILLIER | 0 / 1 |
-  | `Instant`, `LocalDate`, `Duration` | PAILLIER | epoch millis / epoch day / millis |
+  | `Instant`, `LocalDate`, `Duration` | PAILLIER | epoch nanos / epoch day / nanos; the stored column carries a `4242544e01` marker for nanos (see `FIELD-TYPES.md`) |
   | `float`/`double` (+ boxed), `float[]`, `double[]` | CKKS | scalar / slot vector |
   | `long[]`, `int[]`, `short[]` | BFV | slot vector |
 
