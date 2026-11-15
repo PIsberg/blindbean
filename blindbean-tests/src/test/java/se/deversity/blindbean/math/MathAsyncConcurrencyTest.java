@@ -20,23 +20,15 @@ class MathAsyncConcurrencyTest {
      * While the method itself is stateless, this confirms that concurrent calls
      * from virtual threads do not experience register corruption or side-effects.
      */
-    // The detectors are OFF here, and until now that was only true in this comment: the annotation
-    // set threads and invocations but never touched detectAll, which defaults to true, so every
-    // detector was in fact instrumenting this test. On 2026-08-01 the Windows CI job failed with
-    //   operand 13 at index 8002 is not reduced into [0, 987654321012345)
-    // where 13 is plainly inside that range and the arrays are filled with values under 1000. The
-    // arrays are thread-confined locals, so no cross-thread race can reach them; what the vector
-    // loaded and what the array held had diverged. Preset.NONE gives the N x M stress execution
-    // with no diagnostic machinery attached, which is what the paragraph below always claimed.
+    // The detectors are off here (Preset.NONE): batchAdd is a stateless pure function over
+    // caller-owned arrays, so there is no cross-thread race for them to find, and this test is the
+    // N x M stress execution alone.
     //
-    // Original reasoning, still accurate: batchAdd is a stateless
-    // pure function over caller-owned arrays (no shared state, no locks), so there is no
-    // cross-thread race to detect. The detector's byte-level array-access instrumentation also
-    // cannot track the Vector API's SIMD loads/stores — LongVector.fromArray lowers to hardware
-    // intrinsics that bypass instrumented array reads — which desyncs its shadow memory and, under
-    // CI contention, surfaced a phantom "operand not reduced" read on a value that was in range.
-    // The 24-thread stress plus the result spot-checks below already prove concurrent callers are
-    // not corrupted.
+    // The JDK 26 Windows leg failed here on 2026-08-01 and again on 2026-11-15, the second time
+    // with the detectors already off, so instrumentation was not the cause: batchAdd's vector
+    // range check refused an in-range operand at index 8002. That check is now a scalar loop
+    // (see PaillierVectorized.requireReduced). The SIMD arithmetic still uses vector compares, so
+    // every index is checked below rather than a sample, and a failure names the platform.
     @AsyncTest(
         threads = 24,
         invocations = 100,
@@ -56,17 +48,15 @@ class MathAsyncConcurrencyTest {
 
         PaillierVectorized.batchAdd(c1, c2, result, modN2);
 
-        // Spot check a few result indices
-        for (int i = 0; i < 100; i++) {
-            int idx = ThreadLocalRandom.current().nextInt(len);
-            assertEquals((c1[idx] * c2[idx]) % modN2, result[idx], 
-                "SIMD result must match sequential baseline at index " + idx);
-        }
-    }
-
-    private void assertEquals(long expected, long actual, String message) {
-        if (expected != actual) {
-            throw new AssertionError(message + " (expected: " + expected + ", actual: " + actual + ")");
+        for (int idx = 0; idx < len; idx++) {
+            long expected = (c1[idx] * c2[idx]) % modN2;
+            if (result[idx] != expected) {
+                throw new AssertionError("SIMD result must match sequential baseline at index " + idx
+                    + " (expected: " + expected + ", actual: " + result[idx] + "; java "
+                    + System.getProperty("java.vm.version") + ", " + System.getProperty("os.name")
+                    + " " + System.getProperty("os.arch") + ", "
+                    + jdk.incubator.vector.LongVector.SPECIES_PREFERRED.length() + " lanes)");
+            }
         }
     }
 }

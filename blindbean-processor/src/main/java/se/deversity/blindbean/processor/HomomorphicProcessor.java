@@ -171,14 +171,27 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        // Warn about @Homomorphic on non-@BlindEntity classes
+        // Warn about @Homomorphic on non-@BlindEntity classes, unless an entity in this round
+        // extends the class: its fields are generated into that entity's wrapper (#99), so they
+        // are not skipped and a "skipping" warning would be false.
+        List<TypeMirror> entityTypes = new ArrayList<>();
+        for (Element entity : roundEnv.getElementsAnnotatedWith(BlindEntity.class)) {
+            entityTypes.add(entity.asType());
+        }
+        var types = processingEnv.getTypeUtils();
         for (Element element : roundEnv.getElementsAnnotatedWith(Homomorphic.class)) {
             Element enclosing = element.getEnclosingElement();
-            if (enclosing == null || enclosing.getAnnotation(BlindEntity.class) == null) {
+            if (enclosing != null && enclosing.getAnnotation(BlindEntity.class) != null) {
+                continue;
+            }
+            boolean inherited = enclosing != null && entityTypes.stream().anyMatch(entity ->
+                types.isSubtype(types.erasure(entity), types.erasure(enclosing.asType())));
+            if (!inherited) {
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.WARNING,
                     "@Homomorphic field '" + element.getSimpleName()
-                        + "' is not inside a @BlindEntity class — skipping",
+                        + "' is not inside a @BlindEntity class, and no @BlindEntity in this "
+                        + "compilation extends it — skipping",
                     element);
             }
         }
@@ -241,7 +254,11 @@ public class HomomorphicProcessor extends AbstractProcessor {
         List<ExecutableElement> methods = ElementFilter.methodsIn(
             processingEnv.getElementUtils().getAllMembers(typeElement));
 
-        for (VariableElement field : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+        List<VariableElement> fields = fieldsInHierarchy(typeElement, BlindNested.class);
+        if (fields == null) {
+            return null;
+        }
+        for (VariableElement field : fields) {
             if (field.getAnnotation(BlindNested.class) == null) {
                 continue;
             }
@@ -313,6 +330,65 @@ public class HomomorphicProcessor extends AbstractProcessor {
     }
 
     /**
+     * The entity's own fields, then each superclass's up to {@code Object}, most-derived first.
+     * Scanning only {@code getEnclosedElements()} silently dropped an annotated field declared on a
+     * superclass (#99): the build passed and the field had no generated API. The accessors were
+     * already looked up with {@code getAllMembers}, which does include inherited ones.
+     *
+     * <p>A superclass field carrying {@code annotation} whose name a more-derived class reuses is a
+     * compile error: both would generate the same methods, and {@code getX()} can only mean one of
+     * them. Returns null after reporting it.
+     */
+    private List<VariableElement> fieldsInHierarchy(TypeElement typeElement,
+                                                             Class<? extends java.lang.annotation.Annotation> annotation) {
+        List<VariableElement> result = new ArrayList<>();
+        java.util.Map<String, TypeElement> seen = new java.util.HashMap<>();
+        boolean hadError = false;
+        TypeElement current = typeElement;
+        while (current != null) {
+            for (VariableElement field : ElementFilter.fieldsIn(current.getEnclosedElements())) {
+                String name = field.getSimpleName().toString();
+                TypeElement redeclaredIn = seen.putIfAbsent(name, current);
+                if (redeclaredIn == null) {
+                    result.add(field);
+                } else if (field.getAnnotation(annotation) != null) {
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        "@" + annotation.getSimpleName() + " field '" + name + "' declared in "
+                        + current.getQualifiedName() + " is redeclared in " + redeclaredIn.getQualifiedName()
+                        + ", so the generated wrapper cannot tell them apart. Rename one of them.",
+                        typeElement);
+                    hadError = true;
+                }
+            }
+            TypeMirror superclass = current.getSuperclass();
+            current = superclass.getKind() == TypeKind.DECLARED
+                ? (TypeElement) processingEnv.getTypeUtils().asElement(superclass)
+                : null;
+            if (current != null && current.getQualifiedName().contentEquals("java.lang.Object")) {
+                current = null;
+            }
+        }
+        return hadError ? null : result;
+    }
+
+    /**
+     * Whether the generated wrapper, which lives in the entity's package but is not a subclass,
+     * can call {@code m}: public, or non-private and declared in that same package. An inherited
+     * protected accessor from another package used to pass validation and then fail to compile in
+     * generated code.
+     */
+    private boolean callableFromWrapper(ExecutableElement m, TypeElement entity) {
+        if (m.getModifiers().contains(Modifier.PUBLIC)) {
+            return true;
+        }
+        if (m.getModifiers().contains(Modifier.PRIVATE)) {
+            return false;
+        }
+        var elements = processingEnv.getElementUtils();
+        return elements.getPackageOf(m).equals(elements.getPackageOf(entity));
+    }
+
+    /**
      * Walks enclosed elements, collects @Homomorphic fields, validates each.
      * Returns null (not an empty list) if any field had a hard error.
      */
@@ -323,7 +399,11 @@ public class HomomorphicProcessor extends AbstractProcessor {
         List<ExecutableElement> methods = ElementFilter.methodsIn(
             processingEnv.getElementUtils().getAllMembers(typeElement));
 
-        for (VariableElement field : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+        List<VariableElement> fields = fieldsInHierarchy(typeElement, Homomorphic.class);
+        if (fields == null) {
+            return null;
+        }
+        for (VariableElement field : fields) {
             Homomorphic ann = field.getAnnotation(Homomorphic.class);
             if (ann == null) continue;
 
@@ -348,12 +428,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 m.getSimpleName().toString().equals(getterName)
                 && m.getParameters().isEmpty()
                 && m.getReturnType().toString().equals("java.lang.String")
-                && !m.getModifiers().contains(Modifier.PRIVATE));
+                && callableFromWrapper(m, typeElement));
             if (!hasGetter) {
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR,
                     "@Homomorphic field '" + fieldName + "' is missing getter '"
-                        + getterName + "(): String'",
+                        + getterName + "(): String' (public, or non-private in the entity's package, "
+                        + "so the generated wrapper can call it)",
                     field);
                 hadError = true;
                 continue;
@@ -366,12 +447,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
                 && m.getParameters().size() == 1
                 && m.getParameters().get(0).asType().toString().equals("java.lang.String")
                 && m.getReturnType().getKind() == TypeKind.VOID
-                && !m.getModifiers().contains(Modifier.PRIVATE));
+                && callableFromWrapper(m, typeElement));
             if (!hasSetter) {
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR,
                     "@Homomorphic field '" + fieldName + "' is missing setter '"
-                        + setterName + "(String): void'",
+                        + setterName + "(String): void' (public, or non-private in the entity's package, "
+                        + "so the generated wrapper can call it)",
                     field);
                 hadError = true;
                 continue;
@@ -688,6 +770,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
             out.println("    public void encrypt" + f.capName() + "(String plain) {");
             emitNullGuardOnEncrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
+                // The bytes become an unsigned magnitude, and a magnitude has no leading zero bytes,
+                // so a leading U+0000 (UTF-8 0x00) would vanish on the way back (#222). Refused
+                // rather than marked: a marker would change the format of every stored String.
+                out.println("        if (!plain.isEmpty() && plain.charAt(0) == '\\u0000') {");
+                out.println("            throw new IllegalArgumentException(\"Field '" + f.name()
+                    + "' cannot hold a String that starts with U+0000: the encoding drops leading NUL characters\");");
+                out.println("        }");
                 out.println("        java.math.BigInteger encoded = new java.math.BigInteger(1, plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));");
                 out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(encoded);");
                 out.println("        entity.set" + f.capName() + "(ct.hexData());");
