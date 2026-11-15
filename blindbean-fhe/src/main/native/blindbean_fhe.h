@@ -53,8 +53,18 @@ BLINDBEAN_API void fhe_destroy_context(FheContext ctx);
 /** Encrypts a 64-bit integer using BFV. Returns NULL on failure. */
 BLINDBEAN_API FheCiphertext fhe_encrypt_long(FheContext ctx, int64_t value);
 
-/** Decrypts a BFV ciphertext back to a 64-bit integer. Returns 0 on failure. */
-BLINDBEAN_API int64_t fhe_decrypt_long(FheContext ctx, FheCiphertext ct);
+/* Status codes of the *_checked decrypts. A status, not a sentinel value: 0 and 0.0 are real
+ * plaintexts, so the old fhe_decrypt_long / fhe_decrypt_double, which returned them on failure,
+ * made a failed decrypt indistinguishable from an encrypted zero (#221). The new names are
+ * deliberate: the Java bridge resolves every symbol when it loads, so a library and a jar from
+ * different versions fail loudly instead of reading a value as a status. */
+#define FHE_OK 0
+#define FHE_ERR_ARGUMENT 1 /* NULL context, ciphertext or out pointer, or the wrong scheme */
+#define FHE_ERR_SEAL 2     /* SEAL threw, e.g. a ciphertext from another parameter set */
+
+/** Decrypts a BFV ciphertext into *out_value. Returns FHE_OK, or an FHE_ERR_* code and leaves
+ *  *out_value untouched. */
+BLINDBEAN_API int32_t fhe_decrypt_long_checked(FheContext ctx, FheCiphertext ct, int64_t* out_value);
 
 /** Encrypts an array of 64-bit integers using BFV Batching. Returns NULL on failure. */
 BLINDBEAN_API FheCiphertext fhe_encrypt_long_array(FheContext ctx, const int64_t* values, size_t count);
@@ -69,8 +79,9 @@ BLINDBEAN_API int32_t fhe_decrypt_long_array(FheContext ctx, FheCiphertext ct, i
 /** Encrypts a double using CKKS. Returns NULL on failure. */
 BLINDBEAN_API FheCiphertext fhe_encrypt_double(FheContext ctx, double value);
 
-/** Decrypts a CKKS ciphertext back to a double. Returns 0.0 on failure. */
-BLINDBEAN_API double fhe_decrypt_double(FheContext ctx, FheCiphertext ct);
+/** Decrypts a CKKS ciphertext into *out_value. Returns FHE_OK, or an FHE_ERR_* code and leaves
+ *  *out_value untouched. */
+BLINDBEAN_API int32_t fhe_decrypt_double_checked(FheContext ctx, FheCiphertext ct, double* out_value);
 
 // ============================================================
 // Homomorphic Operations
