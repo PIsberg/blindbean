@@ -25,6 +25,13 @@ Rules worth knowing before adding another type:
   generated code goes through `PaillierMath.decryptSigned` (balanced representation). Strings and
   `byte[]` must keep using plain `decrypt` — they are unsigned magnitudes, and a blob with the top
   bit set would otherwise read as negative.
+- **A Paillier integral field refuses to decrypt a result outside its range.** Paillier holds the
+  exact sum, so `byte`/`short`/`int`/`long` (and boxed) decoders check it against the field's
+  width and throw `ArithmeticException` naming the field, rather than narrowing to a plausible
+  wrong number the way Java's own `int` arithmetic wraps: two `int` fields at 2,000,000,000 added
+  homomorphically used to decrypt as -294,967,296. The ciphertext is untouched, so widening the
+  field type (or reading it as `BigInteger`) recovers the exact value. `Instant`, `LocalDate` and
+  `Duration` apply the same check against `long`.
 - **The Paillier modulus caps every plaintext at (n-1)/2 in magnitude.** `PaillierMath.encrypt`
   refuses anything wider instead of reducing it mod n. For a `String` or `byte[]` that is 255 bytes
   at the 2048-bit default; see `SECURITY-AND-LIMITATIONS.md`.

@@ -480,6 +480,93 @@ public class HomomorphicProcessorTest {
     }
 
     /**
+     * Paillier holds the exact sum, so an integral field whose homomorphic result leaves the
+     * field's range is detectable at decode time. The decoder narrowed with longValue() and a
+     * cast, so 2,000,000,000 + 2,000,000,000 in an int field decrypted as -294,967,296 (#220).
+     * It must throw instead, and the exact bounds of every width must still round-trip.
+     */
+    @Test
+    public void paillierIntegralSumOutsideTheFieldRangeThrowsInsteadOfWrapping(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class Counters {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = byte.class)    private String b;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = short.class)   private String s;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = int.class)     private String i;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = long.class)    private String l;
+                @Homomorphic(scheme = Scheme.PAILLIER, type = Integer.class) private String boxed;
+
+                public String getB() { return b; }         public void setB(String v) { b = v; }
+                public String getS() { return s; }         public void setS(String v) { s = v; }
+                public String getI() { return i; }         public void setI(String v) { i = v; }
+                public String getL() { return l; }         public void setL(String v) { l = v; }
+                public String getBoxed() { return boxed; } public void setBoxed(String v) { boxed = v; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("Counters", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        record Width(String cap, Class<?> param, Object min, Object max) {}
+        List<Width> widths = List.of(
+            new Width("B", byte.class, Byte.MIN_VALUE, Byte.MAX_VALUE),
+            new Width("S", short.class, Short.MIN_VALUE, Short.MAX_VALUE),
+            new Width("I", int.class, Integer.MIN_VALUE, Integer.MAX_VALUE),
+            new Width("L", long.class, Long.MIN_VALUE, Long.MAX_VALUE),
+            new Width("Boxed", int.class, Integer.MIN_VALUE, Integer.MAX_VALUE));
+
+        // 512-bit modulus: test-only, for keygen speed. Far wider than 2^64, so the sums are exact.
+        se.deversity.blindbean.context.BlindContext.init(new se.deversity.blindbean.math.PaillierKeyPair(512));
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.Counters");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.CountersBlindWrapper");
+            Object wrapper = wrapperClass.getConstructor(entityClass)
+                .newInstance(entityClass.getConstructor().newInstance());
+
+            for (Width w : widths) {
+                var encrypt = wrapperClass.getMethod("encrypt" + w.cap(), w.param());
+                var add     = wrapperClass.getMethod("add" + w.cap(), java.math.BigInteger.class);
+                var decrypt = wrapperClass.getMethod("decrypt" + w.cap());
+
+                for (Object bound : List.of(w.min(), w.max())) {
+                    encrypt.invoke(wrapper, bound);
+                    assertEquals(((Number) bound).longValue(), ((Number) decrypt.invoke(wrapper)).longValue(),
+                        w.cap() + ": the range bound " + bound + " must round-trip");
+                }
+
+                encrypt.invoke(wrapper, w.max());
+                add.invoke(wrapper, java.math.BigInteger.ONE);
+                var above = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                    () -> decrypt.invoke(wrapper), w.cap() + ": max + 1 must not decrypt as a wrapped value");
+                assertInstanceOf(ArithmeticException.class, above.getCause(), w.cap() + ": max + 1");
+                assertTrue(above.getCause().getMessage().contains("'" + w.cap().toLowerCase(Locale.ROOT) + "'"),
+                    "the overflow must name the field, got: " + above.getCause().getMessage());
+
+                encrypt.invoke(wrapper, w.min());
+                add.invoke(wrapper, java.math.BigInteger.valueOf(-1));
+                var below = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                    () -> decrypt.invoke(wrapper), w.cap() + ": min - 1 must not decrypt as a wrapped value");
+                assertInstanceOf(ArithmeticException.class, below.getCause(), w.cap() + ": min - 1");
+            }
+        } finally {
+            se.deversity.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    /**
      * CKKS is approximate: an encrypted 42 decrypts to something like 41.9999999 or 42.0000001.
      * The generated decoder for an integral or boolean CKKS field used a plain cast, which
      * truncates toward zero, so roughly half of all integral decrypts came back one too small, and
