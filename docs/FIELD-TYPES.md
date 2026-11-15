@@ -71,6 +71,16 @@ nested entity yields a null wrapper. Explicit by design — the processor does n
 `@BlindEntity`-typed fields on its own, and a field may not be both `@Homomorphic` and
 `@BlindNested`.
 
+**Inheritance.** `@Homomorphic` and `@BlindNested` fields declared on a superclass of a
+`@BlindEntity` are generated into the entity's wrapper, through the inherited `getX`/`setX`. The
+superclass itself needs no annotation and may be abstract. Before #99 the processor read only the
+entity's own declared fields, so an inherited one was silently left without an API. Two cases are
+compile errors rather than broken generated code: a superclass field whose name a subclass
+redeclares (the wrapper could not tell them apart), and an inherited accessor the wrapper cannot
+call, which means one that is neither public nor declared in the entity's package (a `protected`
+getter in another package's base class, for instance). The "not inside a @BlindEntity class"
+warning now fires only when no entity in the compilation extends the declaring class.
+
 **Records are unsupported by construction**, not by omission: the wrapper stores each ciphertext with
 `entity.setX(hex)`, and a record's components are final. Supporting them means a different generated
 API that returns a new record rather than mutating one. The processor rejects them with that reason

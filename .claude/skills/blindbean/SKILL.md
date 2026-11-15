@@ -185,6 +185,12 @@ It's deliberately explicit: the processor does not go hunting for `@BlindEntity`
 own. A field cannot be both `@Homomorphic` and `@BlindNested` — it is either an encrypted value or a
 nested entity.
 
+**Inherited fields work.** A `@Homomorphic` or `@BlindNested` field on a (possibly abstract,
+unannotated) superclass is generated into the subclass entity's wrapper, through the inherited
+accessors. Those accessors must be public, or non-private in the entity's own package; a
+`protected` getter in a base class from another package is a compile error, as is redeclaring an
+inherited field's name in the subclass.
+
 **Records are not supported**, and won't be without a redesign: the wrapper stores each ciphertext by
 calling `setX(...)` on the entity, and a record's components are final. Use a class with a getter and
 setter per field. The processor says so rather than failing obscurely.
