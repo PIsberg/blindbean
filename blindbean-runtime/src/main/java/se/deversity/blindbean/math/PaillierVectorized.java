@@ -76,6 +76,8 @@ public class PaillierVectorized {
         }
 
         int length = c1Array.length;
+        requireReduced(c1Array, "c1Array", length, modN2);
+        requireReduced(c2Array, "c2Array", length, modN2);
         int i = 0;
         int loopBound = SPECIES.loopBound(length);
 
@@ -85,8 +87,6 @@ public class PaillierVectorized {
         for (; i < loopBound; i += SPECIES.length()) {
             LongVector va = LongVector.fromArray(SPECIES, c1Array, i);
             LongVector vb = LongVector.fromArray(SPECIES, c2Array, i);
-            checkReduced(va, vn, "c1Array", c1Array, i, modN2);
-            checkReduced(vb, vn, "c2Array", c2Array, i, modN2);
 
             // q ≈ floor(a*b / n), within ±2 of the true quotient (see MAX_MODULUS)
             DoubleVector da = (DoubleVector) va.convert(VectorOperators.L2D, 0);
@@ -117,36 +117,25 @@ public class PaillierVectorized {
     }
 
     /**
-     * Refuses an operand vector that is not reduced into {@code [0, modN2)}.
+     * Refuses an operand array with any element outside {@code [0, modN2)}, before the SIMD loop.
      *
-     * <p>The message reports {@code v.lane(lane)}, the value the comparison actually rejected, and
-     * not a fresh read of {@code source[offset + lane]}. Those are not the same value, and the
-     * difference matters. Re-reading the array produced a CI failure that read
-     * {@code operand 13 at index 8002 is not reduced into [0, 987654321012345)}, in which 13 is
-     * plainly inside the stated range: the vector had been loaded with something else, and by the
-     * time the message was built the array read gave the correct value back. A message that
-     * disproves itself sends the reader hunting for a bug in the range check rather than at the
-     * load. Both values are now reported whenever they disagree.
+     * <p>A plain loop on purpose. The check used to be a vector compare of each loaded lane, and
+     * the JDK 26 Windows CI leg refused in-range operands with it twice, on 2026-08-01 and
+     * 2026-11-15, both times at index 8002 of a fresh 8192-element array of values under 1000:
+     * {@code operand 223 in c1Array at index 8002 is not reduced into [0, 987654321012345)}, where
+     * the rejected lane and the array both held 223. The compare's mask said out of range for a
+     * value that was not. It did not reproduce in 43,200 local calls on JDK 26 (Windows, Intel,
+     * with and without JaCoCo, on 4 pinned cores), so the cause is not established; a range check
+     * made of scalar comparisons cannot disagree with the array it reads.
      */
-    private static void checkReduced(LongVector v, LongVector vn, String operandName,
-                                     long[] source, int offset, long modN2) {
-        VectorMask<Long> bad = v.compare(VectorOperators.LT, 0)
-                                .or(v.compare(VectorOperators.GE, vn));
-        if (bad.anyTrue()) {
-            int lane = bad.firstTrue();
-            int index = offset + lane;
-            long rejected = v.lane(lane);
-            long inArray = source[index];
-
-            String detail = rejected == inArray
-                ? ""
-                : " (the array holds " + inArray + " at that index, so the lane and the array "
-                  + "disagree, which means the vector load misbehaved rather than the data being "
-                  + "out of range)";
-
-            throw new IllegalArgumentException(
-                "operand " + rejected + " in " + operandName + " at index " + index
-                + " is not reduced into [0, " + modN2 + ")" + detail);
+    private static void requireReduced(long[] source, String operandName, int length, long modN2) {
+        for (int index = 0; index < length; index++) {
+            long operand = source[index];
+            if (operand < 0 || operand >= modN2) {
+                throw new IllegalArgumentException(
+                    "operand " + operand + " in " + operandName + " at index " + index
+                    + " is not reduced into [0, " + modN2 + ")");
+            }
         }
     }
 
