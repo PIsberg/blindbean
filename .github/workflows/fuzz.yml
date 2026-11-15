@@ -1,0 +1,68 @@
+# Fuzz smoke: a short real fuzzing campaign on every change.
+#
+# In the ordinary build (ci.yml) KeyBundleLoadFuzzTest runs in Jazzer's regression mode, which
+# replays stored inputs and generates nothing new. Here JAZZER_FUZZ=1 turns the same @FuzzTest
+# into a coverage-guided fuzzer for its maxDuration (60 s) against BlindContext.loadKeys, the one
+# place BlindBean deserializes bytes it did not produce. Its first runs found a leaked file handle,
+# a NoClassDefFoundError escaping on case-insensitive filesystems, and a 1 KB file forcing a 2 GB
+# allocation; all three are fixed and pinned by @Test cases in that class.
+#
+# A finding fails the job. Jazzer writes the crashing input under
+# blindbean-tests/src/test/resources/.../KeyBundleLoadFuzzTestInputs/, uploaded below: commit it
+# there and it replays as a regression test in every later build.
+name: Fuzz
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  jazzer:
+    name: Jazzer (loadKeys, 60 s)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          java-version: '26'
+          distribution: 'oracle'
+          cache: maven
+
+      # `test`, not a bare surefire goal: prepare-agent must run to define the @{argLine} the
+      # surefire config expands. Static analysis is skipped; ci.yml owns that gate.
+      - name: Fuzz BlindContext.loadKeys
+        env:
+          JAZZER_FUZZ: '1'
+        run: >
+          ./mvnw -B -pl blindbean-tests -am test
+          -DexcludedGroups=native
+          -Dtest='KeyBundleLoadFuzzTest#loadKeysOnArbitraryBytes'
+          -Dsurefire.failIfNoSpecifiedTests=false
+          -Dspotbugs.skip -Dpmd.skip -Dcheckstyle.skip
+
+      - name: Upload crashing inputs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-findings-${{ github.run_id }}
+          path: blindbean-tests/src/test/resources/**/*Inputs/**
+          if-no-files-found: ignore

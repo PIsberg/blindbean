@@ -3,8 +3,15 @@
 ![Java 26](https://img.shields.io/badge/Java-26-orange.svg?logo=java)
 ![Project Panama FFM](https://img.shields.io/badge/Project_Panama-FFM-blue.svg)
 ![Cryptography](https://img.shields.io/badge/Cryptography-FHE-red.svg)
-![Microsoft SEAL](https://img.shields.io/badge/Microsoft_SEAL-4.1-0078D4.svg)
+![Microsoft SEAL](https://img.shields.io/badge/Microsoft_SEAL-4.3-0078D4.svg)
+[![CI](https://github.com/PIsberg/blindbean/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/PIsberg/blindbean/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/PIsberg/blindbean/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/PIsberg/blindbean/actions/workflows/codeql.yml)
+[![Fuzz](https://github.com/PIsberg/blindbean/actions/workflows/fuzz.yml/badge.svg?branch=main)](https://github.com/PIsberg/blindbean/actions/workflows/fuzz.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/PIsberg/blindbean/badge)](https://securityscorecards.dev/viewer/?uri=github.com/PIsberg/blindbean)
+[![Find Security Bugs](https://img.shields.io/badge/Find_Security_Bugs-enforced-brightgreen.svg)](https://find-sec-bugs.github.io/)
+[![Fuzzed with Jazzer](https://img.shields.io/badge/fuzzed_with-Jazzer-brightgreen.svg)](https://github.com/CodeIntelligenceTesting/jazzer)
+[![SBOM: CycloneDX](https://img.shields.io/badge/SBOM-CycloneDX_1.6-blue.svg)](https://cyclonedx.org/)
+[![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 [![codecov](https://codecov.io/gh/PIsberg/blindbean/graph/badge.svg?token=Y6W85Z8B6B)](https://codecov.io/gh/PIsberg/blindbean)
 [![License](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-orange.svg)](LICENSE)
 [![Pitest Passed](https://img.shields.io/badge/Pitest-Passed-brightgreen.svg)](https://pitest.org)
@@ -129,6 +136,7 @@ GitHub Actions runs:
 - a fast Java-only gate on Linux and macOS for annotation-processor and core regressions
 - a native build matrix on Linux, macOS, and Windows that publishes the built shared library as an artifact
 - the full Maven test suite on Windows against the published `blindbean_fhe.dll`
+- a 60-second Jazzer fuzzing run against the key-file loader, CodeQL, OpenSSF Scorecard, and a check that every GitHub Action is in `.github/workflows/actions.lock`
 
 ## Quickstart
 
@@ -336,3 +344,5 @@ for a runnable end-to-end example.
 ## Security model & limitations
 
 What each scheme does and doesn't give you (no encrypted comparisons, malleability, CKKS approximation), noise-budget rules, and key-rotation guidance: see [docs/SECURITY-AND-LIMITATIONS.md](docs/SECURITY-AND-LIMITATIONS.md).
+
+Found a vulnerability? Report it privately, see [SECURITY.md](SECURITY.md). Every build runs [Find Security Bugs](https://find-sec-bugs.github.io/) inside the SpotBugs gate, Jazzer fuzzes the key-file loader on every change, and each release ships a CycloneDX SBOM per module; [docs/CI-NOTES.md](docs/CI-NOTES.md) describes the supply-chain checks.

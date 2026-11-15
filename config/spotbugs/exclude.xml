@@ -66,4 +66,57 @@
         <Class name="se.deversity.blindbean.context.KeyBundle"/>
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
     </Match>
+
+    <!-- ── Find Security Bugs ─────────────────────────────────────────────────────────────── -->
+
+    <!--
+      exportKeys(path) / loadKeys(path) take the key file's location from the calling application
+      by contract: choosing where its own key bundle lives is the caller's decision, and both
+      parameters carry @AIInputSanitized(PATH_TRAVERSAL) to tell callers to sanitize anything
+      user-derived. A library cannot know which directory is "allowed".
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.context.BlindContext"/>
+        <Or>
+            <Method name="loadKeys"/>
+            <Method name="exportKeys"/>
+        </Or>
+        <Bug pattern="PATH_TRAVERSAL_IN,PATH_TRAVERSAL_OUT"/>
+    </Match>
+
+    <!--
+      loadKeys deserializes by design (the persisted KeyBundle format), and the pattern
+      FindSecBugs flags is mitigated in depth: KeyBundleInputStream.resolveClass refuses every
+      class outside KEY_BUNDLE_CLASSES before it is loaded, the ObjectInputFilter allowlist with
+      maxdepth=10 rejects the rest before instantiation, and a per-file bound rejects any array
+      longer than the file. KeyBundleLoadFuzzTest pins all three and fuzzes the method in fuzz.yml.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.context.BlindContext"/>
+        <Method name="loadKeys"/>
+        <Bug pattern="OBJECT_DESERIALIZATION"/>
+    </Match>
+
+    <!--
+      nativeLoadGuidance builds a plain-text error message with a StringBuilder. FindSecBugs reads
+      StringBuilder.append of a system property as XML construction; no XML is produced or parsed.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.fhe.FheContext"/>
+        <Method name="nativeLoadGuidance"/>
+        <Bug pattern="POTENTIAL_XML_INJECTION"/>
+    </Match>
+
+    <!--
+      NOT a false positive in full, and tracked: https://github.com/PIsberg/blindbean/issues/254.
+      The blindbean.native.path lookup (strategy 1) is operator configuration. The working-directory
+      lookups (src/main/native, build-native/*) let whoever can write the process's cwd plant the
+      native library. FheNativeBridge is @AILocked, so the fix needs the owner; remove this entry
+      with that fix so the method is checked again.
+    -->
+    <Match>
+        <Class name="se.deversity.blindbean.fhe.FheNativeBridge"/>
+        <Method name="loadNativeLibrary"/>
+        <Bug pattern="PATH_TRAVERSAL_IN"/>
+    </Match>
 </FindBugsFilter>

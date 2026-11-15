@@ -17,7 +17,10 @@ outright.
 ## What the workflow does
 
 It builds the three native libraries, runs the full SEAL-backed suite on Windows, signs, uploads to
-Maven Central, and attaches the jar + all three natives + `SHA256SUMS.txt` to a GitHub Release.
+Maven Central, and attaches to a GitHub Release: the module jars, all three natives, a CycloneDX
+SBOM per module (`*-cyclonedx.json`), the jars' detached GPG signatures (`*.jar.asc`, present only
+when the Central deploy ran) and `SHA256SUMS.txt`. The signatures are also what OpenSSF Scorecard's
+Signed-Releases check looks for.
 
 **`autoPublish` is `false`** — the bundle uploads and waits for a human to press Publish on
 central.sonatype.com, because a Central release is irreversible (a version can never be replaced or

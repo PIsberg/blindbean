@@ -21,6 +21,45 @@ dependency-check, weekly + on demand) and `mutation-testing.yml` (PIT, `workflow
 Both are slow, and the first changes verdict without the code changing — a gate that goes red
 because a CVE was published overnight teaches people to ignore red.
 
+## Supply-chain and security workflows
+
+| Workflow | What it proves | Runs on |
+|---|---|---|
+| `fuzz.yml` | a 60 s Jazzer campaign against `BlindContext.loadKeys` finds nothing | push to main, PRs |
+| `actions-lock.yml` | every action is in `actions.lock` and every locked commit is reachable from its upstream tag | push to main, PRs |
+| `codeql.yml` | CodeQL static analysis | push, PRs, weekly |
+| `scorecards.yml` | publishes the OpenSSF Scorecard behind the README badge | push to main, weekly |
+
+**FindSecBugs** rides inside the SpotBugs gate in `java-gate` (`findsecbugs-plugin` in the root
+pom's SpotBugs config), so a security finding fails `verify` like any other bug. Every suppression
+is in `config/spotbugs/exclude.xml` with its reason; the `FheNativeBridge.loadNativeLibrary` entry
+is a real finding parked on #254 because the class is `@AILocked`, and goes when that is fixed.
+
+**Fuzzing.** `KeyBundleLoadFuzzTest` is a Jazzer `@FuzzTest`. In `java-gate` it runs in regression
+mode: it replays any stored inputs under `blindbean-tests/src/test/resources/.../KeyBundleLoadFuzzTestInputs/`
+and generates nothing. `fuzz.yml` sets `JAZZER_FUZZ=1`, which turns the same method into a fuzzer.
+Locally:
+
+```bash
+JAZZER_FUZZ=1 ./mvnw -pl blindbean-tests -am test -DexcludedGroups=native \
+  -Dtest='KeyBundleLoadFuzzTest#loadKeysOnArbitraryBytes' -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+The fuzz target mutates a valid bundle it generates in-process, rather than a committed seed: a
+serialized key bundle in the repo would be a key fixture, which the `KeyBundle` privacy guardrail
+rules out. Jazzer's working corpus lands in `blindbean-tests/.cifuzz-corpus/` (gitignored). A
+crashing input it writes under `...Inputs/` *does* belong in the commit: it is a mutated bundle of
+a throwaway 512-bit test key, and committing it is what makes it a regression test.
+
+**Actions lockfile.** After changing any `uses:` line, run `gh actions-lock --no-narrow` and commit
+`.github/workflows/actions.lock`. Never drop `--no-narrow`: without it the tool rewrites
+`@<sha> # vX.Y.Z` to `@vX.Y.Z`, which Scorecard counts as unpinned.
+
+**SBOM.** `cyclonedx-maven-plugin` writes `target/<artifactId>-<version>-cyclonedx.json` (CycloneDX
+1.6, compile + runtime scope) for every published module at `package` and attaches it, so it ships
+to Central beside each jar and onto the GitHub Release. `reproducible-build` hashes jars only, so
+the SBOM's per-build serial number does not trip it.
+
 ## The JDK matrix
 
 The build compiles at `${maven.compiler.release}` (26 by default) and each matrix leg overrides it
@@ -100,10 +139,12 @@ The `@AI*` guardrail annotations are `requires static` everywhere (SOURCE retent
   block at the RC8 bump. A root block that grows on a version bump is that change, not a regression.
 - `.claudeignore` no longer carries a block for a module with no exclusions, so it shrank by four
   empty module regions at RC8. Same cause, same conclusion.
-- `AGENTS.md` has no granular sibling, so it keeps the sidecar-**merged** block. `GEMINI.md` no
-  longer does: `.gemini/rules/` exists and is tracked, so RC10 collapses `GEMINI.md` to an index
-  pointing at those files, exactly as `CLAUDE.md` does for `.claude/rules/`. (This paragraph used
-  to claim the directory was deliberately absent — it was already committed when that was written.)
+- `AGENTS.md` has no granular sibling, so it keeps the sidecar-**merged** block. `GEMINI.md`
+  collapsed to an index of `.gemini/rules/` from RC10 up to 1.2.x. Since VibeTags 1.3 (#763, "a lean
+  root GEMINI.md") an indexed reactor root's `GEMINI.md` carries the safety sections inline and no
+  index, and a clean build with the cache deleted no longer rewrites `.gemini/rules/` (checked at
+  1.4.2; the files there keep their 1.2.0-era timestamps). Gemini CLI never read that directory
+  (VibeTags #669). Whether to delete the leftover `.gemini/rules/` is tracked in #255.
   Expect a build to add a rule file whenever a module gains its first indexed guardrail; that is
   generated output and belongs in the commit.
 - `AGENTS.md` is only *written* by VibeTags when it is the sole AI config file present

@@ -206,6 +206,17 @@ jobs:
           find . -path '*/target/blindbean-*-'"${VERSION}"'.jar' \
                  ! -name '*-sources.jar' ! -name '*-javadoc.jar' \
                  ! -path '*blindbean-tests*' -exec cp {} dist/ \;
+          # The detached GPG signatures maven-gpg-plugin wrote for those jars during the Central
+          # deploy. Attaching them lets a GitHub-Release consumer verify the jar against the same
+          # key as Central, and is what OpenSSF Scorecard's Signed-Releases check looks for. They
+          # exist only when the deploy step ran; a release without Central creds ships unsigned.
+          find . -path '*/target/blindbean-*-'"${VERSION}"'.jar.asc' \
+                 ! -name '*-sources.jar.asc' ! -name '*-javadoc.jar.asc' \
+                 ! -path '*blindbean-tests*' -exec cp {} dist/ \;
+          # CycloneDX SBOM per published module (cyclonedx-maven-plugin, bound to package in the
+          # root pom). The same files go to Central with each module.
+          find . -path '*/target/*-'"${VERSION}"'-cyclonedx.json' \
+                 ! -path '*blindbean-tests*' -exec cp {} dist/ \;
           cp natives/blindbean_fhe-linux-x64/blindbean_fhe.so    dist/blindbean_fhe-linux-x64.so
           cp natives/blindbean_fhe-macos-arm64/blindbean_fhe.dylib dist/blindbean_fhe-macos-arm64.dylib
           cp natives/blindbean_fhe-windows-x64/blindbean_fhe.dll  dist/blindbean_fhe-windows-x64.dll
