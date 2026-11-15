@@ -480,6 +480,66 @@ public class HomomorphicProcessorTest {
     }
 
     /**
+     * The String encoder turns UTF-8 bytes into {@code new BigInteger(1, bytes)}, which discards
+     * leading zero bytes, so "\u0000abc" decrypted as "abc" (#222). A leading U+0000 is refused at
+     * encrypt time rather than changing the storage format; an interior NUL is not a leading zero
+     * byte and must keep round-tripping.
+     */
+    @Test
+    public void paillierStringWithALeadingNulIsRefusedNotTruncated(@TempDir Path tmpDir) throws Exception {
+        Path genDir     = tmpDir.resolve("gen");
+        Path classesDir = tmpDir.resolve("classes");
+        Files.createDirectories(genDir);
+        Files.createDirectories(classesDir);
+
+        String source = """
+            package com.example.apt;
+
+            import se.deversity.blindbean.annotations.BlindEntity;
+            import se.deversity.blindbean.annotations.Homomorphic;
+            import se.deversity.blindbean.annotations.Scheme;
+
+            @BlindEntity
+            public class NulNote {
+                @Homomorphic(scheme = Scheme.PAILLIER, type = String.class)
+                private String note;
+
+                public String getNote() { return note; }
+                public void setNote(String n) { this.note = n; }
+            }
+            """;
+
+        List<Diagnostic<? extends JavaFileObject>> diags =
+            compile("NulNote", source, genDir, classesDir);
+        assertEquals(0, diags.stream().filter(d -> d.getKind() == Diagnostic.Kind.ERROR).count(),
+            "Expected no compilation errors; got: " + diags);
+
+        se.deversity.blindbean.context.BlindContext.init(new se.deversity.blindbean.math.PaillierKeyPair(512));
+        try (URLClassLoader loader = loaderFor(classesDir)) {
+            Class<?> entityClass  = loader.loadClass("com.example.apt.NulNote");
+            Class<?> wrapperClass = loader.loadClass("com.example.apt.NulNoteBlindWrapper");
+            Object wrapper = wrapperClass.getConstructor(entityClass)
+                .newInstance(entityClass.getConstructor().newInstance());
+            var encrypt = wrapperClass.getMethod("encryptNote", String.class);
+            var decrypt = wrapperClass.getMethod("decryptNote");
+
+            encrypt.invoke(wrapper, "a\u0000b");
+            assertEquals("a\u0000b", decrypt.invoke(wrapper), "an interior NUL must round-trip");
+
+            for (String leading : List.of("\u0000abc", "\u0000", "\u0000\u0000x")) {
+                var thrown = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                    () -> encrypt.invoke(wrapper, leading),
+                    "a leading U+0000 must be refused, not silently dropped");
+                assertInstanceOf(IllegalArgumentException.class, thrown.getCause());
+                assertEquals("a\u0000b", decrypt.invoke(wrapper),
+                    "a refused encrypt must leave the stored ciphertext untouched");
+            }
+        } finally {
+            se.deversity.blindbean.context.BlindContext.clear();
+        }
+    }
+
+    /**
      * Paillier holds the exact sum, so an integral field whose homomorphic result leaves the
      * field's range is detectable at decode time. The decoder narrowed with longValue() and a
      * cast, so 2,000,000,000 + 2,000,000,000 in an int field decrypted as -294,967,296 (#220).

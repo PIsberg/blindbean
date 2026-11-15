@@ -688,6 +688,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
             out.println("    public void encrypt" + f.capName() + "(String plain) {");
             emitNullGuardOnEncrypt(out, f);
             if (f.scheme() == Scheme.PAILLIER) {
+                // The bytes become an unsigned magnitude, and a magnitude has no leading zero bytes,
+                // so a leading U+0000 (UTF-8 0x00) would vanish on the way back (#222). Refused
+                // rather than marked: a marker would change the format of every stored String.
+                out.println("        if (!plain.isEmpty() && plain.charAt(0) == '\\u0000') {");
+                out.println("            throw new IllegalArgumentException(\"Field '" + f.name()
+                    + "' cannot hold a String that starts with U+0000: the encoding drops leading NUL characters\");");
+                out.println("        }");
                 out.println("        java.math.BigInteger encoded = new java.math.BigInteger(1, plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));");
                 out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(encoded);");
                 out.println("        entity.set" + f.capName() + "(ct.hexData());");
