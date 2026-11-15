@@ -33,11 +33,41 @@
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-fhe</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-runtime</artifactId></dependency>
         <dependency><groupId>se.deversity</groupId><artifactId>blindbean-junit</artifactId></dependency>
-        <dependency>
-            <groupId>se.deversity.codekarta</groupId>
-            <artifactId>code-karta-core</artifactId>
-        </dependency>
         <!-- processor is compile-time; consumers add it to their processor path, not runtime cp,
              so it is intentionally NOT a transitive runtime dep of the aggregate. -->
     </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              What this artifact hands its consumers is the library and nothing else. A diagram
+              renderer (code-karta) and, through it, jackson-databind once rode along at compile
+              scope with no code using either (#273): more supply-chain surface and version
+              conflicts for every user. Banned transitively, so a dependency that pulls them in
+              indirectly fails the build too.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-lean-consumer-classpath</id>
+                        <phase>validate</phase>
+                        <goals><goal>enforce</goal></goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>se.deversity.codekarta</exclude>
+                                        <exclude>com.fasterxml.jackson.core</exclude>
+                                    </excludes>
+                                    <message>The blindbean aggregate must not ship build tooling or its dependencies to consumers (#273).</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
