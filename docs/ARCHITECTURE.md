@@ -156,6 +156,10 @@ We utilize the Java 26 **Foreign Function & Memory API** (`java.lang.foreign`) f
 | `fhe_plain_modulus` | BFV plaintext modulus `t`; 0 for CKKS. **Java needs it to reject unencodable values** — see below |
 | `fhe_slot_count` | `polyModulusDegree` for BFV, half that for CKKS |
 
+#### Decrypt failures are a status, never a value
+
+`fhe_decrypt_long_checked` and `fhe_decrypt_double_checked` return an `FHE_*` status (`FHE_OK`, `FHE_ERR_ARGUMENT` for a NULL handle or the wrong scheme, `FHE_ERR_SEAL` when SEAL throws) and write the plaintext through an out-pointer; `FheContext` throws `FheException` on anything but `FHE_OK`. They replace `fhe_decrypt_long` / `fhe_decrypt_double`, which returned 0 / 0.0 on failure, so a ciphertext from another parameter set decrypted as a plausible zero (#221). The names changed on purpose: every symbol is resolved at class load, so a jar and a native library from different versions fail at startup instead of reading a value as a status. The array decrypts report failure as a zero slot count, which `FheContext` also turns into an `FheException`.
+
 CKKS only ever had the scalar path (`fhe_encrypt_double`), so every ciphertext wasted all but one of its `degree/2` slots, and a CKKS key rotation — which round-trips through decrypt/encrypt — could carry only slot 0. The array symbols close that.
 
 ### Scheme Specifics & Security
