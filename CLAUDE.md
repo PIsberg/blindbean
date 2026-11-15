@@ -243,6 +243,9 @@ Guardrails for module `blindbean-processor` are maintained in that module's own 
     <element path="se.deversity.blindbean.context.BlindRotation">
       <aspect>key-rotation</aspect>
     </element>
+    <element path="se.deversity.blindbean.context.KeyFileWriter">
+      <aspect>key-file-write</aspect>
+    </element>
     <element path="se.deversity.blindbean.math.PaillierKeyPair">
       <aspect>key-generation</aspect>
     </element>

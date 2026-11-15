@@ -112,6 +112,7 @@ Do not weaken security properties of these elements. Flag any change for securit
 - `se.deversity.blindbean.context.BlindContext.exportKeys(java.lang.String)`: Security-critical code [key-serialization]. Do not weaken security properties. Flag any change for security review.
 - `se.deversity.blindbean.context.BlindContext.loadKeys(java.lang.String)`: Security-critical code [key-deserialization]. Do not weaken security properties. Flag any change for security review.
 - `se.deversity.blindbean.context.BlindRotation`: Security-critical code [key-rotation]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.context.KeyFileWriter`: Security-critical code [key-file-write]. Do not weaken security properties. Flag any change for security review.
 - `se.deversity.blindbean.math.PaillierKeyPair`: Security-critical code [key-generation]. Do not weaken security properties. Flag any change for security review.
 - `se.deversity.blindbean.math.PaillierMath`: Security-critical code [paillier-encryption]. Do not weaken security properties. Flag any change for security review.
 <!-- VIBETAGS-MODULE-END: blindbean-runtime -->
