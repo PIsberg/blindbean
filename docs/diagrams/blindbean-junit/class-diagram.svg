@@ -51,16 +51,17 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
 </defs>
 <rect width="960" height="594" fill="#f9fafb"/>
 <rect width="960" height="594" fill="url(#dotGrid)"/>
-<rect class="group-rect" x="46.0" y="46.0" width="468.0" height="130.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
+<rect class="group-rect" x="46.0" y="46.0" width="468.0" height="145.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
 <text x="52.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.junit</text>
 <g id="BlindBeanExtension">
   <title>BlindBeanExtension [CLASS]</title>
-  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="102.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="117.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
   <text class="node-label" x="410.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">BlindBeanExtension</text>
   <line x1="320.0" y1="104.0" x2="500.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
   <text x="328.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">beforeEach(ExtensionContex…</text>
   <text x="328.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">afterEach(ExtensionContext…</text>
   <text x="328.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">findConfig(ExtensionContex…</text>
+  <text x="328.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">findOnTypeHierarchy(Class&lt;…</text>
 </g>
 <g id="BlindBeanTest">
   <title>BlindBeanTest [CLASS]</title>
@@ -88,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
       edges.forEach(edge => {
         const source = edge.getAttribute('data-source');
         const target = edge.getAttribute('data-target');
-        const isConnected = (source === nodeId || target === nodeId || 
-                             (source && source.startsWith(nodeId + '.')) || 
+        const isConnected = (source === nodeId || target === nodeId ||
+                             (source && source.startsWith(nodeId + '.')) ||
                              (target && target.startsWith(nodeId + '.')) ||
                              (nodeId && nodeId.startsWith(source + '.')) ||
                              (nodeId && nodeId.startsWith(target + '.')));
