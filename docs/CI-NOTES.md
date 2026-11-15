@@ -118,6 +118,19 @@ boots a BFV/CKKS context, tag it — an untagged one breaks the Linux gate. Tag 
 not the outer one, when only part of a suite needs native (see `BlindMathTest`,
 `BlindBeanExtensionTest`).
 
+## `@AsyncTest` budgets: `timeoutMs` covers every round
+
+**`timeoutMs` is one budget for all `invocations` rounds together, not a per-round limit.** When it
+runs out mid-test the failure reads like a deadlock ("Invocation round timed out: 4/20 threads
+completed within 186ms ... A thread may be stuck before the test body"), but the small number is
+the budget left when the last round started, not a hang. Work that is serialized on a lock, like
+every `FheContext` call on `nativeLock`, costs `threads x invocations x body time` no matter how
+many threads you add. Size it from the surefire report (`time=` per testcase in
+`blindbean-tests/target/surefire-reports/TEST-*.xml`) and keep the test under about a third of its
+budget: `FheAsyncConcurrencyTest.concurrentBfvOperationsAreThreadSafe` used 43.7 s of 60 s and went
+red under load (#259), and now uses about 13 s. Before adding rounds, check the test can fail at
+all: that one passed with the lock removed (#268).
+
 ## Codecov — two traps, both hit for real
 
 Both the fast gate and the Windows suite upload JaCoCo XML to **Codecov**, which enforces a

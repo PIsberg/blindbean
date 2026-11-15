@@ -47,10 +47,19 @@ class FheAsyncConcurrencyTest {
      * Hammers a single shared FheContext with concurrent BFV operations.
      * Verifies that the internal nativeLock correctly serializes access to the
      * non-thread-safe SEAL pointers.
+     *
+     * <p>{@code timeoutMs} is the budget for all rounds together, not per round. Every body runs
+     * fully serialized on {@code nativeLock}, so 100 rounds of 20 threads (2,000 bodies at about
+     * 22 ms) took 43.7 s of the 60 s in a green local run and crossed it under load: the failure
+     * read "round timed out: 4/20 threads completed within 186ms", the last round starting with
+     * 186 ms of budget left (#259). 30 rounds keep 600 colliding bodies at about a quarter of the
+     * budget. More rounds bought nothing measurable: with the lock removed from encryptLong, add
+     * and decryptLong this test passed at 30 and at 100 rounds alike, so it does not yet detect a
+     * missing lock (#268).
      */
     @AsyncTest(
         threads = 20,
-        invocations = 100,
+        invocations = 30,
         timeoutMs = 60000,
         includes = { DetectorType.RACE_CONDITIONS, DetectorType.ATOMICITY_VIOLATIONS }
     )
