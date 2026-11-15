@@ -81,6 +81,10 @@ library:
 </dependency>
 ```
 
+The aggregate is the library only. For `@BlindBeanTest` in your tests, add `blindbean-junit` with
+`<scope>test</scope>`; it is kept out of the aggregate so JUnit never lands on your production
+classpath.
+
 On the **module path**, depend on the modules you use (import `blindbean-bom` for versions) and add
 `requires`:
 

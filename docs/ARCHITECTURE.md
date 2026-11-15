@@ -196,7 +196,7 @@ This exists because the missing-library failure is the first error most new user
 
 ## 3.5 Test Support Layer (`se.deversity.blindbean.junit`)
 
-Ships in the **main** artifact — `junit-jupiter-api` is therefore scoped `provided`, so consumers inherit the extension with the library while supplying their own JUnit at runtime.
+Ships as its own artifact, `blindbean-junit`, which declares `junit-jupiter-api` at compile scope and `requires transitive org.junit.jupiter.api`: the extension's users need the API anyway. It is deliberately **not** part of the `blindbean` aggregate, so JUnit reaches only consumers who add `blindbean-junit`, normally in test scope (#274). An enforcer rule on the aggregate bans `org.junit` from its dependency tree.
 
 | Type | Role |
 |:-----|:-----|

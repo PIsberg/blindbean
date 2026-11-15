@@ -10,7 +10,7 @@
 # resulting SVGs together with the code change that made them stale.
 set -euo pipefail
 
-KARTA_VERSION="${KARTA_VERSION:-0.4.0}"   # keep in step with code-karta-core in the root pom.xml
+KARTA_VERSION="${KARTA_VERSION:-0.4.0}"   # the only pin: no module depends on code-karta (#273)
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 

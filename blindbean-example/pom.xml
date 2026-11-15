@@ -43,11 +43,18 @@
             <artifactId>vibetags-annotations</artifactId>
         </dependency>
 
-        <!-- Testing -->
+        <!-- Testing. @BlindBeanTest lives in blindbean-junit, which the aggregate does not include
+             (it would put JUnit on every consumer's classpath), so tests that use it add it here. -->
+        <dependency>
+            <groupId>se.deversity</groupId>
+            <artifactId>blindbean-junit</artifactId>
+            <version>0.1.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>6.0.3</version>
+            <version>6.1.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
