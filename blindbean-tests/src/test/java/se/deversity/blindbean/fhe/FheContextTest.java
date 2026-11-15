@@ -173,6 +173,58 @@ public class FheContextTest {
     }
 
     /**
+     * The native scalar decrypts caught every SEAL error, printed it to stderr and returned 0 or
+     * 0.0, which the Java side passed on as a real result (#221). A ciphertext from another
+     * parameter set is the reachable case: SEAL refuses it, and the caller got a plausible zero.
+     */
+    @Test
+    public void ckksDecryptOfAForeignCiphertextThrowsInsteadOfReturningZero() {
+        double scale = Math.pow(2, 40);
+        try (FheContext writer = FheContext.ckks(16384, scale);
+             FheContext reader = FheContext.ckks(8192, scale)) {
+            var ct = writer.encryptDouble(1.5);
+            try {
+                assertThrows(FheException.class, () -> reader.decryptDouble(ct),
+                    "a SEAL decrypt failure must surface, not decrypt as 0.0");
+                assertThrows(FheException.class, () -> reader.decryptDouble(java.lang.foreign.MemorySegment.NULL),
+                    "a NULL ciphertext must be refused, not decrypt as 0.0");
+            } finally {
+                writer.freeCiphertext(ct);
+            }
+        }
+    }
+
+    /**
+     * The BFV half of #221. The noise guard queries the budget before decrypting, so it is switched
+     * off here to reach the native decrypt itself, which is the path a caller with the guard
+     * disabled takes. The array decrypt reported the same failure as zero slots, which the Java
+     * side turned into an empty array.
+     */
+    @Test
+    public void bfvDecryptOfAForeignCiphertextThrowsInsteadOfReturningZero() {
+        String saved = System.getProperty("blindbean.noise.guard");
+        System.setProperty("blindbean.noise.guard", "false");
+        try (FheContext writer = FheContext.bfv(16384);
+             FheContext reader = FheContext.bfv(8192)) {
+            var ct = writer.encryptLong(7);
+            try {
+                assertThrows(FheException.class, () -> reader.decryptLong(ct),
+                    "a SEAL decrypt failure must surface, not decrypt as 0");
+                assertThrows(FheException.class, () -> reader.decryptLongArray(ct),
+                    "a SEAL decrypt failure must surface, not decrypt as an empty array");
+            } finally {
+                writer.freeCiphertext(ct);
+            }
+        } finally {
+            if (saved == null) {
+                System.clearProperty("blindbean.noise.guard");
+            } else {
+                System.setProperty("blindbean.noise.guard", saved);
+            }
+        }
+    }
+
+    /**
      * A key import that fails must leave the context's keys exactly as they were.
      *
      * <p>The native import loaded the secret key straight into the live context, then the public

@@ -74,6 +74,14 @@ produced under the context.
   bundle **including private key material**. Treat the file like a private
   key: filesystem permissions, encrypted volumes, never in VCS, never in
   logs.
+- `exportKeys` never rewrites the destination in place. It writes a temporary
+  file (`.<name>.<random>.tmp`) in the same directory, syncs it to disk, then
+  renames it over the destination, so a failure at any point (nothing to
+  export, disk full, a killed process) leaves the previous bundle intact and
+  the temporary file removed. Two consequences: the directory must be
+  writable, not just the file, and the result is a new file, so a symbolic
+  link at the path is replaced rather than followed and the bundle gets
+  owner-only permissions on POSIX instead of the old file's.
 - `loadKeys` treats the file as untrusted input. Whatever its bytes, it
   restores a bundle or throws `FheException`: class names outside the
   bundle's own classes are refused before they are loaded, the allowlist
