@@ -25,6 +25,24 @@ Rules worth knowing before adding another type:
   generated code goes through `PaillierMath.decryptSigned` (balanced representation). Strings and
   `byte[]` must keep using plain `decrypt` — they are unsigned magnitudes, and a blob with the top
   bit set would otherwise read as negative.
+- **A Paillier integral field refuses to decrypt a result outside its range.** Paillier holds the
+  exact sum, so `byte`/`short`/`int`/`long` (and boxed) decoders check it against the field's
+  width and throw `ArithmeticException` naming the field, rather than narrowing to a plausible
+  wrong number the way Java's own `int` arithmetic wraps: two `int` fields at 2,000,000,000 added
+  homomorphically used to decrypt as -294,967,296. The ciphertext is untouched, so widening the
+  field type (or reading it as `BigInteger`) recovers the exact value. `LocalDate` applies the same
+  check against `long`, and `Instant`/`Duration` against `long` seconds.
+- **`Instant` and `Duration` are exact to the nanosecond.** They encode as nanoseconds
+  (`seconds * 10^9 + nano`), so `Instant.now()` and `Duration.ofNanos(1500)` round-trip exactly; they
+  used to encode as milliseconds and silently drop the rest. Nothing in a Paillier ciphertext says
+  which unit it holds, and a marker inside the plaintext would cancel out in `Duration` subtraction,
+  so the unit lives in the stored column: a new value is the hex marker `4242544e01` ("BBTN", v1)
+  followed by the ciphertext hex. A column without it was written by the millisecond encoding and
+  still decrypts correctly. `getCiphertextX()` always hands out nanoseconds (a legacy value is
+  re-encrypted on the fly), so `addX`/`subX` never mix units and rewrite the column in the new form;
+  `rotateX` keeps each column's unit as it is. The one unguarded path: a raw legacy `Ciphertext`
+  built by hand from an old column and passed to `addX(Ciphertext)` is read as nanoseconds. Use
+  `getCiphertextX()` on the source wrapper instead.
 - **The Paillier modulus caps every plaintext at (n-1)/2 in magnitude.** `PaillierMath.encrypt`
   refuses anything wider instead of reducing it mod n. For a `String` or `byte[]` that is 255 bytes
   at the 2048-bit default; see `SECURITY-AND-LIMITATIONS.md`.

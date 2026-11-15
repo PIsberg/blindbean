@@ -84,6 +84,34 @@ public class HomomorphicProcessor extends AbstractProcessor {
     private boolean isDuration(String t) { return t.equals("java.time.Duration"); }
     private boolean isTemporal(String t) { return isTemporalPoint(t) || isDuration(t); }
 
+    /**
+     * Instant and Duration are stored as nanoseconds since #223; before that they were
+     * milliseconds, and nothing in a Paillier ciphertext says which. The unit cannot ride in the
+     * plaintext (Duration supports add and sub, so any additive marker cancels out in a - b), so it
+     * rides in the stored column: a new value is {@link #NANOS_MARKER} followed by the ciphertext
+     * hex, and a column without it is a legacy millisecond value. Hex, so the column stays hex.
+     * LocalDate is day-granular and was never lossy, so it has no marker.
+     */
+    private boolean isNanosTemporal(String t) {
+        return t.equals("java.time.Instant") || isDuration(t);
+    }
+
+    /** ASCII "BBTN" plus a version byte. A legacy column opens with it by chance at about 2^-40. */
+    private static final String NANOS_MARKER = "4242544e01";
+
+    /** The statement that stores {@code ctExpr}, marking it as nanoseconds where the field needs it. */
+    private String storeStatement(FieldModel f, String ctExpr) {
+        String marker = isNanosTemporal(f.typeName()) ? "\"" + NANOS_MARKER + "\" + " : "";
+        return "entity.set" + f.capName() + "(" + marker + ctExpr + ".hexData());";
+    }
+
+    /** {@code BigInteger} nanoseconds of an Instant ({@code getEpochSecond}) or Duration ({@code getSeconds}). */
+    private String nanosExpr(String typeName, String var) {
+        String seconds = typeName.equals("java.time.Instant") ? var + ".getEpochSecond()" : var + ".getSeconds()";
+        return "java.math.BigInteger.valueOf(" + seconds + ").multiply(java.math.BigInteger.valueOf(1_000_000_000L))"
+            + ".add(java.math.BigInteger.valueOf(" + var + ".getNano()))";
+    }
+
     /** Integer vectors — BFV slots. Note byte[] is deliberately NOT here; it is a Paillier blob. */
     private boolean isBfvArray(String t) {
         return t.equals("long[]") || t.equals("int[]") || t.equals("short[]");
@@ -568,6 +596,19 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     private void emitGetCiphertext(PrintWriter out, FieldModel f) {
         out.println("    public Ciphertext getCiphertext" + f.capName() + "() {");
+        if (isNanosTemporal(f.typeName())) {
+            out.println("        String stored = entity.get" + f.capName() + "();");
+            out.println("        if (stored != null && stored.startsWith(\"" + NANOS_MARKER + "\")) {");
+            out.println("            return new Ciphertext(stored.substring(" + NANOS_MARKER.length() + "), Scheme.PAILLIER);");
+            out.println("        }");
+            out.println("        // Written by the millisecond encoding: hand out nanoseconds, so arithmetic and callers");
+            out.println("        // only ever see one unit. The stored column is left as it is.");
+            out.println("        var paillier = BlindContext.getPaillier();");
+            out.println("        return paillier.encrypt(paillier.decryptSigned(new Ciphertext(stored, Scheme.PAILLIER))");
+            out.println("            .multiply(java.math.BigInteger.valueOf(1_000_000L)));");
+            out.println("    }");
+            return;
+        }
         out.println("        return new Ciphertext(entity.get" + f.capName() + "(), Scheme." + f.scheme().name() + ");");
         out.println("    }");
     }
@@ -619,15 +660,13 @@ public class HomomorphicProcessor extends AbstractProcessor {
             return;
         }
         if (isTemporal(typeName)) {
-            String encode = switch (typeName) {
-                case "java.time.Instant"   -> "plain.toEpochMilli()";
-                case "java.time.LocalDate" -> "plain.toEpochDay()";
-                default                    -> "plain.toMillis()";   // Duration
-            };
+            String encode = isNanosTemporal(typeName)
+                ? nanosExpr(typeName, "plain")
+                : "java.math.BigInteger.valueOf(plain.toEpochDay())";   // LocalDate
             out.println("    public void encrypt" + f.capName() + "(" + typeName + " plain) {");
             emitNullGuardOnEncrypt(out, f);
-            out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(java.math.BigInteger.valueOf(" + encode + "));");
-            out.println("        entity.set" + f.capName() + "(ct.hexData());");
+            out.println("        Ciphertext ct = BlindContext.getPaillier().encrypt(" + encode + ");");
+            out.println("        " + storeStatement(f, "ct"));
             out.println("    }");
             return;
         }
@@ -786,15 +825,29 @@ public class HomomorphicProcessor extends AbstractProcessor {
             return;
         }
         if (isTemporal(typeName)) {
-            String decode = switch (typeName) {
-                case "java.time.Instant"   -> "java.time.Instant.ofEpochMilli(n)";
-                case "java.time.LocalDate" -> "java.time.LocalDate.ofEpochDay(n)";
-                default                    -> "java.time.Duration.ofMillis(n)";
-            };
             out.println("    public " + typeName + " decrypt" + f.capName() + "() {");
             emitNullGuardOnDecrypt(out, f);
-            out.println("        long n = BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "()).longValue();");
-            out.println("        return " + decode + ";");
+            if (!isNanosTemporal(typeName)) {   // LocalDate
+                emitRangeCheckedPaillierDecode(out, f, 63, "long", "getCiphertext" + f.capName() + "()");
+                out.println("        return java.time.LocalDate.ofEpochDay(v.longValue());");
+                out.println("    }");
+                return;
+            }
+            boolean instant = typeName.equals("java.time.Instant");
+            out.println("        String stored = entity.get" + f.capName() + "();");
+            out.println("        if (!stored.startsWith(\"" + NANOS_MARKER + "\")) {");
+            out.println("            // A legacy column, written by the millisecond encoding.");
+            out.println("            java.math.BigInteger v = BlindContext.getPaillier().decryptSigned(new Ciphertext(stored, Scheme.PAILLIER));");
+            emitRangeCheck(out, f, "v", 63, "long", "            ");
+            out.println("            return " + (instant ? "java.time.Instant.ofEpochMilli" : "java.time.Duration.ofMillis") + "(v.longValue());");
+            out.println("        }");
+            out.println("        java.math.BigInteger v = BlindContext.getPaillier().decryptSigned(");
+            out.println("            new Ciphertext(stored.substring(" + NANOS_MARKER.length() + "), Scheme.PAILLIER));");
+            out.println("        java.math.BigInteger[] secondsAndNanos = v.divideAndRemainder(java.math.BigInteger.valueOf(1_000_000_000L));");
+            emitRangeCheck(out, f, "secondsAndNanos[0]", 63, "long seconds", "        ");
+            out.println("        // The remainder takes the sign of v; both factories normalise a negative adjustment.");
+            out.println("        return " + (instant ? "java.time.Instant.ofEpochSecond" : "java.time.Duration.ofSeconds")
+                + "(secondsAndNanos[0].longValue(), secondsAndNanos[1].longValue());");
             out.println("    }");
             return;
         }
@@ -879,7 +932,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
                     String rType = boxedDecryptReturnType(f);
                     out.println("    public " + f.typeName() + " decrypt" + f.capName() + "() {");
                     emitNullGuardOnDecrypt(out, f);
-                    out.println("        return (" + rType + ")(" + pType + ")BlindContext.getPaillier().decryptSigned(getCiphertext" + f.capName() + "()).longValue();");
+                    int bits = switch (pType) {
+                        case "byte"  -> 7;
+                        case "short" -> 15;
+                        case "int"   -> 31;
+                        default      -> 63;
+                    };
+                    emitRangeCheckedPaillierDecode(out, f, bits, pType, "getCiphertext" + f.capName() + "()");
+                    out.println("        return (" + rType + ")(" + pType + ")v.longValue();");
                     out.println("    }");
                 }
                 case BFV -> {
@@ -979,6 +1039,19 @@ public class HomomorphicProcessor extends AbstractProcessor {
         // type — primitives included — so this guard is unconditional: without it the first null
         // row kills an entire rotation batch with an NPE thrown from generated code.
         out.println("        if (entity.get" + f.capName() + "() == null) return;");
+        if (isNanosTemporal(f.typeName())) {
+            // Rotate the stored ciphertext as it is, unit and all. Going through getCiphertext
+            // would upgrade a legacy column under whatever key the thread holds, which during a
+            // rotation need not be the one that wrote it. Rotation preserves the plaintext, so a
+            // legacy column stays a legacy column and a marked one keeps its marker.
+            out.println("        String stored = entity.get" + f.capName() + "();");
+            out.println("        boolean nanos = stored.startsWith(\"" + NANOS_MARKER + "\");");
+            out.println("        Ciphertext rotated = rotation.rotate(new Ciphertext(nanos ? stored.substring("
+                + NANOS_MARKER.length() + ") : stored, Scheme.PAILLIER));");
+            out.println("        entity.set" + f.capName() + "((nanos ? \"" + NANOS_MARKER + "\" : \"\") + rotated.hexData());");
+            out.println("    }");
+            return;
+        }
         out.println("        Ciphertext rotated = rotation.rotate(getCiphertext" + f.capName() + "());");
         out.println("        entity.set" + f.capName() + "(rotated.hexData());");
         out.println("    }");
@@ -991,14 +1064,14 @@ public class HomomorphicProcessor extends AbstractProcessor {
     private void emitAdd(PrintWriter out, FieldModel f) {
         out.println("    public void add" + f.capName() + "(Ciphertext other) {");
         out.println("        Ciphertext sum = BlindMath.add(getCiphertext" + f.capName() + "(), other);");
-        out.println("        entity.set" + f.capName() + "(sum.hexData());");
+        out.println("        " + storeStatement(f, "sum"));
         out.println("    }");
     }
 
     private void emitSub(PrintWriter out, FieldModel f) {
         out.println("    public void sub" + f.capName() + "(Ciphertext other) {");
         out.println("        Ciphertext diff = BlindMath.subtract(getCiphertext" + f.capName() + "(), other);");
-        out.println("        entity.set" + f.capName() + "(diff.hexData());");
+        out.println("        " + storeStatement(f, "diff"));
         out.println("    }");
     }
 
@@ -1024,8 +1097,7 @@ public class HomomorphicProcessor extends AbstractProcessor {
         }
         if (isDuration(t)) {
             out.println("    public void " + m + "(java.time.Duration plain) {");
-            out.println("        " + m + "(BlindContext.getPaillier().encrypt("
-                        + "java.math.BigInteger.valueOf(plain.toMillis())));");
+            out.println("        " + m + "(BlindContext.getPaillier().encrypt(" + nanosExpr(t, "plain") + "));");
             out.println("    }");
             return true;
         }
@@ -1159,6 +1231,26 @@ public class HomomorphicProcessor extends AbstractProcessor {
 
     private void emitEncryptAsync(PrintWriter out, FieldModel f) {
         emitRunAsync(out, "encrypt", f.capName(), encryptParamType(f), "plain");
+    }
+
+    /**
+     * Emits {@code v}, the field's exact signed Paillier plaintext, and a check that it fits in
+     * {@code bits} magnitude bits. Paillier holds the exact sum, so a homomorphic add or sub that
+     * left the field's range is detectable here; narrowing with {@code longValue()} and a cast
+     * would turn it into a plausible wrong number instead (#220). {@code bitLength()} excludes the
+     * sign, so {@code <= 31} is exactly the {@code int} range, MIN_VALUE included. The message names
+     * the field and type but never the value: it is decrypted plaintext.
+     */
+    private void emitRangeCheckedPaillierDecode(PrintWriter out, FieldModel f, int bits, String typeLabel, String ctExpr) {
+        out.println("        java.math.BigInteger v = BlindContext.getPaillier().decryptSigned(" + ctExpr + ");");
+        emitRangeCheck(out, f, "v", bits, typeLabel, "        ");
+    }
+
+    private void emitRangeCheck(PrintWriter out, FieldModel f, String var, int bits, String typeLabel, String indent) {
+        out.println(indent + "if (" + var + ".bitLength() > " + bits + ") {");
+        out.println(indent + "    throw new ArithmeticException(\"Decrypted value of field '" + f.name()
+            + "' does not fit in " + typeLabel + ": a homomorphic add or sub overflowed the field's range\");");
+        out.println(indent + "}");
     }
 
     private void emitDecryptAsync(PrintWriter out, FieldModel f) {
