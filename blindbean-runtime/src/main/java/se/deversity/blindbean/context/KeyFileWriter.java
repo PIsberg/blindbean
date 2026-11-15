@@ -31,9 +31,13 @@ import static java.lang.System.Logger.Level.WARNING;
  * group or ACL became readable by its owner only.
  *
  * <p>Safety comes from a backup instead. Before the existing file is truncated, its bytes are copied
- * to {@code .<name>.bak} beside it, created with the same POSIX mode or ACL so the copy is no more
- * readable than the original. An I/O error during the rewrite puts the old bytes back and removes
- * the backup. If the process dies mid-rewrite, the backup survives and the next export refuses to
+ * to {@code .<name>.bak} beside it, created owner-only on POSIX and with the original's ACL on
+ * Windows, so the copy is never more readable than the original. (Copying the POSIX mode would not
+ * do: the backup's group is the exporting user's, not the original's.) An I/O error during the
+ * rewrite puts the old bytes back and removes the backup.
+ *
+ * <p>A key file that did not exist yet is created owner-only on POSIX, whatever the umask, and with
+ * {@code CREATE_NEW}, so a file that appears in the meantime is never truncated. If the process dies mid-rewrite, the backup survives and the next export refuses to
  * run until someone restores or removes it, since it may then be the only intact copy.
  */
 @AISecure(aspect = "key-file-write")
@@ -96,12 +100,14 @@ final class KeyFileWriter {
         deleteBackup(backup);
     }
 
-    /** No previous bundle: write the file, and remove a partial one if the write fails. */
+    /** No previous bundle: create the file owner-only, and remove a partial one if the write fails. */
     private static void writeNewFile(Path path, byte[] bytes, Sink sink) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(path.toFile())) {
+        try (FileChannel channel = FileChannel.open(path,
+                java.util.EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), ownerOnly(path))) {
+            OutputStream out = Channels.newOutputStream(channel);
             sink.write(out, bytes);
             out.flush();
-            out.getFD().sync();
+            channel.force(true);
         } catch (IOException | RuntimeException failure) {
             // Nothing was there before, so a partial file is only debris. A dangling symlink that
             // led here is the operator's, and stays.
@@ -116,9 +122,9 @@ final class KeyFileWriter {
         }
     }
 
-    /** The backup: same bytes, created with the original's mode or ACL, synced before any truncation. */
+    /** The backup: same bytes, never more readable than the original, synced before any truncation. */
     private static void createBackup(Path target, Path backup, byte[] previous) throws IOException {
-        Files.createFile(backup, sameAccessAs(target));
+        Files.createFile(backup, backupAccess(target));
         try (FileOutputStream out = new FileOutputStream(backup.toFile())) {
             out.write(previous);
             out.flush();
@@ -133,14 +139,23 @@ final class KeyFileWriter {
         }
     }
 
+    /** POSIX: owner read/write only. Elsewhere the directory's defaults apply, as for any new file. */
+    private static FileAttribute<?>[] ownerOnly(Path path) {
+        if (path.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+            return new FileAttribute<?>[] {PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))};
+        }
+        return new FileAttribute<?>[0];
+    }
+
     /**
-     * Creation attributes that give a new file the same access as {@code original}. POSIX modes
-     * are still narrowed by the umask, which can only make the backup more private, never less.
+     * Creation attributes for the backup of {@code original}. POSIX: owner-only, because a copied
+     * mode would apply to the exporting user's group rather than the original's. ACL: the original's
+     * entries, which name their principals explicitly and so grant exactly the original's access.
      */
-    private static FileAttribute<?>[] sameAccessAs(Path original) throws IOException {
+    private static FileAttribute<?>[] backupAccess(Path original) throws IOException {
         Set<String> views = original.getFileSystem().supportedFileAttributeViews();
         if (views.contains("posix")) {
-            return new FileAttribute<?>[] {PosixFilePermissions.asFileAttribute(Files.getPosixFilePermissions(original))};
+            return ownerOnly(original);
         }
         if (views.contains("acl")) {
             List<AclEntry> acl = Files.getFileAttributeView(original, AclFileAttributeView.class).getAcl();

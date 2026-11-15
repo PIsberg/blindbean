@@ -78,11 +78,13 @@ produced under the context.
   bundle is serialized in memory first, so one that cannot be serialized touches nothing. An
   existing file is then rewritten in place, through any symbolic link, so it keeps its owner,
   group, mode, ACL and hard links, and a symlinked key path stays a link. While it is rewritten,
-  its previous bytes sit in `.<name>.bak` beside it, created with the same mode or ACL, and an I/O
+  its previous bytes sit in `.<name>.bak` beside it, created owner-only on POSIX (a copied mode
+  would apply to the exporting user's group) and with the original's ACL on Windows, and an I/O
   error during the write puts them back. If the process is killed mid-write, that backup survives
   and every later export refuses, naming it, until you restore it over the key file or remove it:
   it may be the only intact copy. A key file the process cannot write fails before anything
-  changes, and so does one whose directory is not writable, since the backup goes there. (#258 renamed a temporary file over the destination instead, which replaced symlinks
+  changes, and so does one whose directory is not writable, since the backup goes there. A key
+  file that does not exist yet is created owner-only on POSIX, whatever the umask. (#258 renamed a temporary file over the destination instead, which replaced symlinks
   and reset shared permissions to owner-only.)
 - `loadKeys` treats the file as untrusted input. Whatever its bytes, it
   restores a bundle or throws `FheException`: class names outside the
