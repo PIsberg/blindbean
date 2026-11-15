@@ -46,6 +46,11 @@ Rules worth knowing before adding another type:
 - **The Paillier modulus caps every plaintext at (n-1)/2 in magnitude.** `PaillierMath.encrypt`
   refuses anything wider instead of reducing it mod n. For a `String` or `byte[]` that is 255 bytes
   at the 2048-bit default; see `SECURITY-AND-LIMITATIONS.md`.
+- **A `String` may not start with U+0000.** Its UTF-8 bytes are stored as an unsigned magnitude,
+  which has no leading zero bytes, so `"\u0000abc"` used to decrypt as `"abc"`. `encryptX` now
+  throws `IllegalArgumentException` naming the field instead (#222). A NUL anywhere else
+  round-trips. `byte[]` has no such limit: it carries a `0x01` marker byte for exactly this reason,
+  which `String` never got, and adding one now would change the format of every stored String.
 - **A BFV slot is ~20 bits, not 64.** `PlainModulus::Batching(degree, 20)` gives t ≈ 1,032,193, so a
   slot holds about ±516,000. `FheContext.encryptLongArray` now rejects anything larger — before the
   guard SEAL reduced it mod t and returned a plausible wrong number, and a single out-of-range entry
@@ -65,6 +70,16 @@ reachable without wrapping by hand at every call site. It writes through to the 
 nested entity yields a null wrapper. Explicit by design — the processor does not hunt for
 `@BlindEntity`-typed fields on its own, and a field may not be both `@Homomorphic` and
 `@BlindNested`.
+
+**Inheritance.** `@Homomorphic` and `@BlindNested` fields declared on a superclass of a
+`@BlindEntity` are generated into the entity's wrapper, through the inherited `getX`/`setX`. The
+superclass itself needs no annotation and may be abstract. Before #99 the processor read only the
+entity's own declared fields, so an inherited one was silently left without an API. Two cases are
+compile errors rather than broken generated code: a superclass field whose name a subclass
+redeclares (the wrapper could not tell them apart), and an inherited accessor the wrapper cannot
+call, which means one that is neither public nor declared in the entity's package (a `protected`
+getter in another package's base class, for instance). The "not inside a @BlindEntity class"
+warning now fires only when no entity in the compilation extends the declaring class.
 
 **Records are unsupported by construction**, not by omission: the wrapper stores each ciphertext with
 `entity.setX(hex)`, and a record's components are final. Supporting them means a different generated
