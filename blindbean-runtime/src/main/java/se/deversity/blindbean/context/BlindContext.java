@@ -150,13 +150,12 @@ public class BlindContext {
      * Exports the current combined Paillier and Microsoft SEAL encryption states to a file.
      * This secures the keys allowing the application to persist data over restarts.
      * <p>
-     * The bundle is written to a temporary file in the destination's directory, synced to disk,
-     * and then renamed over the destination. A failed export, whether it is rejected up front or
-     * fails during the write, leaves an existing file at {@code filePath} unchanged and removes the
-     * temporary file. Because the destination is replaced rather than rewritten, a symbolic link at
-     * {@code filePath} is replaced by a regular file, and the new file gets the permissions of a
-     * freshly created temporary file (owner-only on POSIX) rather than those of the file it
-     * replaces.
+     * An existing file at {@code filePath} is rewritten in place, through any symbolic link, so it
+     * keeps its owner, group, mode, ACL and hard links, and a symlinked key path stays a link. While
+     * it is rewritten, its previous bytes are kept in a backup beside it ({@code .<name>.bak}, with
+     * the same access), and an I/O error during the write puts them back. A failed export therefore
+     * never loses the previous bundle. If the process is killed mid-write, that backup is left
+     * behind, and later exports refuse to run until it is restored or removed.
      * @param filePath the destination binary path to stream the bundle to.
      * @throws FheException if there is nothing to export, {@code filePath} is a directory, or the
      *         bundle cannot be written
@@ -165,7 +164,7 @@ public class BlindContext {
     public static void exportKeys(
             @AIInputSanitized({AIInputSanitized.SanitizerType.PATH_TRAVERSAL}) String filePath) {
         // Assemble the bundle *before* touching the filesystem, so a validation failure or a
-        // failing native exportState never creates a temporary file or touches the destination.
+        // failing native exportState never creates a backup or touches the destination.
         PaillierKeyPair kp = paillierInstance.get() != null ? paillierInstance.get().getKeyPair() : null;
         FheContext ctx = fheInstance.get();
 
@@ -183,38 +182,18 @@ public class BlindContext {
                 ctx != null ? ctx.exportState() : null
         );
 
-        // Never write into the destination itself (#224): a truncating open followed by a failure
-        // mid-write (disk full, I/O error, a killed process) would leave a partial file where the
-        // previous good bundle was. Write a complete, fsynced copy next to it, then rename it over
-        // the destination, so a reader sees either the old bundle or the new one, never a mix.
-        java.nio.file.Path tmp = null;
+        // Serialize in memory first, so a bundle that cannot be serialized never touches the
+        // destination. KeyFileWriter then rewrites the existing file in place with a backup (#224):
+        // the old bundle survives a failed write, and the file keeps its identity and attributes,
+        // which the temp-file rename this replaced did not.
+        byte[] serialized = null;
         try {
-            java.nio.file.Path dest = java.nio.file.Path.of(filePath).toAbsolutePath();
-            java.nio.file.Path dir = dest.getParent();
-            if (dir == null || java.nio.file.Files.isDirectory(dest)) {
-                // A replacing move would swap an empty directory for the bundle; refuse instead.
-                throw new java.io.IOException("Destination is a directory: " + dest);
-            }
-            tmp = java.nio.file.Files.createTempFile(dir, "." + dest.getFileName() + ".", ".tmp");
-
-            // Two resources, not one nested constructor: ObjectOutputStream's constructor writes
-            // the stream header, and if that throws the inner stream was never registered for closing.
-            try (java.io.FileOutputStream out = new java.io.FileOutputStream(tmp.toFile());
-                 java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(out)) {
+            java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+            try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(buffer)) {
                 oos.writeObject(bundle);
-                oos.flush();
-                // Durable before the rename: otherwise a crash could persist the rename but not
-                // the bytes, which is the same lost bundle by another route.
-                out.getFD().sync();
             }
-            try {
-                java.nio.file.Files.move(tmp, dest, java.nio.file.StandardCopyOption.ATOMIC_MOVE,
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
-                // Still safe from a partial write: tmp holds a complete bundle at this point.
-                java.nio.file.Files.move(tmp, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            }
-            tmp = null;
+            serialized = buffer.toByteArray();
+            KeyFileWriter.write(java.nio.file.Path.of(filePath), serialized);
 
             // Sizes and scheme only. The payload and the key pair are OMIT-masked. The payload is
             // read into a local first: calling the nullable getter twice inside a ternary is the
@@ -226,15 +205,12 @@ public class BlindContext {
                 ctx != null ? ctx.scheme() : "none",
                 exportedState != null ? exportedState.length : 0);
         } catch (java.io.IOException | RuntimeException e) {
-            FheException failure = new FheException("Key export failed", e);
-            if (tmp != null) {
-                try {
-                    java.nio.file.Files.deleteIfExists(tmp);
-                } catch (java.io.IOException cleanup) {
-                    failure.addSuppressed(cleanup);
-                }
+            // The cause's message carries paths and class names, never key material.
+            throw new FheException("Key export failed: " + e.getMessage(), e);
+        } finally {
+            if (serialized != null) {
+                java.util.Arrays.fill(serialized, (byte) 0);
             }
-            throw failure;
         }
     }
 

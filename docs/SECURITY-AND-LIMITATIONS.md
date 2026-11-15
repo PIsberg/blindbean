@@ -74,14 +74,16 @@ produced under the context.
   bundle **including private key material**. Treat the file like a private
   key: filesystem permissions, encrypted volumes, never in VCS, never in
   logs.
-- `exportKeys` never rewrites the destination in place. It writes a temporary
-  file (`.<name>.<random>.tmp`) in the same directory, syncs it to disk, then
-  renames it over the destination, so a failure at any point (nothing to
-  export, disk full, a killed process) leaves the previous bundle intact and
-  the temporary file removed. Two consequences: the directory must be
-  writable, not just the file, and the result is a new file, so a symbolic
-  link at the path is replaced rather than followed and the bundle gets
-  owner-only permissions on POSIX instead of the old file's.
+- `exportKeys` never loses the previous bundle, and never replaces the file that holds it. The
+  bundle is serialized in memory first, so one that cannot be serialized touches nothing. An
+  existing file is then rewritten in place, through any symbolic link, so it keeps its owner,
+  group, mode, ACL and hard links, and a symlinked key path stays a link. While it is rewritten,
+  its previous bytes sit in `.<name>.bak` beside it, created with the same mode or ACL, and an I/O
+  error during the write puts them back. If the process is killed mid-write, that backup survives
+  and every later export refuses, naming it, until you restore it over the key file or remove it:
+  it may be the only intact copy. A key file the process cannot write fails before anything
+  changes, and so does one whose directory is not writable, since the backup goes there. (#258 renamed a temporary file over the destination instead, which replaced symlinks
+  and reset shared permissions to owner-only.)
 - `loadKeys` treats the file as untrusted input. Whatever its bytes, it
   restores a bundle or throws `FheException`: class names outside the
   bundle's own classes are refused before they are loaded, the allowlist

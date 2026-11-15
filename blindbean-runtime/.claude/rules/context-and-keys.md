@@ -96,6 +96,9 @@ When modifying this element, audit for:
 ### se.deversity.blindbean.context.BlindRotation
 - **Aspect**: key-rotation
 
+### se.deversity.blindbean.context.KeyFileWriter
+- **Aspect**: key-file-write
+
 ## Input Sanitization
 - **Target Filters**: PATH_TRAVERSAL
 - **Rule**: Run raw input strings through approved sanitizers.
