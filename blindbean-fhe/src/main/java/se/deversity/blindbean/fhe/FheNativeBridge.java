@@ -76,8 +76,10 @@ public class FheNativeBridge {
             MH_ENCRYPT_LONG = downcall("fhe_encrypt_long",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
 
-            MH_DECRYPT_LONG = downcall("fhe_decrypt_long",
-                    FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            // Status plus out-parameter (#221): the old fhe_decrypt_long returned 0 on failure,
+            // indistinguishable from an encrypted zero.
+            MH_DECRYPT_LONG = downcall("fhe_decrypt_long_checked",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
             MH_ENCRYPT_LONG_ARRAY = downcall("fhe_encrypt_long_array",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG));
@@ -100,8 +102,8 @@ public class FheNativeBridge {
             MH_ENCRYPT_DOUBLE = downcall("fhe_encrypt_double",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_DOUBLE));
 
-            MH_DECRYPT_DOUBLE = downcall("fhe_decrypt_double",
-                    FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MH_DECRYPT_DOUBLE = downcall("fhe_decrypt_double_checked",
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
             MH_ADD = downcall("fhe_add",
                     FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
@@ -181,11 +183,17 @@ public class FheNativeBridge {
         }
     }
 
-    public static long fhe_decrypt_long(MemorySegment ctx, MemorySegment ct) {
+    /** Native status codes of the checked decrypts, mirroring {@code FHE_*} in blindbean_fhe.h. */
+    public static final int FHE_OK = 0;
+    public static final int FHE_ERR_ARGUMENT = 1;
+    public static final int FHE_ERR_SEAL = 2;
+
+    /** Writes the decrypted value to {@code outValue} (one {@code long}); returns an {@code FHE_*} status. */
+    public static int fhe_decrypt_long_checked(MemorySegment ctx, MemorySegment ct, MemorySegment outValue) {
         try {
-            return (long) MH_DECRYPT_LONG.invokeExact(ctx, ct);
+            return (int) MH_DECRYPT_LONG.invokeExact(ctx, ct, outValue);
         } catch (Throwable e) {
-            throw new FheException("Failed to call fhe_decrypt_long", e);
+            throw new FheException("Failed to call fhe_decrypt_long_checked", e);
         }
     }
 
@@ -247,11 +255,12 @@ public class FheNativeBridge {
         }
     }
 
-    public static double fhe_decrypt_double(MemorySegment ctx, MemorySegment ct) {
+    /** Writes the decrypted value to {@code outValue} (one {@code double}); returns an {@code FHE_*} status. */
+    public static int fhe_decrypt_double_checked(MemorySegment ctx, MemorySegment ct, MemorySegment outValue) {
         try {
-            return (double) MH_DECRYPT_DOUBLE.invokeExact(ctx, ct);
+            return (int) MH_DECRYPT_DOUBLE.invokeExact(ctx, ct, outValue);
         } catch (Throwable e) {
-            throw new FheException("Failed to call fhe_decrypt_double", e);
+            throw new FheException("Failed to call fhe_decrypt_double_checked", e);
         }
     }
 
