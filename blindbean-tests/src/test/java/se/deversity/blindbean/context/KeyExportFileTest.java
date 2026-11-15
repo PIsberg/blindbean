@@ -154,6 +154,39 @@ class KeyExportFileTest {
         assertBundleDecrypts(keys, ct);
     }
 
+    /** A key file that did not exist yet is created readable by its owner only, whatever the umask. */
+    @Test
+    void aNewKeyFileIsOwnerOnlyOnPosix() throws Exception {
+        assumeTrue(dir.getFileSystem().supportedFileAttributeViews().contains("posix"), "no POSIX permissions here");
+        Path keys = dir.resolve("keys.bin");
+        freshKeys();
+        BlindContext.exportKeys(keys.toString());
+        assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(keys)));
+    }
+
+    /**
+     * The backup holds the previous private keys. Copying the original's mode is not enough: the
+     * backup's group is the exporting user's, not the original's, so group bits could open it to
+     * people who could not read the original. It must be owner-only while it exists.
+     */
+    @Test
+    void theBackupIsOwnerOnlyWhileTheFileIsRewritten() throws Exception {
+        assumeTrue(dir.getFileSystem().supportedFileAttributeViews().contains("posix"), "no POSIX permissions here");
+        Path keys = dir.resolve("keys.bin");
+        Files.write(keys, new byte[] {7, 7, 7});
+        Files.setPosixFilePermissions(keys, PosixFilePermissions.fromString("rw-r-----"));
+        String[] seen = new String[1];
+
+        KeyFileWriter.write(keys, new byte[] {1, 2}, (out, bytes) -> {
+            seen[0] = PosixFilePermissions.toString(Files.getPosixFilePermissions(KeyFileWriter.backupOf(keys.toRealPath())));
+            out.write(bytes);
+        });
+
+        assertEquals("rw-------", seen[0], "the backup of the previous keys must be owner-only");
+        assertEquals("rw-r-----", PosixFilePermissions.toString(Files.getPosixFilePermissions(keys)),
+            "the key file itself keeps its shared mode");
+    }
+
     /**
      * A backup left by an export that was killed mid-write may be the only intact copy of the old
      * keys, so a later export must refuse rather than overwrite it, and touch neither file.
