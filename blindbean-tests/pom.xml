@@ -70,7 +70,7 @@
         <dependency>
             <groupId>se.deversity.async-test-lib</groupId>
             <artifactId>async-test-lib</artifactId>
-            <version>1.14.0</version>
+            <version>1.14.3</version>
             <scope>test</scope>
         </dependency>
         <!-- ArchUnit: codifies the module-boundary guardrails (see se…blindbean.arch) as tests -->
@@ -78,6 +78,22 @@
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5</artifactId>
             <version>1.5.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!--
+          Jazzer: coverage-guided fuzzing as JUnit @FuzzTest (KeyBundleLoadFuzzTest). In a normal
+          build it runs in regression mode over stored inputs; JAZZER_FUZZ=1 turns it into a fuzzer.
+        -->
+        <dependency>
+            <groupId>com.code-intelligence</groupId>
+            <artifactId>jazzer-junit</artifactId>
+            <version>${jazzer.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.code-intelligence</groupId>
+            <artifactId>jazzer-api</artifactId>
+            <version>${jazzer.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

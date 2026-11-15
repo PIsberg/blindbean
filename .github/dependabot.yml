@@ -4,6 +4,14 @@ updates:
     directory: /
     schedule:
       interval: daily
+    groups:
+      # init, analyze and upload-sarif are three entry points into one action repo, and CodeQL
+      # refuses to run init and analyze at different versions. Ungrouped, Dependabot opens one PR
+      # per path (#250 for init, #251 for analyze), each moving half the pair. One group keeps
+      # them consistent by construction. Same rule as PIsberg/vibetags.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
 
   - package-ecosystem: maven
     directory: /

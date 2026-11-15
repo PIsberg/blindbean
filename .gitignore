@@ -9,3 +9,8 @@ vcpkg_installed/
 vibetags.log
 load-tests/target/
 dependency-reduced-pom.xml
+.vibetags-generate.lock
+
+# Jazzer working corpus (KeyBundleLoadFuzzTest under JAZZER_FUZZ=1). Regenerated every run, and
+# its entries are mutated key bundles, which must not be committed.
+.cifuzz-corpus/
