@@ -1,0 +1,4 @@
+# Every path is owned by the maintainer. The main-branch ruleset requires code-owner review, which
+# is what OpenSSF Scorecard's Branch-Protection check scores at tier 4; without this file that
+# requirement has no owner to ask and Scorecard reports it as missing.
+* @PIsberg

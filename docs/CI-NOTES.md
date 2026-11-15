@@ -55,6 +55,21 @@ a throwaway 512-bit test key, and committing it is what makes it a regression te
 `.github/workflows/actions.lock`. Never drop `--no-narrow`: without it the tool rewrites
 `@<sha> # vX.Y.Z` to `@vX.Y.Z`, which Scorecard counts as unpinned.
 
+**Branch protection.** `main` is guarded by the repository ruleset "main: OpenSSF Scorecard branch
+protection" (Settings → Rules → Rulesets; `gh api repos/PIsberg/blindbean/rulesets`): no deletion,
+no force push, changes only through a PR with 2 approvals including the code owner
+(`.github/CODEOWNERS`), stale approvals dismissed on push, the last push approved, and every check
+of `ci.yml`, `codeql.yml`, `fuzz.yml` and `actions-lock.yml` passing on a branch that is up to date
+with `main`. The repository-admin role may bypass it **for pull requests only**: with one
+maintainer nobody else can approve, so merging is `gh pr merge <N> --merge --admin`. Direct pushes to
+`main` are refused for everyone. Measured with the Scorecard 5.6.0 CLI and an admin token:
+Branch-Protection went 0 → 8; with CODEOWNERS on `main` it should reach 9. The tenth point needs the
+rules to bind admins, that is, deleting the bypass, which only makes sense with a second reviewer.
+Renaming a job in those workflows renames its check: update the ruleset's required checks in the same
+PR, or every later PR waits on a check that no longer exists. And because the ruleset requires an
+up-to-date branch, a PR stacked on another one needs `main` merged in after its predecessor lands,
+so its CI runs again.
+
 **SBOM.** `cyclonedx-maven-plugin` writes `target/<artifactId>-<version>-cyclonedx.json` (CycloneDX
 1.6, compile + runtime scope) for every published module at `package` and attaches it, so it ships
 to Central beside each jar and onto the GitHub Release. `reproducible-build` hashes jars only, so
