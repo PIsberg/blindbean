@@ -129,7 +129,8 @@ many threads you add. Size it from the surefire report (`time=` per testcase in
 `blindbean-tests/target/surefire-reports/TEST-*.xml`) and keep the test under about a third of its
 budget: `FheAsyncConcurrencyTest.concurrentBfvOperationsAreThreadSafe` used 43.7 s of 60 s and went
 red under load (#259), and now uses about 13 s. Before adding rounds, check the test can fail at
-all: that one passed with the lock removed (#268).
+all: that one passed with the lock removed (#268). `FheContextCloseRaceTest` is the one that
+fails without it, by racing operations against `close()`; it crashed the JVM in 3 of 3 runs.
 
 ## Codecov — two traps, both hit for real
 
