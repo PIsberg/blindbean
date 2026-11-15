@@ -106,17 +106,4 @@
         <Method name="nativeLoadGuidance"/>
         <Bug pattern="POTENTIAL_XML_INJECTION"/>
     </Match>
-
-    <!--
-      NOT a false positive in full, and tracked: https://github.com/PIsberg/blindbean/issues/254.
-      The blindbean.native.path lookup (strategy 1) is operator configuration. The working-directory
-      lookups (src/main/native, build-native/*) let whoever can write the process's cwd plant the
-      native library. FheNativeBridge is @AILocked, so the fix needs the owner; remove this entry
-      with that fix so the method is checked again.
-    -->
-    <Match>
-        <Class name="se.deversity.blindbean.fhe.FheNativeBridge"/>
-        <Method name="loadNativeLibrary"/>
-        <Bug pattern="PATH_TRAVERSAL_IN"/>
-    </Match>
 </FindBugsFilter>

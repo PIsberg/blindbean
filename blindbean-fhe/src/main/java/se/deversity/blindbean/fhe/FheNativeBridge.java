@@ -7,11 +7,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import se.deversity.vibetags.annotations.AICore;
 import se.deversity.vibetags.annotations.AILocked;
@@ -23,12 +18,9 @@ import se.deversity.vibetags.annotations.AILocked;
  * {@code blindbean_fhe.h}. Method handles are resolved once at class-load time
  * and cached for the lifetime of the JVM.
  * <p>
- * <b>DLL resolution order:</b>
- * <ol>
- *   <li>System property {@code blindbean.native.path} (directory containing the DLL)</li>
- *   <li>{@code src/main/native/} relative to working directory (development convenience)</li>
- *   <li>{@link System#loadLibrary(String)} using {@code java.library.path}</li>
- * </ol>
+ * <b>DLL resolution:</b> the directory in the system property {@code blindbean.native.path}, or
+ * the absolute entries of {@code java.library.path} when that property is unset. The working
+ * directory is never searched; see {@link NativeLibraryLocator} for why.
  *
  * Requires {@code --enable-native-access=ALL-UNNAMED} at runtime.
  */
@@ -364,72 +356,12 @@ public class FheNativeBridge {
     }
 
     /**
-     * Loads the native library using a prioritized search strategy:
-     * 1. System property blindbean.native.path (directory path)
-     * 2. src/main/native/ relative to cwd (dev convenience)
-     * 3. System loadLibrary (java.library.path)
+     * Loads the native library from the file {@link NativeLibraryLocator} picks: the directory in
+     * {@code blindbean.native.path}, or an absolute {@code java.library.path} entry.
      */
     private static void loadNativeLibrary() {
-        Set<String> candidateNames = nativeLibraryFileNames();
-
-        // Strategy 1: System property
-        String nativePath = System.getProperty("blindbean.native.path");
-        if (nativePath != null) {
-            for (String candidateName : candidateNames) {
-                Path candidate = Paths.get(nativePath, candidateName);
-                if (Files.exists(candidate)) {
-                    System.load(candidate.toAbsolutePath().toString());
-                    return;
-                }
-            }
-        }
-
-        // Strategy 2: Development path relative to cwd
-        for (String candidateName : candidateNames) {
-            Path devPath = Paths.get("src/main/native", candidateName).toAbsolutePath();
-            if (Files.exists(devPath)) {
-                System.load(devPath.toString());
-                return;
-            }
-        }
-        // Also check CMake build output directories
-        for (String buildDir : new String[]{"build-native/Release", "build-native/Debug", "build-native"}) {
-            for (String candidateName : candidateNames) {
-                Path buildPath = Paths.get(buildDir, candidateName).toAbsolutePath();
-                if (Files.exists(buildPath)) {
-                    System.load(buildPath.toString());
-                    return;
-                }
-            }
-        }
-
-        // Strategy 3: System library path
-        try {
-            System.loadLibrary("blindbean_fhe");
-        } catch (UnsatisfiedLinkError e) {
-            throw new FheException(
-                    "Cannot load blindbean_fhe native library. Searched: " +
-                    "blindbean.native.path=" + nativePath + ", " +
-                    "src/main/native/, build-native/, java.library.path. " +
-                    "Ensure the SEAL-backed native library is built (see README for CMake instructions).", e);
-        }
-    }
-
-    private static Set<String> nativeLibraryFileNames() {
-        Set<String> candidateNames = new LinkedHashSet<>();
-        candidateNames.add(System.mapLibraryName("blindbean_fhe"));
-
-        String osName = System.getProperty("os.name", "").toLowerCase();
-        if (osName.contains("win")) {
-            candidateNames.add("blindbean_fhe.dll");
-        } else if (osName.contains("mac")) {
-            candidateNames.add("blindbean_fhe.dylib");
-            candidateNames.add("libblindbean_fhe.dylib");
-        } else {
-            candidateNames.add("blindbean_fhe.so");
-            candidateNames.add("libblindbean_fhe.so");
-        }
-
-        return candidateNames;
+        System.load(NativeLibraryLocator.locate(
+                System.getProperty(NativeLibraryLocator.PROPERTY),
+                System.getProperty("java.library.path")).toString());
     }
 }

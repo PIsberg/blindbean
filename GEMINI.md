@@ -43,6 +43,7 @@ The following elements are well-tested core components. Make changes with extrem
 Do not weaken security properties of these elements. Flag any change for security review:
 
 - `se.deversity.blindbean.fhe.FheContext`: Security-critical code [fhe-encryption]. Do not weaken security properties. Flag any change for security review.
+- `se.deversity.blindbean.fhe.NativeLibraryLocator`: Security-critical code [native-library-search-path]. Do not weaken security properties. Flag any change for security review.
 <!-- VIBETAGS-MODULE-END: blindbean-fhe -->
 <!-- VIBETAGS-MODULE: blindbean-junit -->
 # GEMINI AI INSTRUCTIONS

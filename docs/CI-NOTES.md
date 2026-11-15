@@ -32,8 +32,8 @@ because a CVE was published overnight teaches people to ignore red.
 
 **FindSecBugs** rides inside the SpotBugs gate in `java-gate` (`findsecbugs-plugin` in the root
 pom's SpotBugs config), so a security finding fails `verify` like any other bug. Every suppression
-is in `config/spotbugs/exclude.xml` with its reason; the `FheNativeBridge.loadNativeLibrary` entry
-is a real finding parked on #254 because the class is `@AILocked`, and goes when that is fixed.
+is in `config/spotbugs/exclude.xml` with its reason. The native loader (`FheNativeBridge.loadNativeLibrary`
+and `NativeLibraryLocator`) has no suppression since #254 was fixed.
 
 **Fuzzing.** `KeyBundleLoadFuzzTest` is a Jazzer `@FuzzTest`. In `java-gate` it runs in regression
 mode: it replays any stored inputs under `blindbean-tests/src/test/resources/.../KeyBundleLoadFuzzTestInputs/`

@@ -96,7 +96,9 @@ the native bridge, or the Vector API.
 The jars do **not** bundle the native library. Paillier is pure Java and works out of the box;
 BFV/CKKS need `blindbean_fhe` for your platform — take it from the
 [release assets](https://github.com/PIsberg/blindbean/releases) and point
-`-Dblindbean.native.path` at the directory holding it.
+`-Dblindbean.native.path` at the directory holding it. BlindBean loads it from that directory, or
+with the property unset from an absolute `java.library.path` entry, and never from the working
+directory; set the property in production.
 
 Every JVM running BlindBean needs `--enable-preview --add-modules jdk.incubator.vector`, plus native
 access for BFV/CKKS: `--enable-native-access=ALL-UNNAMED` on the classpath, or
@@ -122,13 +124,15 @@ cmake -S blindbean-fhe/src/main/native -B build-native \
 cmake --build build-native --config Release
 
 # 2. Build and install the Java library
-./mvnw clean install -B -Dblindbean.native.path=build-native
+./mvnw clean install -B -Dblindbean.native.path="$PWD/build-native"
 
 # 3. Run tests
-./mvnw clean test -Dblindbean.native.path=build-native
+./mvnw clean test -Dblindbean.native.path="$PWD/build-native"
 ```
 
-On Windows, use `mvnw.cmd` and `-Dblindbean.native.path=build-native/Release`.
+On Windows, use `mvnw.cmd` and drop the flag (the test module defaults it to
+`build-native/Release` at the repo root). The path must be absolute: the tests run with
+`blindbean-tests/` as their working directory.
 
 ## CI
 

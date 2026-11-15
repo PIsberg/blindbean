@@ -158,10 +158,12 @@ public class FheContext implements AutoCloseable {
         sb.append("BlindBean could not load the native FHE library (blindbean_fhe).\n");
         sb.append("  OS/arch: ").append(os).append('/').append(arch).append('\n');
         if (configured == null || configured.isBlank()) {
-            sb.append("  The system property 'blindbean.native.path' is NOT set.\n");
+            sb.append("  The system property 'blindbean.native.path' is NOT set, so only java.library.path was "
+                    + "searched (never the working directory).\n");
             sb.append("  Fix: pass -Dblindbean.native.path=<dir containing the built library>\n");
         } else {
-            sb.append("  Searched 'blindbean.native.path' = ").append(configured).append('\n');
+            sb.append("  Searched 'blindbean.native.path' = ").append(configured)
+                    .append(" (and nowhere else: a set path never falls back)\n");
             sb.append("  Fix: verify the library exists there for this OS/arch");
             if (os.toLowerCase(java.util.Locale.ROOT).contains("win")) {
                 sb.append(" (MSVC builds place it under a Release/ subdirectory)");
@@ -171,11 +173,29 @@ public class FheContext implements AutoCloseable {
         sb.append("  Build it once with: cmake -S blindbean-fhe/src/main/native -B build-native "
                 + "-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake && "
                 + "cmake --build build-native --config Release\n");
-        sb.append("  Docs: README.md 'Prerequisites' and CLAUDE.md 'Build & Test'.");
-        if (cause != null && cause.getMessage() != null) {
-            sb.append("\n  Underlying error: ").append(cause.getMessage());
+        sb.append("  Docs: README.md 'Building' and docs/BUILD-AND-TEST.md.");
+        String underlying = innermostMessage(cause);
+        if (underlying != null) {
+            sb.append("\n  Underlying error: ").append(underlying);
         }
         return sb.toString();
+    }
+
+    /**
+     * The message of the deepest cause that has one. A failed load inside FheNativeBridge's static
+     * initializer arrives wrapped in an ExceptionInInitializerError, whose own message is null, and
+     * on every later access in a NoClassDefFoundError around that; the loader's own words, which
+     * name the directory it searched, are at the bottom.
+     */
+    private static @Nullable String innermostMessage(@Nullable Throwable cause) {
+        @Nullable String message = null;
+        int depth = 0;
+        for (Throwable t = cause; t != null && depth < 16; t = t.getCause(), depth++) {
+            if (t.getMessage() != null) {
+                message = t.getMessage();
+            }
+        }
+        return message;
     }
 
     public int polyModulusDegree() { return polyModulusDegree; }

@@ -21,4 +21,10 @@ These are already wired into `maven-compiler-plugin` and `maven-surefire-plugin`
 
 The floor is **22**, not 21. `java.lang.foreign` (`Arena`, `MemorySegment`, `ValueLayout`, used throughout `blindbean-fhe`) was a preview API in 21, and `Arena.allocateFrom` did not exist there at all. Supporting 21 would be a rewrite of the FFM bridge, not a flag change.
 
-The native library location is controlled by the `blindbean.native.path` system property (read by `FheNativeBridge` when loading symbols). Tests will fail fast if the DLL cannot be found there.
+## Native library location
+
+`blindbean.native.path` names the directory holding `blindbean_fhe` (read once, when `FheNativeBridge` first loads). Use an absolute path: a relative one resolves against the JVM's working directory.
+
+- **Set:** only that directory is searched. If the library is not there, the first BFV/CKKS call throws an `FheException` naming the directory; there is no fallback.
+- **Unset or blank:** the absolute entries of `java.library.path`, in order. Relative entries are skipped, including the `.` the JDK appends to the default value on Windows.
+- **Never:** the working directory. Versions before the fix for #254 searched `src/main/native/` and `build-native/` under it, which let anyone who could write that directory plant native code into the process.
