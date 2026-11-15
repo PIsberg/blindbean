@@ -173,6 +173,70 @@ public class BlindContextTest {
             "the preserved bundle must still decrypt ciphertexts from before the failed export");
     }
 
+    /**
+     * A key pair that serializes partway and then fails: the bundle header and class descriptors
+     * reach the stream before ObjectOutputStream finds the unserializable field. This is the
+     * shape of a disk-full or I/O error during the write itself (#224), reachable through the
+     * public API without a filesystem fault injector.
+     */
+    private static final class UnserializableKeyPair extends PaillierKeyPair {
+        private static final long serialVersionUID = 1L;
+        @SuppressWarnings({"unused", "serial"})
+        private final Object notSerializable = new Object();
+
+        UnserializableKeyPair() {
+            super(512);
+        }
+    }
+
+    /**
+     * Opening the destination with a truncating FileOutputStream and then failing during the
+     * write left a partial file where the previous good bundle was (#224). The export must
+     * write elsewhere and only replace the destination once the new bundle is complete.
+     */
+    @Test
+    public void exportFailingMidWriteLeavesAnExistingBundleIntact() throws Exception {
+        Path bundleFile = tempDir.resolve("keys.bin");
+        BigInteger message = BigInteger.valueOf(55555L);
+
+        BlindContext.init();
+        Ciphertext encrypted = BlindContext.getPaillier().encrypt(message);
+        BlindContext.exportKeys(bundleFile.toString());
+        byte[] goodBundle = Files.readAllBytes(bundleFile);
+
+        BlindContext.init(new UnserializableKeyPair());
+        FheException e = assertThrows(FheException.class,
+            () -> BlindContext.exportKeys(bundleFile.toString()));
+        assertTrue(e.getMessage().contains("Key export failed"),
+            "a write failure must be reported as an export failure, got: " + e.getMessage());
+
+        assertArrayEquals(goodBundle, Files.readAllBytes(bundleFile),
+            "an export that fails mid-write must leave the previous bundle byte-for-byte intact");
+        try (var entries = Files.list(tempDir)) {
+            assertEquals(java.util.List.of(bundleFile), entries.toList(),
+                "a failed export must not leave a temporary file behind");
+        }
+
+        BlindContext.clear();
+        BlindContext.loadKeys(bundleFile.toString());
+        assertEquals(message, BlindContext.getPaillier().decrypt(encrypted),
+            "the preserved bundle must still decrypt ciphertexts from before the failed export");
+    }
+
+    @Test
+    public void successfulExportLeavesOnlyTheBundleInTheDirectory() throws Exception {
+        Path bundleFile = tempDir.resolve("keys.bin");
+        BlindContext.init();
+        BlindContext.exportKeys(bundleFile.toString());
+        // Export twice: the second one replaces an existing file, the path #224 changes.
+        BlindContext.exportKeys(bundleFile.toString());
+
+        try (var entries = Files.list(tempDir)) {
+            assertEquals(java.util.List.of(bundleFile), entries.toList(),
+                "export must not leave a temporary file next to the bundle");
+        }
+    }
+
     @Test
     public void exportToAnUnwritableDestinationThrowsFheException() {
         BlindContext.init();
