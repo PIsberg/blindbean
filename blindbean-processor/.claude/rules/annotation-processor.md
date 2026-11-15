@@ -26,11 +26,6 @@ These elements are strictly excluded from AI context. Do not reference them.
 ### se.deversity.blindbean.processor.HomomorphicProcessor.isIntegral(java.lang.String)
 - **Reason**: Pure internal type-dispatch helper — not part of the public processor API
 
-## Internationalization Mandate
-
-### se.deversity.blindbean.processor.HomomorphicProcessor
-- **Rule**: Prohibit hardcoding user-facing strings, labels, or messages. All user-visible text must be resolved via localization resources.
-
 ## Strict Classpath Integrity
 
 ### se.deversity.blindbean.processor.HomomorphicProcessor

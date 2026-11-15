@@ -32,7 +32,6 @@ import java.util.Set;
 import se.deversity.vibetags.annotations.AIContext;
 import se.deversity.vibetags.annotations.AIFeatureFlag;
 import se.deversity.vibetags.annotations.AIIgnore;
-import se.deversity.vibetags.annotations.AIInternationalized;
 import se.deversity.vibetags.annotations.AIStrictClasspath;
 
 @SupportedAnnotationTypes({
@@ -42,7 +41,6 @@ import se.deversity.vibetags.annotations.AIStrictClasspath;
 @AutoService(Processor.class)
 @AIContext(focus = "Strictly maintain high-performance AST compilation speed", avoids = "Heavy internal object allocations")
 @AIStrictClasspath
-@AIInternationalized
 public class HomomorphicProcessor extends AbstractProcessor {
 
     /**
