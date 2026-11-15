@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="910" viewBox="0 0 960 910">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="910" viewBox="0 0 1080 910">
 <defs>
 <style>
 svg { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -52,62 +52,62 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
   <path d="M0,0 L8,4 L0,8" fill="none" stroke="#374151" stroke-width="1.2"/>
 </marker>
 </defs>
-<rect width="960" height="910" fill="#f9fafb"/>
-<rect width="960" height="910" fill="url(#dotGrid)"/>
-<rect class="group-rect" x="46.0" y="46.0" width="728.0" height="708.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
+<rect width="1080" height="910" fill="#f9fafb"/>
+<rect width="1080" height="910" fill="url(#dotGrid)"/>
+<rect class="group-rect" x="46.0" y="46.0" width="988.0" height="708.0" rx="8" fill="#f3f4f6" fill-opacity="0.5" stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1.2"/>
 <text x="52.0" y="59.0" font-family="sans-serif" font-size="11" fill="#6b7280" font-style="italic">se.deversity.blindbean.fhe</text>
-<path class="edge-line" data-source="FheCiphertextNative" data-target="FheContext" data-type="HAS" d="M410.0 340.0 Q269.9 378.2 150.0 460.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
-<text class="edge-label" data-source="FheCiphertextNative" data-target="FheContext" data-type="HAS" x="275.0" y="383.1" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">context</text>
+<path class="edge-line" data-source="FheCiphertextNative" data-target="FheContext" data-type="HAS" d="M580.0 200.0 Q385.6 379.3 240.0 600.0" fill="none" stroke="#374151" stroke-width="1.6" marker-end="url(#marker-open-374151)"/>
+<text class="edge-label" data-source="FheCiphertextNative" data-target="FheContext" data-type="HAS" x="397.8" y="383.6" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#374151" font-style="italic">context</text>
 <g id="FheCiphertextNative">
   <title>FheCiphertextNative [CLASS]</title>
-  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="280.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="410.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">FheCiphertextNative</text>
-  <line x1="320.0" y1="104.0" x2="500.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="328.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAGIC_0: byte</text>
-  <text x="328.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAGIC_1: byte</text>
-  <text x="328.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">VERSION: byte</text>
-  <text x="328.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">HEADER_LEN: int</text>
-  <text x="328.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle: MemorySegment</text>
-  <text x="328.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">context: FheContext</text>
-  <text x="328.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
-  <line x1="320.0" y1="221.0" x2="500.0" y2="221.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="328.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle(): MemorySegment</text>
-  <text x="328.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialize(): byte[]</text>
-  <text x="328.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">deserialize(FheContext, by…</text>
-  <text x="328.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">toBlindCiphertext(): Ciphe…</text>
-  <text x="328.0" y="294.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromBlindCiphertext(FheCon…</text>
-  <text x="328.0" y="309.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">ensureValid(): void</text>
-  <text x="328.0" y="324.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+1 more)</text>
+  <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="280.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="670.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">FheCiphertextNative</text>
+  <line x1="580.0" y1="104.0" x2="760.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="588.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAGIC_0: byte</text>
+  <text x="588.0" y="132.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MAGIC_1: byte</text>
+  <text x="588.0" y="147.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">VERSION: byte</text>
+  <text x="588.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">HEADER_LEN: int</text>
+  <text x="588.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle: MemorySegment</text>
+  <text x="588.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">context: FheContext</text>
+  <text x="588.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+2 more)</text>
+  <line x1="580.0" y1="221.0" x2="760.0" y2="221.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="588.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle(): MemorySegment</text>
+  <text x="588.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">serialize(): byte[]</text>
+  <text x="588.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">deserialize(FheContext, by…</text>
+  <text x="588.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">toBlindCiphertext(): Ciphe…</text>
+  <text x="588.0" y="294.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fromBlindCiphertext(FheCon…</text>
+  <text x="588.0" y="309.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">ensureValid(): void</text>
+  <text x="588.0" y="324.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+1 more)</text>
 </g>
 <g id="FheContext">
   <title>FheContext [CLASS]</title>
   <rect class="node-rect" x="60.0" y="460.0" width="180.0" height="280.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
   <text class="node-label" x="150.0" y="482.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">FheContext</text>
   <line x1="60.0" y1="504.0" x2="240.0" y2="504.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="68.0" y="517.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle: MemorySegment</text>
-  <text x="68.0" y="532.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">scheme: Scheme</text>
-  <text x="68.0" y="547.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">arena: Arena</text>
-  <text x="68.0" y="562.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree: int</text>
-  <text x="68.0" y="577.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">scale: double</text>
-  <text x="68.0" y="592.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">closed: boolean</text>
-  <text x="68.0" y="607.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+3 more)</text>
+  <text x="68.0" y="517.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">LOG: System.Logger</text>
+  <text x="68.0" y="532.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">LOW_NOISE_BUDGET_BITS: int</text>
+  <text x="68.0" y="547.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">handle: MemorySegment</text>
+  <text x="68.0" y="562.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">scheme: Scheme</text>
+  <text x="68.0" y="577.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">arena: Arena</text>
+  <text x="68.0" y="592.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree: int</text>
+  <text x="68.0" y="607.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+5 more)</text>
   <line x1="60.0" y1="621.0" x2="240.0" y2="621.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
   <text x="68.0" y="634.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">bfv(int): FheContext</text>
   <text x="68.0" y="649.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">ckks(int, double): FheCont…</text>
   <text x="68.0" y="664.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">create(MemorySegment, Sche…</text>
   <text x="68.0" y="679.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">initNative(java.util.funct…</text>
   <text x="68.0" y="694.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">nativeLoadGuidance(Throwab…</text>
-  <text x="68.0" y="709.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">polyModulusDegree(): int</text>
-  <text x="68.0" y="724.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+28 more)</text>
+  <text x="68.0" y="709.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">innermostMessage(Throwable…</text>
+  <text x="68.0" y="724.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+30 more)</text>
 </g>
 <g id="FheException">
   <title>FheException [CLASS]</title>
-  <rect class="node-rect" x="580.0" y="60.0" width="180.0" height="100.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
-  <text class="node-label" x="670.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">FheException</text>
-  <line x1="580.0" y1="104.0" x2="760.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="588.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">errorCode: int</text>
-  <line x1="580.0" y1="131.0" x2="760.0" y2="131.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
-  <text x="588.0" y="144.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getErrorCode(): int</text>
+  <rect class="node-rect" x="840.0" y="60.0" width="180.0" height="100.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="930.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">FheException</text>
+  <line x1="840.0" y1="104.0" x2="1020.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="848.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">errorCode: int</text>
+  <line x1="840.0" y1="131.0" x2="1020.0" y2="131.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="848.0" y="144.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">getErrorCode(): int</text>
 </g>
 <g id="FheNativeBridge">
   <title>FheNativeBridge [CLASS]</title>
@@ -120,20 +120,33 @@ text { font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe
   <text x="68.0" y="162.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_INIT_CKKS: MethodHandle</text>
   <text x="68.0" y="177.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_DESTROY_CONTEXT: Method…</text>
   <text x="68.0" y="192.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">MH_ENCRYPT_LONG: MethodHan…</text>
-  <text x="68.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+20 more)</text>
+  <text x="68.0" y="207.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+23 more)</text>
   <line x1="60.0" y1="221.0" x2="240.0" y2="221.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
   <text x="68.0" y="234.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_init_bfv(int): MemoryS…</text>
   <text x="68.0" y="249.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_init_ckks(int, double)…</text>
   <text x="68.0" y="264.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_destroy_context(Memory…</text>
   <text x="68.0" y="279.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_encrypt_long(MemorySeg…</text>
-  <text x="68.0" y="294.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_decrypt_long(MemorySeg…</text>
+  <text x="68.0" y="294.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_decrypt_long_checked(M…</text>
   <text x="68.0" y="309.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">fhe_encrypt_long_array(Mem…</text>
-  <text x="68.0" y="324.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+21 more)</text>
+  <text x="68.0" y="324.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">…(+20 more)</text>
 </g>
-<rect x="724.0" y="800.0" width="220.0" height="76.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
-<text x="740.0" y="820.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
-<line x1="740.0" y1="844.0" x2="776.0" y2="844.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-open-374151)"/>
-<text x="784.0" y="848.0" font-family="sans-serif" font-size="11" fill="#374151">has</text>
+<g id="NativeLibraryLocator">
+  <title>NativeLibraryLocator [CLASS]</title>
+  <rect class="node-rect" x="320.0" y="60.0" width="180.0" height="160.0" rx="6.0" fill="url(#grad-CLASS)" stroke="#374151" stroke-width="1.8" filter="url(#nodeShadow)"/>
+  <text class="node-label" x="410.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="13.0" font-weight="bold" fill="#1f2937">NativeLibraryLocator</text>
+  <line x1="320.0" y1="104.0" x2="500.0" y2="104.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="328.0" y="117.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">PROPERTY: String</text>
+  <line x1="320.0" y1="131.0" x2="500.0" y2="131.0" stroke="#374151" stroke-width="0.8" opacity="0.4"/>
+  <text x="328.0" y="144.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">locate(String, String): Pa…</text>
+  <text x="328.0" y="159.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">findIn(Path, Set&lt;String&gt;):…</text>
+  <text x="328.0" y="174.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">toAbsoluteDir(String): Path</text>
+  <text x="328.0" y="189.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">absoluteDir(String): Optio…</text>
+  <text x="328.0" y="204.5" font-family="sans-serif" font-size="10" fill="#374151" dominant-baseline="central">nativeLibraryFileNames(): …</text>
+</g>
+<rect x="844.0" y="800.0" width="220.0" height="76.0" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1" filter="url(#nodeShadow)"/>
+<text x="860.0" y="820.0" font-family="sans-serif" font-size="11" font-weight="bold" fill="#374151">Legend</text>
+<line x1="860.0" y1="844.0" x2="896.0" y2="844.0" stroke="#374151" stroke-width="2" marker-end="url(#marker-open-374151)"/>
+<text x="904.0" y="848.0" font-family="sans-serif" font-size="11" fill="#374151">has</text>
 <script type="text/javascript">
 <![CDATA[
 document.addEventListener('DOMContentLoaded', () => {
@@ -155,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
       edges.forEach(edge => {
         const source = edge.getAttribute('data-source');
         const target = edge.getAttribute('data-target');
-        const isConnected = (source === nodeId || target === nodeId || 
-                             (source && source.startsWith(nodeId + '.')) || 
+        const isConnected = (source === nodeId || target === nodeId ||
+                             (source && source.startsWith(nodeId + '.')) ||
                              (target && target.startsWith(nodeId + '.')) ||
                              (nodeId && nodeId.startsWith(source + '.')) ||
                              (nodeId && nodeId.startsWith(target + '.')));
@@ -199,6 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ]]>
 </script>
 <a class="diagram-attribution" href="https://github.com/PIsberg/codekarta" target="_blank" rel="noopener noreferrer">
-  <text x="944.0" y="894.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
+  <text x="1064.0" y="894.0" text-anchor="end" font-family="sans-serif" font-size="11" fill="#6b7280" text-decoration="underline">Created with https://github.com/PIsberg/codekarta</text>
 </a>
 </svg>
